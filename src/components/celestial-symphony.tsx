@@ -242,9 +242,12 @@ const CelestialSymphony = ({
         if (planet.name === 'Viridis' && planet.material instanceof THREE.MeshStandardMaterial) {
           if (isViridisAnimationActive) {
             planet.userData.time += effectiveDelta;
-            // Cycle over ~28 "days" (where a day is relative to the base speed)
-            const animationSpeed = (Math.PI * 2) / 28; 
-            planet.material.emissiveIntensity = 0.4 + (Math.sin(planet.userData.time * animationSpeed) + 1) * 0.4;
+            // Cycle over 18 days (9 to dim, 9 to brighten)
+            // (time * speed) / days_in_cycle * PI
+            const animationCycle = (planet.userData.time * 0.05) / 9 * Math.PI; 
+            // Cosine wave from 0 to 1, then map to 0.1 - 0.9 range, plus base 0.1
+            const intensity = (Math.cos(animationCycle) + 1) / 2 * 0.9 + 0.1;
+            planet.material.emissiveIntensity = intensity;
           } else {
              planet.material.emissiveIntensity = 0.8; // Reset to default
           }
@@ -347,7 +350,7 @@ const CelestialSymphony = ({
     });
     
     if (sebakaMesh) {
-      sebakaMesh.visible = !viewFromSebaka;
+      sebakaMesh.visible = !viewFromSebea;
     }
 
     if (viewFromSebaka) {
@@ -389,3 +392,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    
