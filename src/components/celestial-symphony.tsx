@@ -305,12 +305,11 @@ const CelestialSymphony = ({
             const rotationY = THREE.MathUtils.degToRad(sebakaRotationAngle);
             const manualRotation = new THREE.Euler(0, rotationY, 0, 'YXZ');
             
-            cameraOffset.applyEuler(manualRotation);
             camera.position.copy(sebakaPosition).add(cameraOffset);
 
-            const lookAtOffset = new THREE.Vector3(0, surfaceYOffset, -100);
+            const lookAtOffset = new THREE.Vector3(0, 0, -100); // Look "forward" from camera
             lookAtOffset.applyEuler(manualRotation);
-            controls.target.copy(sebakaPosition).add(lookAtOffset);
+            controls.target.copy(camera.position).add(lookAtOffset);
           }
       }
 
@@ -419,7 +418,8 @@ const CelestialSymphony = ({
         if (isSebakaRotating) {
             controls.enableRotate = false;
         } else {
-            controls.enableRotate = true;
+             // Disable rotation controls when slider is active
+            controls.enableRotate = false;
         }
 
     } else {
