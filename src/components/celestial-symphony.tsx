@@ -13,6 +13,7 @@ interface CelestialSymphonyProps {
 const CelestialSymphony = ({ stars, planets }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
+  const binaryStarMeshesRef = useRef<THREE.Mesh[]>([]);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -27,7 +28,7 @@ const CelestialSymphony = ({ stars, planets }: CelestialSymphonyProps) => {
       75,
       currentMount.clientWidth / currentMount.clientHeight,
       0.1,
-      2000
+      200000 // Increased far plane for distant star
     );
     camera.position.set(0, 400, 800);
 
@@ -43,7 +44,7 @@ const CelestialSymphony = ({ stars, planets }: CelestialSymphonyProps) => {
     controls.dampingFactor = 0.05;
     controls.screenSpacePanning = false;
     controls.minDistance = 100;
-    controls.maxDistance = 1500;
+    controls.maxDistance = 10000;
     controls.target.set(0, 0, 0);
 
     // Lighting
@@ -52,17 +53,28 @@ const CelestialSymphony = ({ stars, planets }: CelestialSymphonyProps) => {
     scene.add(pointLight);
 
     // Stars
+    binaryStarMeshesRef.current = [];
     stars.forEach((starData) => {
       const geometry = new THREE.SphereGeometry(starData.size, 32, 32);
       const material = new THREE.MeshBasicMaterial({ color: starData.color });
       const star = new THREE.Mesh(geometry, material);
       star.position.set(...starData.position);
       scene.add(star);
+      // Identify binary stars to animate them
+      if (starData.name === "Alpha" || starData.name === "Twilight") {
+        binaryStarMeshesRef.current.push(star);
+      } else {
+        // Add a lens flare effect for the distant, bright Beacon star
+        const pointLightBeacon = new THREE.PointLight(starData.color, 5, 0, 1);
+        pointLightBeacon.position.set(...starData.position);
+        scene.add(pointLightBeacon);
+      }
     });
 
     // Planets and Orbits
     planetMeshesRef.current = [];
     planets.forEach((planetData) => {
+      const orbitCenter = planetData.orbitCenter || [0, 0, 0];
       // Planet
       const planetGeometry = new THREE.SphereGeometry(planetData.size, 32, 32);
       const planetMaterial = new THREE.MeshStandardMaterial({
@@ -75,6 +87,7 @@ const CelestialSymphony = ({ stars, planets }: CelestialSymphonyProps) => {
         orbitRadius: planetData.orbitRadius,
         orbitSpeed: planetData.orbitSpeed,
         angle: Math.random() * Math.PI * 2,
+        orbitCenter: new THREE.Vector3(...orbitCenter),
       };
       scene.add(planet);
       planetMeshesRef.current.push(planet);
@@ -83,19 +96,35 @@ const CelestialSymphony = ({ stars, planets }: CelestialSymphonyProps) => {
       const orbitGeometry = new THREE.TorusGeometry(planetData.orbitRadius, 0.5, 8, 100);
       const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
       const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
+      orbit.position.set(...orbitCenter);
       orbit.rotation.x = Math.PI / 2;
       scene.add(orbit);
     });
+
+    const binaryOrbitSpeed = 0.01; // Speed for Alpha/Twilight mutual orbit
+    let binaryAngle = 0;
 
     // Animation loop
     const animate = () => {
       requestAnimationFrame(animate);
 
+      // Animate binary stars
+      binaryAngle += binaryOrbitSpeed;
+      if (binaryStarMeshesRef.current.length === 2) {
+          const r = 15; // half the distance between them
+          binaryStarMeshesRef.current[0].position.x = -r * Math.cos(binaryAngle);
+          binaryStarMeshesRef.current[0].position.z = r * Math.sin(binaryAngle);
+          binaryStarMeshesRef.current[1].position.x = r * Math.cos(binaryAngle);
+          binaryStarMeshesRef.current[1].position.z = -r * Math.sin(binaryAngle);
+      }
+
+      // Animate planets
       planetMeshesRef.current.forEach((planet) => {
         planet.userData.angle += planet.userData.orbitSpeed;
-        const x = planet.userData.orbitRadius * Math.cos(planet.userData.angle);
-        const z = planet.userData.orbitRadius * Math.sin(planet.userData.angle);
-        planet.position.set(x, 0, z);
+        const x = planet.userData.orbitCenter.x + planet.userData.orbitRadius * Math.cos(planet.userData.angle);
+        const z = planet.userData.orbitCenter.z + planet.userData.orbitRadius * Math.sin(planet.userData.angle);
+        const y = planet.userData.orbitCenter.y;
+        planet.position.set(x, y, z);
       });
 
       controls.update();

@@ -4,6 +4,7 @@ export interface PlanetData {
   size: number;
   orbitRadius: number;
   orbitSpeed: number;
+  orbitCenter?: [number, number, number];
 }
 
 export interface StarData {
