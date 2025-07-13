@@ -175,7 +175,7 @@ const CelestialSymphony = ({
             z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
         } else {
             x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
-            z = planet.userData.orbitCenter.z + semiMajorAxis * Math.sin(planet.userData.angle);
+            z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
         }
 
         const y = planet.userData.orbitCenter.y;
@@ -190,7 +190,9 @@ const CelestialSymphony = ({
           const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
           camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
           
-          const lookAtTarget = new THREE.Vector3(0, 0, 0); 
+          // Look outwards from the planet
+          const lookDirection = camera.position.clone().sub(controls.target).normalize();
+          const lookAtTarget = camera.position.clone().add(lookDirection);
           controls.target.copy(lookAtTarget);
       }
 
@@ -278,11 +280,18 @@ const CelestialSymphony = ({
     }
 
     if (viewFromSebaka) {
-        controls.enablePan = true;
-        controls.enableZoom = false; // Disable zooming to stay on the planet
-        controls.minDistance = 0; // Allow looking around from a fixed point
-        controls.maxDistance = 1;
+        if (sebakaMesh) {
+            const sebakaPosition = sebakaMesh.position.clone();
+            const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
+            camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
+            controls.target.copy(sebakaPosition.clone().add(new THREE.Vector3(0,0,1))); // Look forward initially
+        }
+        controls.enablePan = false;
+        controls.enableZoom = false; 
+        controls.minDistance = 0;
+        controls.maxDistance = 1; 
         controls.screenSpacePanning = false;
+
     } else {
         // Reset to default orbital view
         controls.target.set(0, 0, 0);
