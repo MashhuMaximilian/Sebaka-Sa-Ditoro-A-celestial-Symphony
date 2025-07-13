@@ -25,6 +25,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Tooltip,
   TooltipContent,
@@ -159,6 +161,7 @@ export default function Home() {
   const [isSebakaRotating, setIsSebakaRotating] = useState(false);
   const [resetViewToggle, setResetViewToggle] = useState(false);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
+  const [sebakaRotationAngle, setSebakaRotationAngle] = useState(0);
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -173,8 +176,15 @@ export default function Home() {
     setPlanets([...updatedInnerPlanets, ...outerPlanets]);
   };
   
-  const handleSpeedChange = (value: number[]) => {
-    setSpeedMultiplier(value[0]);
+  const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value)) {
+        setSpeedMultiplier(value);
+    }
+  };
+
+  const handleRotationChange = (value: number[]) => {
+    setSebakaRotationAngle(value[0]);
   };
 
   const resetSpeed = () => {
@@ -202,11 +212,14 @@ export default function Home() {
 
   const toggleSebakaView = () => {
       setViewFromSebaka(prev => {
-          const newVew = !prev;
-          if (!newVew && isSebakaRotating) {
+          const newView = !prev;
+          if (!newView && isSebakaRotating) {
               setIsSebakaRotating(false);
           }
-          return newVew;
+          if(newView) {
+            setSebakaRotationAngle(0);
+          }
+          return newView;
       })
   }
 
@@ -219,6 +232,7 @@ export default function Home() {
         onBodyClick={handleBodyClick}
         viewFromSebaka={viewFromSebaka}
         isSebakaRotating={isSebakaRotating}
+        sebakaRotationAngle={sebakaRotationAngle}
         resetViewToggle={resetViewToggle}
         isViridisAnimationActive={isViridisAnimationActive}
       />
@@ -256,7 +270,7 @@ export default function Home() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={toggleSebakaView} disabled={isSebakaRotating}>
+                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={toggleSebakaView}>
                             <PersonStanding className="h-5 w-5" />
                             <span className="sr-only">Toggle View from Sebaka</span>
                         </Button>
@@ -310,19 +324,36 @@ export default function Home() {
             </Sheet>
         </div>
       </div>
-
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-sm md:max-w-md p-4">
+      
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-sm md:max-w-md p-4 space-y-2">
+          {viewFromSebaka && !isSebakaRotating && (
+             <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                 <Label htmlFor="rotation-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  Rotation: {sebakaRotationAngle.toFixed(0)}°
+                </Label>
+                <Slider
+                    id="rotation-slider"
+                    min={0}
+                    max={360}
+                    step={1}
+                    value={[sebakaRotationAngle]}
+                    onValueChange={handleRotationChange}
+                    className="w-full"
+                />
+            </div>
+          )}
           <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-              <span className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                  Speed: {speedMultiplier.toFixed(1)}x
-              </span>
-              <Slider
-                  min={0.1}
-                  max={2000}
-                  step={0.1}
-                  value={[speedMultiplier]}
-                  onValueChange={handleSpeedChange}
+              <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  Speed (x)
+              </Label>
+              <Input
+                  id="speed-input"
+                  type="number"
+                  value={speedMultiplier}
+                  onChange={handleSpeedChange}
                   className="w-full"
+                  min={0.1}
+                  step={0.1}
               />
                <TooltipProvider>
                   <Tooltip>
