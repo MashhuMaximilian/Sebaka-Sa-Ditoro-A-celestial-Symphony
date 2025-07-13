@@ -166,15 +166,14 @@ const CelestialSymphony = ({
         planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta;
         
         const semiMajorAxis = planet.userData.orbitRadius;
-        let semiMinorAxis;
+        let semiMinorAxis = semiMajorAxis;
         let x, z;
 
         if (planet.userData.eccentric) {
             const eccentricity = planet.name === 'Spectris' ? 0.2 : 0.5; // Spectris: 0.2, Aetheris: 0.5
             semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
-        } else {
-            semiMinorAxis = semiMajorAxis; // For circular orbits, semi-minor is same as semi-major
         }
+        
         x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
         z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
 
@@ -188,11 +187,10 @@ const CelestialSymphony = ({
       if (viewFromSebaka && sebakaMesh && camera && controls) {
           const sebakaPosition = sebakaMesh.position.clone();
           const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
+          
           camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
           
-          // Look outwards from the planet
-          const lookDirection = camera.position.clone().sub(controls.target).normalize();
-          const lookAtTarget = camera.position.clone().add(lookDirection);
+          const lookAtTarget = sebakaMesh.position.clone().add(new THREE.Vector3(0, 0, 100)); // Look "forward" in a somewhat arbitrary direction
           controls.target.copy(lookAtTarget);
       }
 

@@ -277,7 +277,7 @@ export default function Home() {
               </span>
               <Slider
                   min={0.1}
-                  max={100}
+                  max={500}
                   step={0.1}
                   value={[speedMultiplier]}
                   onValueChange={handleSpeedChange}
@@ -300,4 +300,3 @@ export default function Home() {
     </main>
   );
 }
-
