@@ -11,6 +11,7 @@ interface CelestialSymphonyProps {
   planets: PlanetData[];
   speedMultiplier?: number;
   onBodyClick: (name: string) => void;
+  viewFromSebaka: boolean;
 }
 
 const CelestialSymphony = ({
@@ -18,14 +19,17 @@ const CelestialSymphony = ({
   planets,
   speedMultiplier = 1,
   onBodyClick,
+  viewFromSebaka,
 }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
   const binaryStarMeshesRef = useRef<THREE.Mesh[]>([]);
   const animationFrameId = useRef<number>();
   const controlsRef = useRef<OrbitControls>();
+  const cameraRef = useRef<THREE.PerspectiveCamera>();
   const clockRef = useRef(new THREE.Clock());
   const speedMultiplierRef = useRef(speedMultiplier);
+  const originalCameraPos = useRef(new THREE.Vector3(0, 400, 800));
 
   useEffect(() => {
     speedMultiplierRef.current = speedMultiplier;
@@ -46,7 +50,8 @@ const CelestialSymphony = ({
       0.1,
       200000 // Increased far plane for distant star
     );
-    camera.position.set(0, 400, 800);
+    camera.position.copy(originalCameraPos.current);
+    cameraRef.current = camera;
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -149,6 +154,7 @@ const CelestialSymphony = ({
           star2.position.z = -r1 * Math.sin(star2.userData.angle);
       }
 
+      let sebakaMesh: THREE.Mesh | undefined;
       // Animate planets
       planetMeshesRef.current.forEach((planet) => {
         planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta * 10;
@@ -161,7 +167,20 @@ const CelestialSymphony = ({
         const z = planet.userData.orbitCenter.z + radius * Math.sin(planet.userData.angle);
         const y = planet.userData.orbitCenter.y;
         planet.position.set(x, y, z);
+        if (planet.name === 'Sebaka') {
+            sebakaMesh = planet;
+        }
       });
+      
+      if (viewFromSebaka && sebakaMesh) {
+          sebakaMesh.visible = false;
+          camera.position.copy(sebakaMesh.position);
+          const lookAtTarget = new THREE.Vector3().copy(sebakaMesh.position).add(new THREE.Vector3(100, 0, 0)); // Look outwards
+          controls.target.copy(lookAtTarget);
+      } else if (sebakaMesh) {
+          sebakaMesh.visible = true;
+      }
+
 
       controls.update();
       renderer.render(scene, camera);
@@ -234,6 +253,26 @@ const CelestialSymphony = ({
       }
     });
   }, [planets]);
+
+  useEffect(() => {
+    const camera = cameraRef.current;
+    const controls = controlsRef.current;
+    if (!camera || !controls) return;
+
+    if (viewFromSebaka) {
+        // Position will be set in animation loop
+        controls.minDistance = 0.1;
+        controls.maxDistance = 1; // Prevent zooming out too far
+        controls.enablePan = false;
+    } else {
+        camera.position.copy(originalCameraPos.current);
+        controls.target.set(0, 0, 0);
+        controls.minDistance = 1;
+        controls.maxDistance = 20000;
+        controls.enablePan = true;
+    }
+
+  }, [viewFromSebaka])
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };

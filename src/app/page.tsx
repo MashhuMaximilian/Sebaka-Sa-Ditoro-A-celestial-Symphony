@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Info } from "lucide-react";
+import { Palette, History, Eye, EyeOff } from "lucide-react";
 
 import type { PlanetData, StarData } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
@@ -15,7 +15,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Sheet,
@@ -156,6 +155,7 @@ export default function Home() {
   const [speedMultiplier, setSpeedMultiplier] = useState(1);
   const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
+  const [viewFromSebaka, setViewFromSebaka] = useState(false);
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -167,7 +167,7 @@ export default function Home() {
       color: newColors[i % newColors.length],
     }));
 
-    setPlanets([...updatedInnerPanels, ...outerPlanets]);
+    setPlanets([...updatedInnerPlanets, ...outerPlanets]);
   };
   
   const handleSpeedChange = (value: number[]) => {
@@ -187,9 +187,19 @@ export default function Home() {
     }
   };
 
+  const toggleViewFromSebaka = () => {
+    setViewFromSebaka(prev => !prev);
+  }
+
   return (
     <main className="relative h-screen w-screen overflow-hidden">
-      <CelestialSymphony stars={initialStars} planets={planets} speedMultiplier={speedMultiplier} onBodyClick={handleBodyClick} />
+      <CelestialSymphony 
+        stars={initialStars} 
+        planets={planets} 
+        speedMultiplier={speedMultiplier} 
+        onBodyClick={handleBodyClick}
+        viewFromSebaka={viewFromSebaka}
+      />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
           <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary-foreground/90 tracking-tighter">
@@ -210,6 +220,20 @@ export default function Home() {
                     </DialogContent>
                 )}
             </Dialog>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={toggleViewFromSebaka}>
+                            {viewFromSebaka ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            <span className="sr-only">Toggle View from Sebaka</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{viewFromSebaka ? 'Exit Sebaka View' : 'View from Sebaka'}</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+
             <Sheet>
             <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm">
