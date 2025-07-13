@@ -132,6 +132,53 @@ const CelestialSymphony = ({
       planetMeshesRef.current.push(planet);
       clickableObjects.push(planet);
 
+      if (planetData.name === "Spectris") {
+        const ringGeometry = new THREE.RingGeometry(planetData.size * 1.5, planetData.size * 3, 64);
+        
+        const vertexShader = `
+          varying vec3 vUv;
+          void main() {
+            vUv = position;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `;
+        const fragmentShader = `
+          varying vec3 vUv;
+          void main() {
+            float angle = atan(vUv.y, vUv.x);
+            float hue = (angle + 3.14159) / (2.0 * 3.14159);
+            gl_FragColor = vec4(hsv2rgb(vec3(hue, 0.7, 1.0)), 0.7);
+          }
+          vec3 hsv2rgb(vec3 c) {
+            vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+            vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+            return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+          }
+        `;
+
+        const ringMaterial = new THREE.ShaderMaterial({
+          vertexShader,
+          fragmentShader,
+          side: THREE.DoubleSide,
+          transparent: true,
+          extensions: {
+            derivatives: true
+          },
+          defines: {
+            STANDARD: '',
+            PHYSICAL: ''
+          },
+           uniforms: {
+            time: { value: 1.0 },
+            resolution: { value: new THREE.Vector2() }
+          },
+        });
+
+        const rings = new THREE.Mesh(ringGeometry, ringMaterial);
+        rings.rotation.x = Math.PI / 2 + 0.2; // Tilt the rings
+        planet.add(rings); // Attach rings to the planet
+      }
+
       const orbitGeometry = new THREE.TorusGeometry(planetData.orbitRadius, 0.5, 8, 100);
       const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
       const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
@@ -169,16 +216,17 @@ const CelestialSymphony = ({
         planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta;
         
         const semiMajorAxis = planet.userData.orbitRadius;
-        let semiMinorAxis = semiMajorAxis; // Default to circular
         let x, z;
 
         if (planet.userData.eccentric) {
             const eccentricity = planet.name === 'Spectris' ? 0.2 : 0.5; // Spectris: 0.2, Aetheris: 0.5
-            semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
+            const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
+            x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
+            z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
+        } else {
+            x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
+            z = planet.userData.orbitCenter.z + semiMajorAxis * Math.sin(planet.userData.angle);
         }
-        
-        x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
-        z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
 
         const y = planet.userData.orbitCenter.y;
         planet.position.set(x, y, z);
@@ -190,11 +238,8 @@ const CelestialSymphony = ({
       if (viewFromSebaka && sebakaMesh && camera && controls) {
           const sebakaPosition = sebakaMesh.position.clone();
           const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
-          
           camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
-          
-          const lookAtTarget = sebakaMesh.position.clone().add(new THREE.Vector3(0, 0, 100)); // Look "forward" in a somewhat arbitrary direction
-          controls.target.copy(lookAtTarget);
+          controls.target.copy(sebakaMesh.position.clone().add(new THREE.Vector3(0,0,100))); // Look "forward"
       }
 
       controls.update();
@@ -223,12 +268,17 @@ const CelestialSymphony = ({
 
         raycaster.setFromCamera(mouse, camera);
 
-        const intersects = raycaster.intersectObjects(clickableObjects);
+        const intersects = raycaster.intersectObjects(clickableObjects, true);
 
         if (intersects.length > 0) {
-            const firstIntersected = intersects[0].object;
-            if (firstIntersected.name) {
-                onBodyClick(firstIntersected.name);
+            let currentObject = intersects[0].object;
+            // Traverse up to find the parent mesh with the name
+            while(currentObject.parent && !currentObject.name) {
+              currentObject = currentObject.parent;
+            }
+
+            if (currentObject.name) {
+                onBodyClick(currentObject.name);
             }
         }
     }
