@@ -174,9 +174,13 @@ const CelestialSymphony = ({
       
       if (viewFromSebaka && sebakaMesh) {
           sebakaMesh.visible = false;
+          // Set camera position to Sebaka's position
           camera.position.copy(sebakaMesh.position);
-          const lookAtTarget = new THREE.Vector3().copy(sebakaMesh.position).add(new THREE.Vector3(100, 0, 0)); // Look outwards
-          controls.target.copy(lookAtTarget);
+
+          // Update control target to be relative to camera
+          const lookDirection = new THREE.Vector3();
+          camera.getWorldDirection(lookDirection);
+          controls.target.copy(camera.position).add(lookDirection);
       } else if (sebakaMesh) {
           sebakaMesh.visible = true;
       }
@@ -261,15 +265,17 @@ const CelestialSymphony = ({
 
     if (viewFromSebaka) {
         // Position will be set in animation loop
-        controls.minDistance = 0.1;
+        controls.minDistance = 0.01;
         controls.maxDistance = 1; // Prevent zooming out too far
         controls.enablePan = false;
+        controls.enableZoom = false; // Disable zoom from Sebaka
     } else {
         camera.position.copy(originalCameraPos.current);
         controls.target.set(0, 0, 0);
         controls.minDistance = 1;
         controls.maxDistance = 20000;
         controls.enablePan = true;
+        controls.enableZoom = true;
     }
 
   }, [viewFromSebaka])
