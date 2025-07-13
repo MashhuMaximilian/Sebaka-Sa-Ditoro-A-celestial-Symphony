@@ -350,7 +350,7 @@ const CelestialSymphony = ({
     });
     
     if (sebakaMesh) {
-      sebakaMesh.visible = !viewFromSebea;
+      sebakaMesh.visible = !viewFromSebaka;
     }
 
     if (viewFromSebaka) {
