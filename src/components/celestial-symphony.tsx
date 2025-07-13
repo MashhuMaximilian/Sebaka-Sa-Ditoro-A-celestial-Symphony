@@ -166,17 +166,17 @@ const CelestialSymphony = ({
         planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta;
         
         const semiMajorAxis = planet.userData.orbitRadius;
+        let semiMinorAxis;
         let x, z;
 
         if (planet.userData.eccentric) {
             const eccentricity = planet.name === 'Spectris' ? 0.2 : 0.5; // Spectris: 0.2, Aetheris: 0.5
-            const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
-            x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
-            z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
+            semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
         } else {
-            x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
-            z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
+            semiMinorAxis = semiMajorAxis; // For circular orbits, semi-minor is same as semi-major
         }
+        x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
+        z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
 
         const y = planet.userData.orbitCenter.y;
         planet.position.set(x, y, z);
