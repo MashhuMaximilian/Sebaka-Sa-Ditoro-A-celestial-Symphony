@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Eye, PersonStanding } from "lucide-react";
+import { Palette, History, Eye, PersonStanding, Orbit } from "lucide-react";
 
 import type { PlanetData, StarData } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
@@ -35,7 +35,7 @@ import {
 
 // 1 AU = 150 simulation units.
 const AU_TO_UNITS = 150;
-const BASE_SPEED = 0.001; // Base speed for 1 year (333 days)
+const BASE_SPEED = 0.001; // Base speed for 1 year (324 days)
 
 const initialStars: StarData[] = [
     { 
@@ -72,7 +72,7 @@ const initialStars: StarData[] = [
   
 const initialPlanets: PlanetData[] = [
     { 
-        name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 169),
+        name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 169),
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Innermost planet orbiting Alpha-Twilight binary', orbitalPeriod: '169 days', orbitalDistance: '0.7 AU',
         rotation: '40 days', axialTilt: '10°', moons: 'None',
@@ -83,18 +83,18 @@ const initialPlanets: PlanetData[] = [
         lore: 'Seen as a fiery, untamed world in Hypodia’s Sky-Writing, symbolizing raw passion. Magnetic field may enhance fire-based magic.'
     },
     { 
-        name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.1 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 333),
+        name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 324),
         type: 'Planet', classification: 'Terrestrial',
-        orbitalRole: 'Second planet orbiting Alpha-Twilight binary', orbitalPeriod: '333 days', orbitalDistance: '1.1 AU',
+        orbitalRole: 'Second planet orbiting Alpha-Twilight binary', orbitalPeriod: '324 days', orbitalDistance: '1.08 AU',
         rotation: '24 hours', axialTilt: '23.5°', moons: 'None',
         radius: '1 R⊕ (6,371 km)', mass: '1 M⊕',
         surface: 'Earth-like, with oceans, continents, and a breathable atmosphere.',
-        characteristics: 'Habitable zone, supports life, experiences Aerolith Zone phenomena.',
+        characteristics: 'Habitable zone, supports life, experiences Aerolith Zone phenomena. A year is 324 days, consisting of 12 months, with each month having 3 weeks of 9 days each.',
         appearance: 'N/A (observer’s planet). Hosts vibrant sunrises/sunsets from Alpha and Twilight, auroras from Aerolith Zones.',
-        lore: 'Central to Hypodia’s Sky-Writing. Defines year (333 days). Aerolith Zones amplify magical energies.'
+        lore: 'Central to Hypodia’s Sky-Writing. Defines year (324 days). Aerolith Zones amplify magical energies.'
     },
     { 
-        name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 818), eccentric: true,
+        name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 818), eccentric: true,
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Third planet orbiting Alpha-Twilight binary', orbitalPeriod: '818 days', orbitalDistance: '2.0 AU',
         rotation: '30 hours', axialTilt: '15°', moons: '1 (28-day orbital period)',
@@ -105,7 +105,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Called the Calendar Planet, it marks months via sunset position and its moon’s phases. Rings may influence dream-related magic.'
     },
     { 
-        name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 1500),
+        name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 1500),
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Fourth planet orbiting Alpha-Twilight binary', orbitalPeriod: '1,500 days', orbitalDistance: '3.0 AU',
         rotation: '20 hours', axialTilt: '20°', moons: 'None',
@@ -116,7 +116,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'The Phase Maker. Volcanic activity may amplify fire or chaotic magic. Hypodia’s Sky-Writing describes it as a fiery, mysterious world.'
     },
     { 
-        name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 4241), eccentric: true,
+        name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 4241), eccentric: true,
         type: 'Planet', classification: 'Gas Giant',
         orbitalRole: 'Fifth planet orbiting Alpha-Twilight binary', orbitalPeriod: '4,241 days (~11.62 years)', orbitalDistance: '6.0 AU',
         rotation: '10 hours', axialTilt: '25°', moons: 'Multiple (5–10 visible)',
@@ -127,7 +127,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Marks long-term cycles. Magnetosphere enhances protective magic. Hypodia’s Sky-Writing portrays it as a majestic, calming presence.'
     },
     { 
-        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 10 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 2236), orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
+        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 10 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 2236), orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
         type: 'Planet', classification: 'Ice Giant',
         orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '2,236 days (~6.12 years)', orbitalDistance: '10 AU from Beacon',
         rotation: '16 hours', axialTilt: '28°', moons: '2-3 (small)',
@@ -138,7 +138,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Known only through advanced astronomical calculations, a mysterious, remote world.'
     },
     { 
-        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 30 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 13416), orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
+        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 30 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 13416), orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
         type: 'Planet', classification: 'Ice Dwarf',
         orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '13,416 days (~36.73 years)', orbitalDistance: '30 AU from Beacon',
         rotation: '48 hours', axialTilt: '5°', moons: 'None',
@@ -157,6 +157,7 @@ export default function Home() {
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
   const [resetViewToggle, setResetViewToggle] = useState(false);
+  const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -204,6 +205,7 @@ export default function Home() {
         onBodyClick={handleBodyClick}
         viewFromSebaka={viewFromSebaka}
         resetViewToggle={resetViewToggle}
+        isViridisAnimationActive={isViridisAnimationActive}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -226,6 +228,17 @@ export default function Home() {
                 )}
             </Dialog>
             <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                         <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
+                            <Orbit className="h-5 w-5" />
+                            <span className="sr-only">Toggle Viridis Animation</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{isViridisAnimationActive ? 'Stop Viridis Animation' : 'Start Viridis Animation'}</p>
+                    </TooltipContent>
+                </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setViewFromSebaka(prev => !prev)}>

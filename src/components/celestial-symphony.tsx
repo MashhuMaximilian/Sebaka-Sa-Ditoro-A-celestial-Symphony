@@ -13,6 +13,7 @@ interface CelestialSymphonyProps {
   onBodyClick: (name: string) => void;
   viewFromSebaka: boolean;
   resetViewToggle: boolean;
+  isViridisAnimationActive: boolean;
 }
 
 const CelestialSymphony = ({
@@ -22,6 +23,7 @@ const CelestialSymphony = ({
   onBodyClick,
   viewFromSebaka,
   resetViewToggle,
+  isViridisAnimationActive,
 }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
@@ -127,6 +129,7 @@ const CelestialSymphony = ({
         angle: Math.random() * Math.PI * 2,
         orbitCenter: new THREE.Vector3(...orbitCenter),
         eccentric: planetData.eccentric || false,
+        time: Math.random() * 1000, // For animation offset
       };
       scene.add(planet);
       planetMeshesRef.current.push(planet);
@@ -188,7 +191,7 @@ const CelestialSymphony = ({
       orbitMeshesRef.current.push(orbit);
     });
 
-    const binaryOrbitSpeed = 0.01 * (333 / 26);
+    const binaryOrbitSpeed = 0.01 * (324 / 26);
     
     // Animation loop
     const animate = () => {
@@ -217,21 +220,34 @@ const CelestialSymphony = ({
         
         const semiMajorAxis = planet.userData.orbitRadius;
         let x, z;
+        let semiMinorAxis;
 
         if (planet.userData.eccentric) {
             const eccentricity = planet.name === 'Spectris' ? 0.2 : 0.5; // Spectris: 0.2, Aetheris: 0.5
-            const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
+            semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
             x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
             z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
         } else {
+            semiMinorAxis = semiMajorAxis; // For circular orbit
             x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
-            z = planet.userData.orbitCenter.z + semiMajorAxis * Math.sin(planet.userData.angle);
+            z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
         }
 
         const y = planet.userData.orbitCenter.y;
         planet.position.set(x, y, z);
         if (planet.name === 'Sebaka') {
             sebakaMesh = planet;
+        }
+
+        if (planet.name === 'Viridis' && planet.material instanceof THREE.MeshStandardMaterial) {
+          if (isViridisAnimationActive) {
+            planet.userData.time += effectiveDelta;
+            // Cycle over ~28 "days" (where a day is relative to the base speed)
+            const animationSpeed = (Math.PI * 2) / 28; 
+            planet.material.emissiveIntensity = 0.4 + (Math.sin(planet.userData.time * animationSpeed) + 1) * 0.4;
+          } else {
+             planet.material.emissiveIntensity = 0.8; // Reset to default
+          }
         }
       });
       
