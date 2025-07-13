@@ -36,6 +36,7 @@ const CelestialSymphony = ({
   const clockRef = useRef(new THREE.Clock());
   const speedMultiplierRef = useRef(speedMultiplier);
   const originalCameraPos = useRef(new THREE.Vector3(0, 400, 800));
+  const viridisOriginalColor = useRef(new THREE.Color("#9ACD32"));
 
   useEffect(() => {
     speedMultiplierRef.current = speedMultiplier;
@@ -197,6 +198,7 @@ const CelestialSymphony = ({
     const animate = () => {
       animationFrameId.current = requestAnimationFrame(animate);
       const deltaTime = clockRef.current.getDelta();
+      const elapsedTime = clockRef.current.getElapsedTime();
       const effectiveDelta = deltaTime * speedMultiplierRef.current;
 
       // Animate binary stars
@@ -241,15 +243,37 @@ const CelestialSymphony = ({
 
         if (planet.name === 'Viridis' && planet.material instanceof THREE.MeshStandardMaterial) {
           if (isViridisAnimationActive) {
-            planet.userData.time += effectiveDelta;
-            // Cycle over 18 days (9 to dim, 9 to brighten)
-            // (time * speed) / days_in_cycle * PI
-            const animationCycle = (planet.userData.time * 0.05) / 9 * Math.PI; 
-            // Cosine wave from 0 to 1, then map to 0.1 - 0.9 range, plus base 0.1
-            const intensity = (Math.cos(animationCycle) + 1) / 2 * 0.9 + 0.1;
-            planet.material.emissiveIntensity = intensity;
+            const cycleDuration = 4.0; // 4 seconds for the full cycle
+            const timeInCycle = elapsedTime % cycleDuration;
+            const phase = timeInCycle / cycleDuration; // 0.0 to 1.0
+
+            let targetColor = new THREE.Color();
+            let targetIntensity = 0.8;
+
+            if (phase < 0.25) { // Phase 1: Original color (0-1s)
+              targetColor.copy(viridisOriginalColor.current);
+              targetIntensity = 0.8;
+            } else if (phase < 0.5) { // Phase 2: Grey (1-2s)
+              targetColor.set(0x808080); // Grey
+              targetIntensity = 0.3;
+            } else if (phase < 0.75) { // Phase 3: Dark (2-3s)
+              targetColor.set(0x101010); // Dark grey/black
+              targetIntensity = 0.1;
+            } else { // Phase 4: Clear again (3-4s)
+              targetColor.copy(viridisOriginalColor.current);
+              targetIntensity = 0.8;
+            }
+
+            // Smooth transition between phases
+            planet.material.color.lerp(targetColor, 0.1);
+            planet.material.emissive.lerp(targetColor, 0.1);
+            planet.material.emissiveIntensity = THREE.MathUtils.lerp(planet.material.emissiveIntensity, targetIntensity, 0.1);
+
           } else {
-             planet.material.emissiveIntensity = 0.8; // Reset to default
+             // Reset to default when animation is off
+             planet.material.color.copy(viridisOriginalColor.current);
+             planet.material.emissive.copy(viridisOriginalColor.current);
+             planet.material.emissiveIntensity = 0.8;
           }
         }
       });
@@ -258,7 +282,10 @@ const CelestialSymphony = ({
           const sebakaPosition = sebakaMesh.position.clone();
           const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
           camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
-          controls.target.copy(sebakaMesh.position.clone().add(new THREE.Vector3(0,0,100))); // Look "forward"
+          // Only update target if it hasn't been moved by the user
+          if (controls.target.distanceTo(sebakaPosition) < 1) {
+             controls.target.copy(sebakaMesh.position.clone().add(new THREE.Vector3(0,0,100)));
+          }
       }
 
       controls.update();
@@ -334,6 +361,9 @@ const CelestialSymphony = ({
       if (planetData && mesh.material instanceof THREE.MeshStandardMaterial) {
         mesh.material.color.set(planetData.color);
         mesh.material.emissive.set(planetData.color);
+        if (mesh.name === 'Viridis') {
+            viridisOriginalColor.current.set(planetData.color);
+        }
       }
     });
   }, [planets]);
@@ -392,5 +422,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    
