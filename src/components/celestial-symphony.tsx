@@ -10,15 +10,26 @@ interface CelestialSymphonyProps {
   stars: StarData[];
   planets: PlanetData[];
   speedMultiplier?: number;
+  onBodyClick: (name: string) => void;
 }
 
-const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSymphonyProps) => {
+const CelestialSymphony = ({
+  stars,
+  planets,
+  speedMultiplier = 1,
+  onBodyClick,
+}: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
   const binaryStarMeshesRef = useRef<THREE.Mesh[]>([]);
   const animationFrameId = useRef<number>();
   const controlsRef = useRef<OrbitControls>();
   const clockRef = useRef(new THREE.Clock());
+  const speedMultiplierRef = useRef(speedMultiplier);
+
+  useEffect(() => {
+    speedMultiplierRef.current = speedMultiplier;
+  }, [speedMultiplier]);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -47,7 +58,7 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
-    controls.screenSpacePanning = true; // Enable panning
+    controls.screenSpacePanning = true; 
     controls.minDistance = 1;
     controls.maxDistance = 20000;
     controls.target.set(0, 0, 0);
@@ -60,6 +71,10 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
     const pointLight = new THREE.PointLight(0xffffff, 2, 0, 1);
     scene.add(pointLight);
 
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    let clickableObjects: THREE.Mesh[] = [];
+
     // Stars
     binaryStarMeshesRef.current = [];
     stars.forEach((starData) => {
@@ -67,7 +82,9 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
       const material = new THREE.MeshBasicMaterial({ color: starData.color });
       const star = new THREE.Mesh(geometry, material);
       star.position.set(...starData.position);
+      star.name = starData.name;
       scene.add(star);
+      clickableObjects.push(star);
       if (starData.name === "Alpha" || starData.name === "Twilight") {
         binaryStarMeshesRef.current.push(star);
       } else {
@@ -90,6 +107,7 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
         emissiveIntensity: 0.8,
       });
       const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+      planet.name = planetData.name;
       planet.userData = {
         orbitRadius: planetData.orbitRadius,
         orbitSpeed: planetData.orbitSpeed,
@@ -99,6 +117,7 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
       };
       scene.add(planet);
       planetMeshesRef.current.push(planet);
+      clickableObjects.push(planet);
 
       const orbitGeometry = new THREE.TorusGeometry(planetData.orbitRadius, 0.5, 8, 100);
       const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
@@ -112,8 +131,9 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
     
     // Animation loop
     const animate = () => {
+      animationFrameId.current = requestAnimationFrame(animate);
       const deltaTime = clockRef.current.getDelta();
-      const effectiveDelta = deltaTime * speedMultiplier;
+      const effectiveDelta = deltaTime * speedMultiplierRef.current;
 
       // Animate binary stars
       if (binaryStarMeshesRef.current.length === 2) {
@@ -134,7 +154,6 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
         planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta * 10;
         let radius = planet.userData.orbitRadius;
         if (planet.userData.eccentric) {
-            // Simple eccentric orbit simulation (not physically accurate ellipse)
             radius = planet.userData.orbitRadius * (1 + 0.5 * Math.sin(planet.userData.angle * 0.5));
         }
 
@@ -146,39 +165,69 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
 
       controls.update();
       renderer.render(scene, camera);
-      animationFrameId.current = requestAnimationFrame(animate);
     };
 
     clockRef.current.start();
-    animationFrameId.current = requestAnimationFrame(animate);
+    animate();
 
-    // Handle resize
+    const onClick = (event: MouseEvent | TouchEvent) => {
+        const rect = renderer.domElement.getBoundingClientRect();
+        let x, y;
+
+        if (event instanceof MouseEvent) {
+            x = event.clientX;
+            y = event.clientY;
+        } else if (event.touches && event.touches.length > 0) {
+            x = event.touches[0].clientX;
+            y = event.touches[0].clientY;
+        } else {
+            return;
+        }
+
+        mouse.x = ((x - rect.left) / rect.width) * 2 - 1;
+        mouse.y = -((y - rect.top) / rect.height) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+
+        const intersects = raycaster.intersectObjects(clickableObjects);
+
+        if (intersects.length > 0) {
+            const firstIntersected = intersects[0].object;
+            if (firstIntersected.name) {
+                onBodyClick(firstIntersected.name);
+            }
+        }
+    }
+    
+    currentMount.addEventListener('click', onClick);
+    currentMount.addEventListener('touchstart', onClick, { passive: true });
+
     const handleResize = () => {
       camera.aspect = currentMount.clientWidth / currentMount.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
     };
-
     window.addEventListener("resize", handleResize);
 
-    // Cleanup
     return () => {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
       clockRef.current.stop();
       window.removeEventListener("resize", handleResize);
+      currentMount.removeEventListener('click', onClick);
+      currentMount.removeEventListener('touchstart', onClick);
       if (currentMount) {
         currentMount.removeChild(renderer.domElement);
       }
       renderer.dispose();
       controls.dispose();
     };
-  }, []); // Run effect only once on mount
+  }, []); 
 
   useEffect(() => {
-    planetMeshesRef.current.forEach((mesh, index) => {
-      const planetData = planets[index];
+    planetMeshesRef.current.forEach((mesh) => {
+      const planetData = planets.find(p => p.name === mesh.name);
       if (planetData && mesh.material instanceof THREE.MeshStandardMaterial) {
         mesh.material.color.set(planetData.color);
         mesh.material.emissive.set(planetData.color);
