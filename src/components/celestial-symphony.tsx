@@ -164,13 +164,20 @@ const CelestialSymphony = ({
       // Animate planets
       planetMeshesRef.current.forEach((planet) => {
         planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta;
-        let radius = planet.userData.orbitRadius;
+        
+        const semiMajorAxis = planet.userData.orbitRadius;
+        let x, z;
+
         if (planet.userData.eccentric) {
-            radius = planet.userData.orbitRadius * (1 + 0.5 * Math.sin(planet.userData.angle * 0.5));
+            const eccentricity = planet.name === 'Spectris' ? 0.2 : 0.5; // Spectris: 0.2, Aetheris: 0.5
+            const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
+            x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
+            z = planet.userData.orbitCenter.z + semiMinorAxis * Math.sin(planet.userData.angle);
+        } else {
+            x = planet.userData.orbitCenter.x + semiMajorAxis * Math.cos(planet.userData.angle);
+            z = planet.userData.orbitCenter.z + semiMajorAxis * Math.sin(planet.userData.angle);
         }
 
-        const x = planet.userData.orbitCenter.x + radius * Math.cos(planet.userData.angle);
-        const z = planet.userData.orbitCenter.z + radius * Math.sin(planet.userData.angle);
         const y = planet.userData.orbitCenter.y;
         planet.position.set(x, y, z);
         if (planet.name === 'Sebaka') {
@@ -179,11 +186,11 @@ const CelestialSymphony = ({
       });
       
       if (viewFromSebaka && sebakaMesh && camera && controls) {
-          const sebakaPosition = sebakaMesh.position;
-          camera.position.copy(sebakaPosition);
-          // Look towards the center of the system initially
+          const sebakaPosition = sebakaMesh.position.clone();
+          const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
+          camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
+          
           const lookAtTarget = new THREE.Vector3(0, 0, 0); 
-          // Update the controls target to ensure panning works around the new camera position
           controls.target.copy(lookAtTarget);
       }
 
