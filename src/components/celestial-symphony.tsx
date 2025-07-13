@@ -18,7 +18,7 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
   const binaryStarMeshesRef = useRef<THREE.Mesh[]>([]);
   const animationFrameId = useRef<number>();
   const controlsRef = useRef<OrbitControls>();
-  const timeRef = useRef(0);
+  const clockRef = useRef(new THREE.Clock());
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -52,7 +52,7 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
     controls.maxDistance = 20000;
     controls.target.set(0, 0, 0);
     controls.touches.ONE = THREE.TOUCH.PAN;
-    controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
+    controls.touches.TWO = THREE.TOUCH.DOLLY_ROTATE;
     controlsRef.current = controls;
 
     // Lighting
@@ -87,7 +87,7 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
         roughness: 0.8,
         metalness: 0.1,
         emissive: planetData.color,
-        emissiveIntensity: 0.6,
+        emissiveIntensity: 0.8,
       });
       const planet = new THREE.Mesh(planetGeometry, planetMaterial);
       planet.userData = {
@@ -95,6 +95,7 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
         orbitSpeed: planetData.orbitSpeed,
         angle: Math.random() * Math.PI * 2,
         orbitCenter: new THREE.Vector3(...orbitCenter),
+        eccentric: planetData.eccentric || false,
       };
       scene.add(planet);
       planetMeshesRef.current.push(planet);
@@ -107,21 +108,19 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
       scene.add(orbit);
     });
 
-    const binaryOrbitSpeed = 0.01 / (26/333); // 26 day period
+    const binaryOrbitSpeed = 0.01 * (333 / 26);
     
     // Animation loop
-    const animate = (now: number) => {
-      const deltaTime = (now - timeRef.current) * 0.001; // convert ms to s
-      timeRef.current = now;
-      
+    const animate = () => {
+      const deltaTime = clockRef.current.getDelta();
       const effectiveDelta = deltaTime * speedMultiplier;
 
       // Animate binary stars
       if (binaryStarMeshesRef.current.length === 2) {
           const star1 = binaryStarMeshesRef.current[0];
           const star2 = binaryStarMeshesRef.current[1];
-          star1.userData.angle = (star1.userData.angle || 0) + binaryOrbitSpeed * speedMultiplier;
-          star2.userData.angle = (star2.userData.angle || 0) + binaryOrbitSpeed * speedMultiplier;
+          star1.userData.angle = (star1.userData.angle || 0) + binaryOrbitSpeed * effectiveDelta * 10;
+          star2.userData.angle = (star2.userData.angle || 0) + binaryOrbitSpeed * effectiveDelta * 10;
 
           const r1 = 0.1 * 150; // 0.1 AU
           star1.position.x = -r1 * Math.cos(star1.userData.angle);
@@ -132,9 +131,15 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
 
       // Animate planets
       planetMeshesRef.current.forEach((planet) => {
-        planet.userData.angle += planet.userData.orbitSpeed * speedMultiplier;
-        const x = planet.userData.orbitCenter.x + planet.userData.orbitRadius * Math.cos(planet.userData.angle);
-        const z = planet.userData.orbitCenter.z + planet.userData.orbitRadius * Math.sin(planet.userData.angle);
+        planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta * 10;
+        let radius = planet.userData.orbitRadius;
+        if (planet.userData.eccentric) {
+            // Simple eccentric orbit simulation (not physically accurate ellipse)
+            radius = planet.userData.orbitRadius * (1 + 0.5 * Math.sin(planet.userData.angle * 0.5));
+        }
+
+        const x = planet.userData.orbitCenter.x + radius * Math.cos(planet.userData.angle);
+        const z = planet.userData.orbitCenter.z + radius * Math.sin(planet.userData.angle);
         const y = planet.userData.orbitCenter.y;
         planet.position.set(x, y, z);
       });
@@ -144,6 +149,7 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
       animationFrameId.current = requestAnimationFrame(animate);
     };
 
+    clockRef.current.start();
     animationFrameId.current = requestAnimationFrame(animate);
 
     // Handle resize
@@ -160,6 +166,7 @@ const CelestialSymphony = ({ stars, planets, speedMultiplier = 1 }: CelestialSym
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
+      clockRef.current.stop();
       window.removeEventListener("resize", handleResize);
       if (currentMount) {
         currentMount.removeChild(renderer.domElement);

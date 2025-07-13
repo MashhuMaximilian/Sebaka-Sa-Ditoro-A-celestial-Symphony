@@ -6,6 +6,7 @@ export interface PlanetData {
   orbitRadius: number;
   orbitSpeed: number;
   orbitCenter?: [number, number, number];
+  eccentric?: boolean;
 }
 
 export interface StarData {

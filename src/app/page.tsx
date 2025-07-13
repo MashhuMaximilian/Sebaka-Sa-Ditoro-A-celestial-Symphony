@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, Minus, Plus, History } from "lucide-react";
+import { Palette, History } from "lucide-react";
 
 import type { PlanetData, StarData } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
@@ -27,7 +27,7 @@ import {
 
 // 1 AU = 150 simulation units.
 const AU_TO_UNITS = 150;
-const BASE_SPEED = 0.0005; // Reduced base speed for finer control
+const BASE_SPEED = 0.001; // Base speed for 1 year (333 days)
 
 const initialStars: StarData[] = [
     // Alpha-Twilight Binary pair. They orbit each other.
@@ -38,16 +38,15 @@ const initialStars: StarData[] = [
 ];
   
 const initialPlanets: PlanetData[] = [
-    // Planets orbiting the Alpha-Twilight binary barycenter
-    { name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitSpeed: BASE_SPEED / (169/333) }, // 169 days
-    { name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.1 * AU_TO_UNITS, orbitSpeed: BASE_SPEED }, // 333 days (baseline)
-    { name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED / (818/333) }, // 818 days
-    { name: "Viridis", color: "#FF783C", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED / (1500/333) }, // 1500 days
-    { name: "Aetheris", color: "#5082C8", size: 20, orbitRadius: 6.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED / (4241/333) }, // 4241 days, size adjusted for visibility
+    { name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 169) },
+    { name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.1 * AU_TO_UNITS, orbitSpeed: BASE_SPEED }, // Baseline 333 days
+    { name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 818) },
+    { name: "Viridis", color: "#FF783C", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 1500) },
+    { name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 4241), eccentric: true },
   
     // Planets orbiting Beacon
-    { name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 10 * AU_TO_UNITS, orbitSpeed: BASE_SPEED / (2236/333), orbitCenter: [1000 * AU_TO_UNITS, 0, 0] },
-    { name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 30 * AU_TO_UNITS, orbitSpeed: BASE_SPEED / (13416/333), orbitCenter: [1000 * AU_TO_UNITS, 0, 0] },
+    { name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 10 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 2236), orbitCenter: [1000 * AU_TO_UNITS, 0, 0] },
+    { name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 30 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 13416), orbitCenter: [1000 * AU_TO_UNITS, 0, 0] },
 ];
 
 export default function Home() {
