@@ -29,6 +29,7 @@ const CelestialSymphony = ({
   const animationFrameId = useRef<number>();
   const controlsRef = useRef<OrbitControls>();
   const cameraRef = useRef<THREE.PerspectiveCamera>();
+  const sceneRef = useRef<THREE.Scene>();
   const clockRef = useRef(new THREE.Clock());
   const speedMultiplierRef = useRef(speedMultiplier);
   const originalCameraPos = useRef(new THREE.Vector3(0, 400, 800));
@@ -44,6 +45,7 @@ const CelestialSymphony = ({
 
     // Scene
     const scene = new THREE.Scene();
+    sceneRef.current = scene;
 
     // Camera
     const camera = new THREE.PerspectiveCamera(
@@ -176,12 +178,13 @@ const CelestialSymphony = ({
         }
       });
       
-      if (viewFromSebaka && sebakaMesh) {
-          sebakaMesh.visible = false;
-          camera.position.copy(sebakaMesh.position);
-          controls.target.copy(sebakaMesh.position);
-      } else if (sebakaMesh) {
-          sebakaMesh.visible = true;
+      if (viewFromSebaka && sebakaMesh && camera && controls) {
+          const sebakaPosition = sebakaMesh.position;
+          camera.position.copy(sebakaPosition);
+          // Look towards the center of the system initially
+          const lookAtTarget = new THREE.Vector3(0, 0, 0); 
+          // Update the controls target to ensure panning works around the new camera position
+          controls.target.copy(lookAtTarget);
       }
 
       controls.update();
@@ -238,7 +241,7 @@ const CelestialSymphony = ({
       window.removeEventListener("resize", handleResize);
       currentMount.removeEventListener('click', onClick);
       currentMount.removeEventListener('touchstart', onClick);
-      if (currentMount) {
+      if (currentMount && renderer.domElement) {
         currentMount.removeChild(renderer.domElement);
       }
       renderer.dispose();
@@ -259,14 +262,20 @@ const CelestialSymphony = ({
   useEffect(() => {
     const camera = cameraRef.current;
     const controls = controlsRef.current;
+    const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+
     if (!camera || !controls) return;
+    
+    if (sebakaMesh) {
+      sebakaMesh.visible = !viewFromSebaka;
+    }
 
     if (viewFromSebaka) {
-        controls.enablePan = false;
-        controls.enableZoom = false;
+        controls.enablePan = true;
+        controls.enableZoom = false; // Disable zooming to stay on the planet
         controls.minDistance = 0; // Allow looking around from a fixed point
-        controls.maxDistance = Infinity;
-        controls.screenSpacePanning = false; // Important for "first person" feel
+        controls.maxDistance = 1;
+        controls.screenSpacePanning = false;
     } else {
         // Reset to default orbital view
         controls.target.set(0, 0, 0);
@@ -277,20 +286,19 @@ const CelestialSymphony = ({
         controls.screenSpacePanning = true;
     }
     controls.update();
-  }, [viewFromSebaka])
+  }, [viewFromSebaka]);
   
   useEffect(() => {
     const camera = cameraRef.current;
     const controls = controlsRef.current;
-    if (!camera || !controls) return;
+    if (!camera || !controls || viewFromSebaka) return;
 
     camera.position.copy(originalCameraPos.current);
     controls.target.set(0, 0, 0);
     controls.update();
-  }, [resetViewToggle]);
+  }, [resetViewToggle, viewFromSebaka]);
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };
 
 export default CelestialSymphony;
-
