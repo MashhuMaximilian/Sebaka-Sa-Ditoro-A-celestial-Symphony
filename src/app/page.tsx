@@ -37,11 +37,11 @@ import {
 
 // 1 AU = 150 simulation units.
 const AU_TO_UNITS = 150;
-const BASE_SPEED = 0.001; // Base speed for 1 year (324 days)
+const SEBAKA_YEAR_IN_DAYS = 324;
 
 const initialStars: StarData[] = [
     { 
-        name: "Alpha", color: "#FFD700", size: 6.96, position: [-0.1 * AU_TO_UNITS, 0, 0],
+        name: "Alpha", color: "#FFD700", size: 6.96, position: [-0.1 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 26,
         type: 'Star', classification: 'Yellow Dwarf',
         orbitalRole: 'Central Binary (orbits Twilight)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
         radius: '1 R☉ (696,000 km)', mass: '1 M☉',
@@ -51,7 +51,7 @@ const initialStars: StarData[] = [
         lore: 'Symbolizes action and passion in Hypodia’s Sky-Writing, revered as a life-giving force. Influences magical energies in the Aerolith Zones.'
     },
     { 
-        name: "Twilight", color: "#FF6400", size: 4.87, position: [0.1 * AU_TO_UNITS, 0, 0],
+        name: "Twilight", color: "#FF6400", size: 4.87, position: [0.1 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 26,
         type: 'Star', classification: 'Orange Dwarf',
         orbitalRole: 'Central Binary (orbits Alpha)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
         radius: '0.7 R☉ (487,200 km)', mass: '0.6 M☉',
@@ -61,7 +61,7 @@ const initialStars: StarData[] = [
         lore: 'Represents quiet strength and endurance in Hypodia’s Sky-Writing, a counterpoint to Alpha’s vibrancy. May amplify calming magical effects in the Aerolith Zones.'
     },
     { 
-        name: "Beacon", color: "#B4DCFF", size: 27.84, position: [1000 * AU_TO_UNITS, 0, 0],
+        name: "Beacon", color: "#B4DCFF", size: 27.84, position: [1000 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 12328 * SEBAKA_YEAR_IN_DAYS,
         type: 'Star', classification: 'Blue-White Giant',
         orbitalRole: 'Distant Companion (orbits common barycenter of Alpha-Twilight)', orbitalPeriod: '12,328 years', orbitalDistance: '1,000 AU',
         radius: '4 R☉ (2,784,000 km)', mass: '5 M☉',
@@ -74,7 +74,7 @@ const initialStars: StarData[] = [
   
 const initialPlanets: PlanetData[] = [
     { 
-        name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 169),
+        name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitPeriodDays: 169,
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Innermost planet orbiting Alpha-Twilight binary', orbitalPeriod: '169 days', orbitalDistance: '0.7 AU',
         rotation: '40 days', axialTilt: '10°', moons: 'None',
@@ -85,7 +85,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Seen as a fiery, untamed world in Hypodia’s Sky-Writing, symbolizing raw passion. Magnetic field may enhance fire-based magic.'
     },
     { 
-        name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 324),
+        name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitPeriodDays: 324,
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Second planet orbiting Alpha-Twilight binary', orbitalPeriod: '324 days', orbitalDistance: '1.08 AU',
         rotation: '24 hours', axialTilt: '23.5°', moons: 'None',
@@ -96,7 +96,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Central to Hypodia’s Sky-Writing. Defines year (324 days). Aerolith Zones amplify magical energies.'
     },
     { 
-        name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 818), eccentric: true,
+        name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitPeriodDays: 818, eccentric: true,
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Third planet orbiting Alpha-Twilight binary', orbitalPeriod: '818 days', orbitalDistance: '2.0 AU',
         rotation: '30 hours', axialTilt: '15°', moons: '1 (28-day orbital period)',
@@ -107,7 +107,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Called the Calendar Planet, it marks months via sunset position and its moon’s phases. Rings may influence dream-related magic.'
     },
     { 
-        name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 1500),
+        name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitPeriodDays: 1500,
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Fourth planet orbiting Alpha-Twilight binary', orbitalPeriod: '1,500 days', orbitalDistance: '3.0 AU',
         rotation: '20 hours', axialTilt: '20°', moons: 'None',
@@ -118,7 +118,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'The Phase Maker. Volcanic activity may amplify fire or chaotic magic. Hypodia’s Sky-Writing describes it as a fiery, mysterious world.'
     },
     { 
-        name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 4241), eccentric: true,
+        name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true,
         type: 'Planet', classification: 'Gas Giant',
         orbitalRole: 'Fifth planet orbiting Alpha-Twilight binary', orbitalPeriod: '4,241 days (~11.62 years)', orbitalDistance: '6.0 AU',
         rotation: '10 hours', axialTilt: '25°', moons: 'Multiple (5–10 visible)',
@@ -129,7 +129,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Marks long-term cycles. Magnetosphere enhances protective magic. Hypodia’s Sky-Writing portrays it as a majestic, calming presence.'
     },
     { 
-        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 10 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 2236), orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
+        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 10 * AU_TO_UNITS, orbitPeriodDays: 2236, orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
         type: 'Planet', classification: 'Ice Giant',
         orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '2,236 days (~6.12 years)', orbitalDistance: '10 AU from Beacon',
         rotation: '16 hours', axialTilt: '28°', moons: '2-3 (small)',
@@ -140,7 +140,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Known only through advanced astronomical calculations, a mysterious, remote world.'
     },
     { 
-        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 30 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (324 / 13416), orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
+        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 30 * AU_TO_UNITS, orbitPeriodDays: 13416, orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
         type: 'Planet', classification: 'Ice Dwarf',
         orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '13,416 days (~36.73 years)', orbitalDistance: '30 AU from Beacon',
         rotation: '48 hours', axialTilt: '5°', moons: 'None',
@@ -162,6 +162,12 @@ export default function Home() {
   const [resetViewToggle, setResetViewToggle] = useState(false);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [sebakaRotationAngle, setSebakaRotationAngle] = useState(0);
+
+  const [currentYear, setCurrentYear] = useState(0);
+  const [currentDay, setCurrentDay] = useState(0);
+  const [targetYear, setTargetYear] = useState(0);
+  const [elapsedDays, setElapsedDays] = useState(0);
+  const [goToTime, setGoToTime] = useState<number | null>(null);
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -223,6 +229,20 @@ export default function Home() {
       })
   }
 
+  const handleGoToYear = () => {
+    const newElapsedDays = targetYear * SEBAKA_YEAR_IN_DAYS;
+    setElapsedDays(newElapsedDays);
+    setGoToTime(newElapsedDays);
+    setCurrentYear(targetYear);
+    setCurrentDay(0);
+  }
+
+  const handleTimeUpdate = (days: number) => {
+    setElapsedDays(days);
+    setCurrentYear(Math.floor(days / SEBAKA_YEAR_IN_DAYS));
+    setCurrentDay(Math.floor(days % SEBAKA_YEAR_IN_DAYS));
+  }
+
   return (
     <main className="relative h-screen w-screen overflow-hidden">
       <CelestialSymphony 
@@ -235,6 +255,8 @@ export default function Home() {
         sebakaRotationAngle={sebakaRotationAngle}
         resetViewToggle={resetViewToggle}
         isViridisAnimationActive={isViridisAnimationActive}
+        onTimeUpdate={handleTimeUpdate}
+        goToTime={goToTime}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -242,7 +264,7 @@ export default function Home() {
             Celestial Symphony
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-md mt-1">
-            An interactive 3D celestial simulation with AI-powered color harmonization.
+            Year: {currentYear.toLocaleString()} | Day: {currentDay.toLocaleString()}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -342,6 +364,19 @@ export default function Home() {
                 />
             </div>
           )}
+          <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <Label htmlFor="year-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  Go to Year
+              </Label>
+              <Input
+                  id="year-input"
+                  type="number"
+                  value={targetYear}
+                  onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
+                  className="w-full"
+              />
+              <Button onClick={handleGoToYear}>Go</Button>
+          </div>
           <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
               <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                   Speed (x)

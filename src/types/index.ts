@@ -1,4 +1,5 @@
 
+
 interface CelestialBody {
     name: string;
     color: string;
@@ -14,12 +15,12 @@ interface CelestialBody {
     characteristics: string;
     appearance: string;
     lore: string;
+    orbitPeriodDays: number; // The orbital period in Sebaka days.
 }
 
 export interface PlanetData extends CelestialBody {
   type: 'Planet';
   orbitRadius: number;
-  orbitSpeed: number;
   orbitCenter?: [number, number, number];
   eccentric?: boolean;
   rotation: string;
