@@ -26,6 +26,7 @@ const CelestialSymphony = ({
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
   const binaryStarMeshesRef = useRef<THREE.Mesh[]>([]);
+  const orbitMeshesRef = useRef<THREE.Mesh[]>([]);
   const animationFrameId = useRef<number>();
   const controlsRef = useRef<OrbitControls>();
   const cameraRef = useRef<THREE.PerspectiveCamera>();
@@ -107,6 +108,7 @@ const CelestialSymphony = ({
 
     // Planets and Orbits
     planetMeshesRef.current = [];
+    orbitMeshesRef.current = [];
     planets.forEach((planetData) => {
       const orbitCenter = planetData.orbitCenter || [0, 0, 0];
       const planetGeometry = new THREE.SphereGeometry(planetData.size, 32, 32);
@@ -136,6 +138,7 @@ const CelestialSymphony = ({
       orbit.position.set(...orbitCenter);
       orbit.rotation.x = Math.PI / 2;
       scene.add(orbit);
+      orbitMeshesRef.current.push(orbit);
     });
 
     const binaryOrbitSpeed = 0.01 * (333 / 26);
@@ -166,7 +169,7 @@ const CelestialSymphony = ({
         planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta;
         
         const semiMajorAxis = planet.userData.orbitRadius;
-        let semiMinorAxis = semiMajorAxis;
+        let semiMinorAxis = semiMajorAxis; // Default to circular
         let x, z;
 
         if (planet.userData.eccentric) {
@@ -273,6 +276,10 @@ const CelestialSymphony = ({
 
     if (!camera || !controls) return;
     
+    orbitMeshesRef.current.forEach(orbit => {
+        orbit.visible = !viewFromSebaka;
+    });
+    
     if (sebakaMesh) {
       sebakaMesh.visible = !viewFromSebaka;
     }
@@ -282,7 +289,7 @@ const CelestialSymphony = ({
             const sebakaPosition = sebakaMesh.position.clone();
             const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
             camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
-            controls.target.copy(sebakaPosition.clone().add(new THREE.Vector3(0,0,1))); // Look forward initially
+            controls.target.copy(sebakaMesh.position.clone().add(new THREE.Vector3(0,0,100))); // Look forward initially
         }
         controls.enablePan = false;
         controls.enableZoom = false; 

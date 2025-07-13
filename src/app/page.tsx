@@ -105,7 +105,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Called the Calendar Planet, it marks months via sunset position and its moon’s phases. Rings may influence dream-related magic.'
     },
     { 
-        name: "Viridis", color: "#FF783C", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 1500),
+        name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitSpeed: BASE_SPEED * (333 / 1500),
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Fourth planet orbiting Alpha-Twilight binary', orbitalPeriod: '1,500 days', orbitalDistance: '3.0 AU',
         rotation: '20 hours', axialTilt: '20°', moons: 'None',
@@ -277,7 +277,7 @@ export default function Home() {
               </span>
               <Slider
                   min={0.1}
-                  max={500}
+                  max={2000}
                   step={0.1}
                   value={[speedMultiplier]}
                   onValueChange={handleSpeedChange}
