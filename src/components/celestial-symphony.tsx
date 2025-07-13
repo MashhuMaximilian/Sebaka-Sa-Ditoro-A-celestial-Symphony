@@ -12,6 +12,7 @@ interface CelestialSymphonyProps {
   speedMultiplier?: number;
   onBodyClick: (name: string) => void;
   viewFromSebaka: boolean;
+  isSebakaRotating: boolean;
   resetViewToggle: boolean;
   isViridisAnimationActive: boolean;
 }
@@ -22,6 +23,7 @@ const CelestialSymphony = ({
   speedMultiplier = 1,
   onBodyClick,
   viewFromSebaka,
+  isSebakaRotating,
   resetViewToggle,
   isViridisAnimationActive,
 }: CelestialSymphonyProps) => {
@@ -38,6 +40,7 @@ const CelestialSymphony = ({
   const originalCameraPos = useRef(new THREE.Vector3(0, 400, 800));
   const viridisOriginalColor = useRef(new THREE.Color("#9ACD32"));
   const viridisAnimationClock = useRef(new THREE.Clock());
+  const sebakaRotationState = useRef({ y: 0 });
 
 
   useEffect(() => {
@@ -238,8 +241,13 @@ const CelestialSymphony = ({
 
         const y = planet.userData.orbitCenter.y;
         planet.position.set(x, y, z);
+
         if (planet.name === 'Sebaka') {
             sebakaMesh = planet;
+            const dayLengthInSeconds = 24 * 60 * 60; // Sebaka's day length
+            const rotationSpeed = (Math.PI * 2) / dayLengthInSeconds;
+            // sebakaRotationState.current.y += rotationSpeed * effectiveDelta;
+            planet.rotation.y += rotationSpeed * effectiveDelta;
         }
         
         if (planet.name === 'Viridis' && planet.material instanceof THREE.MeshStandardMaterial) {
@@ -279,8 +287,23 @@ const CelestialSymphony = ({
       if (viewFromSebaka && sebakaMesh && camera && controls) {
           const sebakaPosition = sebakaMesh.position.clone();
           const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
-          camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
-          controls.target.copy(sebakaPosition); 
+          
+          if (isSebakaRotating) {
+            // Camera is fixed to the planet's surface and rotates with it
+            const cameraOffset = new THREE.Vector3(0, surfaceYOffset, 0);
+            cameraOffset.applyEuler(sebakaMesh.rotation);
+            camera.position.copy(sebakaPosition).add(cameraOffset);
+            
+            // Look out from the planet
+            const lookAtOffset = new THREE.Vector3(0, surfaceYOffset, -100); // Look "forward" from the surface
+            lookAtOffset.applyEuler(sebakaMesh.rotation);
+            controls.target.copy(sebakaPosition).add(lookAtOffset);
+
+          } else {
+             // Camera is on the planet but does not rotate with it (user controls rotation)
+            camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
+            controls.target.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset + 1, sebakaPosition.z - 1);
+          }
       }
 
       controls.update();
@@ -379,17 +402,19 @@ const CelestialSymphony = ({
     }
 
     if (viewFromSebaka) {
-        if (sebakaMesh) {
-            const sebakaPosition = sebakaMesh.position.clone();
-            const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
-            camera.position.set(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
-            controls.target.copy(sebakaPosition); // Look at the planet itself initially
-        }
-        controls.enablePan = false;
-        controls.minDistance = 0;
-        controls.maxDistance = 1; 
+        controls.enablePan = !isSebakaRotating;
         controls.enableZoom = false; 
+        controls.minDistance = 0;
+        controls.maxDistance = 1;
         controls.screenSpacePanning = false;
+
+        if (isSebakaRotating) {
+            // When rotating, user should not be able to pan, as the planet's rotation controls the view
+            controls.enableRotate = false;
+        } else {
+             // When not rotating, user can freely look around
+            controls.enableRotate = true;
+        }
 
     } else {
         // Reset to default orbital view
@@ -398,10 +423,11 @@ const CelestialSymphony = ({
         controls.maxDistance = 20000;
         controls.enablePan = true;
         controls.enableZoom = true;
+        controls.enableRotate = true;
         controls.screenSpacePanning = true;
     }
     controls.update();
-  }, [viewFromSebaka]);
+  }, [viewFromSebaka, isSebakaRotating]);
   
   useEffect(() => {
     const camera = cameraRef.current;
@@ -417,5 +443,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    

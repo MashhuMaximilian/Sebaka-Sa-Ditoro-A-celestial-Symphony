@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Eye, PersonStanding, Orbit } from "lucide-react";
+import { Palette, History, Eye, PersonStanding, Orbit, RotateCw } from "lucide-react";
 
 import type { PlanetData, StarData } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
@@ -156,6 +156,7 @@ export default function Home() {
   const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
+  const [isSebakaRotating, setIsSebakaRotating] = useState(false);
   const [resetViewToggle, setResetViewToggle] = useState(false);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
 
@@ -193,7 +194,20 @@ export default function Home() {
     if (viewFromSebaka) {
       setViewFromSebaka(false);
     }
+    if (isSebakaRotating) {
+        setIsSebakaRotating(false);
+    }
     setResetViewToggle(prev => !prev);
+  }
+
+  const toggleSebakaView = () => {
+      setViewFromSebaka(prev => {
+          const newVew = !prev;
+          if (!newVew && isSebakaRotating) {
+              setIsSebakaRotating(false);
+          }
+          return newVew;
+      })
   }
 
   return (
@@ -204,6 +218,7 @@ export default function Home() {
         speedMultiplier={speedMultiplier} 
         onBodyClick={handleBodyClick}
         viewFromSebaka={viewFromSebaka}
+        isSebakaRotating={isSebakaRotating}
         resetViewToggle={resetViewToggle}
         isViridisAnimationActive={isViridisAnimationActive}
       />
@@ -241,7 +256,7 @@ export default function Home() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setViewFromSebaka(prev => !prev)}>
+                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={toggleSebakaView} disabled={isSebakaRotating}>
                             <PersonStanding className="h-5 w-5" />
                             <span className="sr-only">Toggle View from Sebaka</span>
                         </Button>
@@ -250,6 +265,19 @@ export default function Home() {
                         <p>{viewFromSebaka ? 'Exit Sebaka View' : 'View from Sebaka'}</p>
                     </TooltipContent>
                 </Tooltip>
+                {viewFromSebaka && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsSebakaRotating(prev => !prev)}>
+                                <RotateCw className="h-5 w-5" />
+                                <span className="sr-only">Toggle Sebaka Rotation</span>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>{isSebakaRotating ? 'Stop Sebaka Rotation' : 'Rotate with Sebaka'}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                )}
                  <Tooltip>
                     <TooltipTrigger asChild>
                          <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={handleResetView}>
