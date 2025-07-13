@@ -12,6 +12,7 @@ interface CelestialSymphonyProps {
   speedMultiplier?: number;
   onBodyClick: (name: string) => void;
   viewFromSebaka: boolean;
+  resetViewToggle: boolean;
 }
 
 const CelestialSymphony = ({
@@ -20,6 +21,7 @@ const CelestialSymphony = ({
   speedMultiplier = 1,
   onBodyClick,
   viewFromSebaka,
+  resetViewToggle,
 }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
@@ -34,7 +36,7 @@ const CelestialSymphony = ({
   useEffect(() => {
     speedMultiplierRef.current = speedMultiplier;
   }, [speedMultiplier]);
-
+  
   useEffect(() => {
     if (!mountRef.current) return;
 
@@ -67,7 +69,6 @@ const CelestialSymphony = ({
     controls.minDistance = 1;
     controls.maxDistance = 20000;
     controls.target.set(0, 0, 0);
-    // This configuration prevents crashes on mobile when panning/zooming.
     controls.touches = {
         ONE: THREE.TOUCH.ROTATE,
         TWO: THREE.TOUCH.DOLLY_PAN
@@ -177,7 +178,6 @@ const CelestialSymphony = ({
       
       if (viewFromSebaka && sebakaMesh) {
           sebakaMesh.visible = false;
-          // Set camera and controls target to Sebaka's position
           camera.position.copy(sebakaMesh.position);
           controls.target.copy(sebakaMesh.position);
       } else if (sebakaMesh) {
@@ -262,16 +262,13 @@ const CelestialSymphony = ({
     if (!camera || !controls) return;
 
     if (viewFromSebaka) {
-        // When viewing from Sebaka, we want to look around, not orbit a point.
-        // We'll set the camera and control target to Sebaka's position in the animate loop.
-        controls.enablePan = true;
-        controls.enableZoom = true;
-        controls.minDistance = 0.01;
-        controls.maxDistance = 10000;
-        controls.screenSpacePanning = false; // Allows for first-person like controls
+        controls.enablePan = false;
+        controls.enableZoom = false;
+        controls.minDistance = 0; // Allow looking around from a fixed point
+        controls.maxDistance = Infinity;
+        controls.screenSpacePanning = false; // Important for "first person" feel
     } else {
         // Reset to default orbital view
-        camera.position.copy(originalCameraPos.current);
         controls.target.set(0, 0, 0);
         controls.minDistance = 1;
         controls.maxDistance = 20000;
@@ -281,8 +278,19 @@ const CelestialSymphony = ({
     }
     controls.update();
   }, [viewFromSebaka])
+  
+  useEffect(() => {
+    const camera = cameraRef.current;
+    const controls = controlsRef.current;
+    if (!camera || !controls) return;
+
+    camera.position.copy(originalCameraPos.current);
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }, [resetViewToggle]);
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };
 
 export default CelestialSymphony;
+

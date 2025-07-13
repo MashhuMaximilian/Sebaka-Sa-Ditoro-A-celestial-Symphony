@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Eye, EyeOff } from "lucide-react";
+import { Palette, History, Eye, PersonStanding } from "lucide-react";
 
 import type { PlanetData, StarData } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
@@ -156,6 +156,7 @@ export default function Home() {
   const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
+  const [resetViewToggle, setResetViewToggle] = useState(false);
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -186,9 +187,12 @@ export default function Home() {
       setInfoPanelOpen(true);
     }
   };
-
-  const toggleViewFromSebaka = () => {
-    setViewFromSebaka(prev => !prev);
+  
+  const handleResetView = () => {
+    if (viewFromSebaka) {
+      setViewFromSebaka(false);
+    }
+    setResetViewToggle(prev => !prev);
   }
 
   return (
@@ -199,6 +203,7 @@ export default function Home() {
         speedMultiplier={speedMultiplier} 
         onBodyClick={handleBodyClick}
         viewFromSebaka={viewFromSebaka}
+        resetViewToggle={resetViewToggle}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -223,13 +228,24 @@ export default function Home() {
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={toggleViewFromSebaka}>
-                            {viewFromSebaka ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setViewFromSebaka(prev => !prev)}>
+                            <PersonStanding className="h-5 w-5" />
                             <span className="sr-only">Toggle View from Sebaka</span>
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>
                         <p>{viewFromSebaka ? 'Exit Sebaka View' : 'View from Sebaka'}</p>
+                    </TooltipContent>
+                </Tooltip>
+                 <Tooltip>
+                    <TooltipTrigger asChild>
+                         <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={handleResetView}>
+                            <Eye className="h-5 w-5" />
+                            <span className="sr-only">Reset View</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Reset View</p>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
@@ -284,3 +300,4 @@ export default function Home() {
     </main>
   );
 }
+
