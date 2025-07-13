@@ -67,8 +67,11 @@ const CelestialSymphony = ({
     controls.minDistance = 1;
     controls.maxDistance = 20000;
     controls.target.set(0, 0, 0);
-    controls.touches.ONE = THREE.TOUCH.PAN;
-    controls.touches.TWO = THREE.TOUCH.DOLLY_ROTATE;
+    // This configuration prevents crashes on mobile when panning/zooming.
+    controls.touches = {
+        ONE: THREE.TOUCH.ROTATE,
+        TWO: THREE.TOUCH.DOLLY_PAN
+    };
     controlsRef.current = controls;
 
     // Lighting
@@ -144,8 +147,8 @@ const CelestialSymphony = ({
       if (binaryStarMeshesRef.current.length === 2) {
           const star1 = binaryStarMeshesRef.current[0];
           const star2 = binaryStarMeshesRef.current[1];
-          star1.userData.angle = (star1.userData.angle || 0) + binaryOrbitSpeed * effectiveDelta * 10;
-          star2.userData.angle = (star2.userData.angle || 0) + binaryOrbitSpeed * effectiveDelta * 10;
+          star1.userData.angle = (star1.userData.angle || 0) + binaryOrbitSpeed * effectiveDelta;
+          star2.userData.angle = (star2.userData.angle || 0) + binaryOrbitSpeed * effectiveDelta;
 
           const r1 = 0.1 * 150; // 0.1 AU
           star1.position.x = -r1 * Math.cos(star1.userData.angle);
@@ -157,7 +160,7 @@ const CelestialSymphony = ({
       let sebakaMesh: THREE.Mesh | undefined;
       // Animate planets
       planetMeshesRef.current.forEach((planet) => {
-        planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta * 10;
+        planet.userData.angle += planet.userData.orbitSpeed * effectiveDelta;
         let radius = planet.userData.orbitRadius;
         if (planet.userData.eccentric) {
             radius = planet.userData.orbitRadius * (1 + 0.5 * Math.sin(planet.userData.angle * 0.5));
@@ -174,17 +177,12 @@ const CelestialSymphony = ({
       
       if (viewFromSebaka && sebakaMesh) {
           sebakaMesh.visible = false;
-          // Set camera position to Sebaka's position
+          // Set camera and controls target to Sebaka's position
           camera.position.copy(sebakaMesh.position);
-
-          // Update control target to be relative to camera
-          const lookDirection = new THREE.Vector3();
-          camera.getWorldDirection(lookDirection);
-          controls.target.copy(camera.position).add(lookDirection);
+          controls.target.copy(sebakaMesh.position);
       } else if (sebakaMesh) {
           sebakaMesh.visible = true;
       }
-
 
       controls.update();
       renderer.render(scene, camera);
@@ -264,20 +262,24 @@ const CelestialSymphony = ({
     if (!camera || !controls) return;
 
     if (viewFromSebaka) {
-        // Position will be set in animation loop
+        // When viewing from Sebaka, we want to look around, not orbit a point.
+        // We'll set the camera and control target to Sebaka's position in the animate loop.
+        controls.enablePan = true;
+        controls.enableZoom = true;
         controls.minDistance = 0.01;
-        controls.maxDistance = 1; // Prevent zooming out too far
-        controls.enablePan = false;
-        controls.enableZoom = false; // Disable zoom from Sebaka
+        controls.maxDistance = 10000;
+        controls.screenSpacePanning = false; // Allows for first-person like controls
     } else {
+        // Reset to default orbital view
         camera.position.copy(originalCameraPos.current);
         controls.target.set(0, 0, 0);
         controls.minDistance = 1;
         controls.maxDistance = 20000;
         controls.enablePan = true;
         controls.enableZoom = true;
+        controls.screenSpacePanning = true;
     }
-
+    controls.update();
   }, [viewFromSebaka])
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
