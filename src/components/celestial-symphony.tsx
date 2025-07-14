@@ -44,6 +44,7 @@ const CelestialSymphony = ({
   const sceneRef = useRef<THREE.Scene>();
   const clockRef = useRef(new THREE.Clock());
   const speedMultiplierRef = useRef(speedMultiplier);
+  const isViridisAnimationActiveRef = useRef(isViridisAnimationActive);
   const originalCameraPos = useRef(new THREE.Vector3(0, 400, 800));
   const viridisOriginalColor = useRef(new THREE.Color("#9ACD32"));
   
@@ -63,6 +64,10 @@ const CelestialSymphony = ({
   useEffect(() => {
     speedMultiplierRef.current = speedMultiplier;
   }, [speedMultiplier]);
+
+  useEffect(() => {
+    isViridisAnimationActiveRef.current = isViridisAnimationActive;
+  }, [isViridisAnimationActive]);
   
   // This effect handles jumping to a specific time
   useEffect(() => {
@@ -196,6 +201,13 @@ const CelestialSymphony = ({
       
       if (body.type === 'Planet' && body.name === "Spectris") {
         const ringGeometry = new THREE.RingGeometry(body.size * 1.5, body.size * 3, 64);
+        const vertexShader = `
+          varying vec3 vUv;
+          void main() {
+            vUv = position;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `;
         const fragmentShader = `
           vec3 hsv2rgb(vec3 c) {
             vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
@@ -207,13 +219,6 @@ const CelestialSymphony = ({
             float angle = atan(vUv.y, vUv.x);
             float hue = (angle + 3.14159) / (2.0 * 3.14159);
             gl_FragColor = vec4(hsv2rgb(vec3(hue, 0.7, 1.0)), 0.7);
-          }
-        `;
-        const vertexShader = `
-          varying vec3 vUv;
-          void main() {
-            vUv = position;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
           }
         `;
 
@@ -255,7 +260,7 @@ const CelestialSymphony = ({
       
       const viridisMesh = planetMeshesRef.current.find(p => p.name === 'Viridis');
       if (viridisMesh && viridisMesh.material instanceof THREE.MeshStandardMaterial) {
-          if (isViridisAnimationActive) {
+          if (isViridisAnimationActiveRef.current) {
             const cycleDurationDays = 27;
             const currentDayInCycle = elapsedDaysRef.current % cycleDurationDays;
             
@@ -320,7 +325,7 @@ const CelestialSymphony = ({
             cameraOffset.applyEuler(manualRotation);
 
             // Then apply the planet's rotation to the offset
-            cameraOffset.applyEuler(sebakaMesh.rotation);
+            // This part is removed as it caused conflicts. The camera is now stationary relative to Sebaka's center unless rotating.
             
             // Set camera position
             camera.position.copy(sebakaPosition).add(cameraOffset);
@@ -462,15 +467,12 @@ const CelestialSymphony = ({
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (!camera || !controls || !viewFromSebaka || isSebakaRotating || !sebakaMesh) return;
 
-      const currentCameraPosition = camera.position.clone();
+      const sebakaPosition = sebakaMesh.position;
       const rotationY = THREE.MathUtils.degToRad(sebakaRotationAngle);
       
-      const lookAtVector = new THREE.Vector3(0, 0, -100); 
+      const lookAtVector = new THREE.Vector3(0, 0, -1);
       lookAtVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
-
-      // We need to account for Sebaka's current orbital position
-      const sebakaPosition = sebakaMesh.position;
-      lookAtVector.add(sebakaPosition);
+      lookAtVector.add(camera.position);
 
       controls.target.copy(lookAtVector);
   }, [sebakaRotationAngle, viewFromSebaka, isSebakaRotating]);
@@ -480,3 +482,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    
