@@ -53,6 +53,9 @@ const CelestialSymphony = ({
   
   const elapsedDaysRef = useRef(0);
   const viewFromSebakaRef = useRef(viewFromSebaka);
+  const isSebakaRotatingRef = useRef(isSebakaRotating);
+  const sebakaRotationAngleRef = useRef(sebakaRotationAngle);
+
 
   // Memoize body data to avoid recalculations
   const bodyData = useMemo(() => {
@@ -194,8 +197,10 @@ const CelestialSymphony = ({
       if (body.type === 'Star') {
         const starData = body as StarData;
         materialOptions.emissive = starData.color;
+        // Use a logarithmic scale for emissive intensity to better represent large differences
         materialOptions.emissiveIntensity = Math.log1p(starData.luminosity || 0) * 0.5 + 0.5;
       }
+      // Give Liminis a slight self-glow to make it visible from afar
       if (body.name === 'Liminis') {
         materialOptions.emissive = body.color;
         materialOptions.emissiveIntensity = 0.2;
@@ -213,6 +218,7 @@ const CelestialSymphony = ({
       } else {
         const starData = body as StarData;
         starMeshesRef.current.push(mesh);
+        // Use luminosity for point light intensity as well
         const lightIntensity = (starData.luminosity || 1) * 2;
         const pointLightStar = new THREE.PointLight(starData.color, lightIntensity, 0, 1);
         mesh.add(pointLightStar);
@@ -332,29 +338,23 @@ const CelestialSymphony = ({
           const sebakaPosition = sebakaMesh.position;
           const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
 
-          if (isSebakaRotating) {
-            const cameraOffset = new THREE.Vector3(0, surfaceYOffset, 0);
-            cameraOffset.applyEuler(sebakaMesh.rotation);
-            camera.position.copy(sebakaPosition).add(cameraOffset);
-            
-            const lookAtOffset = new THREE.Vector3(0, surfaceYOffset, -100); 
-            lookAtOffset.applyEuler(sebakaMesh.rotation);
-            controls.target.copy(sebakaPosition).add(lookAtOffset);
+          if (isSebakaRotatingRef.current) {
+              controls.enableRotate = false;
+              const cameraOffset = new THREE.Vector3(0, surfaceYOffset, 0);
+              camera.position.copy(sebakaPosition).add(cameraOffset);
+              
+              const lookAtRotation = new THREE.Euler(0, sebakaMesh.rotation.y, 0, 'YXZ');
+              const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
+              controls.target.copy(sebakaPosition).add(lookAtDirection);
           } else {
-            const lastCameraDistance = camera.position.distanceTo(controls.target);
-            
-            const rotationY = THREE.MathUtils.degToRad(sebakaRotationAngle);
-            const euler = new THREE.Euler(0, rotationY, 0, 'YXZ');
-            
-            const direction = new THREE.Vector3(0, 0, -1);
-            direction.applyEuler(euler);
-            direction.applyQuaternion(camera.quaternion);
-
-            const newTargetPosition = new THREE.Vector3().copy(sebakaPosition);
-            const newCameraPosition = new THREE.Vector3().copy(newTargetPosition).add(new THREE.Vector3(0, surfaceYOffset, 0));
-
-            controls.target.copy(newTargetPosition);
-            camera.position.copy(newCameraPosition);
+              controls.enableRotate = true;
+              const cameraSurfacePosition = new THREE.Vector3(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
+              camera.position.copy(cameraSurfacePosition);
+              
+              const manualRotation = THREE.MathUtils.degToRad(sebakaRotationAngleRef.current);
+              const lookAtRotation = new THREE.Euler(0, manualRotation, 0, 'YXZ');
+              const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
+              controls.target.copy(sebakaPosition).add(lookAtDirection);
           }
       }
 
@@ -439,11 +439,12 @@ const CelestialSymphony = ({
   }, [planets]);
 
   useEffect(() => {
-    const camera = cameraRef.current;
-    const controls = controlsRef.current;
-    if (!camera || !controls) return;
-
     viewFromSebakaRef.current = viewFromSebaka;
+    isSebakaRotatingRef.current = isSebakaRotating;
+    sebakaRotationAngleRef.current = sebakaRotationAngle;
+
+    const controls = controlsRef.current;
+    if (!controls) return;
     
     orbitMeshesRef.current.forEach(orbit => {
         orbit.visible = !viewFromSebaka;
@@ -459,17 +460,7 @@ const CelestialSymphony = ({
         controls.enableZoom = true;
         controls.minDistance = 5;
         controls.maxDistance = 1000;
-        
-        if (isSebakaRotating) {
-            controls.enableRotate = false;
-        } else {
-            controls.enableRotate = true; 
-        }
-
     } else {
-        if (!isBeaconView) {
-            controls.target.set(0, 0, 0);
-        }
         controls.minDistance = 1;
         controls.maxDistance = 200000;
         controls.enablePan = true;
@@ -477,20 +468,20 @@ const CelestialSymphony = ({
         controls.enableRotate = true;
         controls.screenSpacePanning = true;
     }
-    controls.update();
-  }, [viewFromSebaka, isSebakaRotating, isBeaconView]);
+  }, [viewFromSebaka, isSebakaRotating, sebakaRotationAngle]);
   
   useEffect(() => {
     const camera = cameraRef.current;
     const controls = controlsRef.current;
     if (!camera || !controls || viewFromSebaka) return;
 
+    // Only reset camera to default if not in beacon view
     if (!isBeaconView) {
         camera.position.copy(originalCameraPos.current);
         controls.target.set(0, 0, 0);
     }
     controls.update();
-  }, [resetViewToggle]);
+  }, [resetViewToggle, isBeaconView, viewFromSebaka]);
 
   useEffect(() => {
     const camera = cameraRef.current;
@@ -500,16 +491,18 @@ const CelestialSymphony = ({
     if (isBeaconView) {
         controls.target.copy(beaconPositionRef.current);
         const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
-        camera.position.copy(beaconCamPos);
+        camera.position.lerp(beaconCamPos, 0.1);
     } else if (!viewFromSebaka) { 
         controls.target.set(0, 0, 0);
-        camera.position.copy(originalCameraPos.current);
+        camera.position.lerp(originalCameraPos.current, 0.1);
     }
     controls.update();
-  }, [isBeaconView, resetViewToggle]);
+  }, [isBeaconView, viewFromSebaka, resetViewToggle]);
 
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };
 
 export default CelestialSymphony;
+
+    
