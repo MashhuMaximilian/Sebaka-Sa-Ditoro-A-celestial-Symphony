@@ -16,15 +16,18 @@ interface CelestialSymphonyProps {
   sebakaRotationAngle: number;
   resetViewToggle: boolean;
   isViridisAnimationActive: boolean;
-  onTimeUpdate: (elapsedDays: number) => void;
+  onTimeUpdate: (elapsedHours: number) => void;
   goToTime: number | null;
   isBeaconView: boolean;
+  onRotationAngleChange: (angle: number) => void;
 }
+
+const HOURS_IN_SEBAKA_DAY = 24;
 
 const CelestialSymphony = ({
   stars,
   planets,
-  speedMultiplier = 1,
+  speedMultiplier = 24, // hours per second
   onBodyClick,
   viewFromSebaka,
   isSebakaRotating,
@@ -34,6 +37,7 @@ const CelestialSymphony = ({
   onTimeUpdate,
   goToTime,
   isBeaconView,
+  onRotationAngleChange,
 }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
@@ -57,14 +61,14 @@ const CelestialSymphony = ({
   const viridisOriginalColor = useRef(new THREE.Color("#9ACD32"));
   const beaconPositionRef = useRef(new THREE.Vector3());
   
-  const elapsedDaysRef = useRef(0);
-  const internalRotationAngleRef = useRef(0);
+  const elapsedHoursRef = useRef(0);
+  const internalRotationAngleRef = useRef(sebakaRotationAngle);
 
   const bodyData = useMemo(() => {
     const all = [...stars, ...planets];
     return all.map(body => ({
       ...body,
-      radsPerDay: (2 * Math.PI) / (body.orbitPeriodDays || Infinity)
+      radsPerHour: (2 * Math.PI) / ((body.orbitPeriodDays || Infinity) * HOURS_IN_SEBAKA_DAY)
     }));
   }, [stars, planets]);
 
@@ -82,13 +86,13 @@ const CelestialSymphony = ({
 
   useEffect(() => {
     if (goToTime !== null) {
-      elapsedDaysRef.current = goToTime;
+      elapsedHoursRef.current = goToTime;
       updateAllBodyPositions(goToTime);
       onTimeUpdate(goToTime);
     }
   }, [goToTime]);
 
-  const updateAllBodyPositions = (currentDays: number) => {
+  const updateAllBodyPositions = (currentHours: number) => {
      bodyData.forEach(data => {
         const bodyMesh = allBodiesRef.current.find(m => m.name === data.name);
         if (!bodyMesh) return;
@@ -98,7 +102,7 @@ const CelestialSymphony = ({
         const beaconData = bodyData.find(d => d.name === 'Beacon');
         if (beaconData) {
             const beaconOrbitRadius = beaconData.orbitRadius!;
-            const beaconAngle = currentDays * beaconData.radsPerDay;
+            const beaconAngle = currentHours * beaconData.radsPerHour;
             const beaconX = beaconOrbitRadius * Math.cos(beaconAngle);
             const beaconZ = beaconOrbitRadius * Math.sin(beaconAngle);
             beaconPositionRef.current.set(beaconX, 0, beaconZ);
@@ -115,7 +119,7 @@ const CelestialSymphony = ({
 
         const semiMajorAxis = data.orbitRadius || 0;
         let x, z;
-        let angle = currentDays * data.radsPerDay;
+        let angle = currentHours * data.radsPerHour;
 
         if ((data as PlanetData).eccentric) {
             const eccentricity = data.name === 'Spectris' ? 0.2 : data.name === 'Aetheris' ? 0.5 : 0.1;
@@ -124,7 +128,7 @@ const CelestialSymphony = ({
             z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
         } else if (data.type === 'Star' && (data.name === 'Golden Giver' || data.name === 'Twilight')) {
             const r1 = 0.1 * 150;
-            const binaryAngle = currentDays * data.radsPerDay;
+            const binaryAngle = currentHours * data.radsPerHour;
             x = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.cos(binaryAngle);
             z = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.sin(binaryAngle);
         } else {
@@ -137,8 +141,8 @@ const CelestialSymphony = ({
         bodyMesh.position.set(x, y, z);
 
         if (bodyMesh.name === 'Sebaka') {
-            const rotationPerDay = Math.PI * 2;
-            bodyMesh.rotation.y = currentDays * rotationPerDay;
+            const rotationPerHour = (2 * Math.PI) / HOURS_IN_SEBAKA_DAY;
+            bodyMesh.rotation.y = currentHours * rotationPerHour;
         }
     });
   }
@@ -241,11 +245,11 @@ const CelestialSymphony = ({
       if (!camera || !controls) return;
       
       const deltaTime = clockRef.current.getDelta();
-      const daysPassedThisFrame = deltaTime * speedMultiplierRef.current;
-      elapsedDaysRef.current += daysPassedThisFrame;
+      const hoursPassedThisFrame = deltaTime * speedMultiplierRef.current;
+      elapsedHoursRef.current += hoursPassedThisFrame;
       
-      onTimeUpdate(elapsedDaysRef.current);
-      updateAllBodyPositions(elapsedDaysRef.current);
+      onTimeUpdate(elapsedHoursRef.current);
+      updateAllBodyPositions(elapsedHoursRef.current);
       
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.geometry.parameters.radius === planets.find(p=>p.name === 'Gelidis')?.orbitRadius);
       const liminisOrbit = orbitMeshesRef.current.find(o => o.geometry.parameters.radius === planets.find(p=>p.name === 'Liminis')?.orbitRadius);
@@ -254,9 +258,10 @@ const CelestialSymphony = ({
 
       const viridisMesh = planetMeshesRef.current.find(p => p.name === 'Viridis');
       if (viridisMesh && viridisMesh.material instanceof THREE.MeshStandardMaterial) {
+          const elapsedDays = elapsedHoursRef.current / HOURS_IN_SEBAKA_DAY;
           if (isViridisAnimationActiveRef.current) {
             const cycleDurationDays = 27;
-            const currentDayInCycle = elapsedDaysRef.current % cycleDurationDays;
+            const currentDayInCycle = elapsedDays % cycleDurationDays;
             const phaseDuration = 9;
             let brightnessFactor = 1.0;
             if (currentDayInCycle < phaseDuration) { // Darkening
@@ -278,6 +283,7 @@ const CelestialSymphony = ({
       }
       
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+      const goldenGiverMesh = starMeshesRef.current.find(p => p.name === 'Golden Giver');
       if (viewFromSebakaRef.current && sebakaMesh) {
           const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
           const surfaceOffset = sebakaRadius * 1.01; 
@@ -289,19 +295,26 @@ const CelestialSymphony = ({
           );
 
           if (isSebakaRotatingRef.current) {
-            internalRotationAngleRef.current += deltaTime * 10; // degrees per second
+            const degreesPerSecond = 360 / (HOURS_IN_SEBAKA_DAY / speedMultiplierRef.current);
+            internalRotationAngleRef.current += deltaTime * degreesPerSecond;
             internalRotationAngleRef.current %= 360;
+            onRotationAngleChange(internalRotationAngleRef.current);
           }
-
+          
           const angle = THREE.MathUtils.degToRad(
             isSebakaRotatingRef.current ? internalRotationAngleRef.current : sebakaRotationAngleRef.current
           );
-          
-          const lookAtPosition = new THREE.Vector3(
-             sebakaMesh.position.x + Math.sin(angle) * 1000,
-             sebakaMesh.position.y,
-             sebakaMesh.position.z + Math.cos(angle) * 1000
-          );
+
+          let lookAtPosition: THREE.Vector3;
+          if (goldenGiverMesh && sebakaRotationAngleRef.current === 0 && !isSebakaRotatingRef.current) {
+             lookAtPosition = goldenGiverMesh.position.clone();
+          } else {
+             lookAtPosition = new THREE.Vector3(
+              sebakaMesh.position.x + Math.sin(angle) * 1000,
+              sebakaMesh.position.y,
+              sebakaMesh.position.z + Math.cos(angle) * 1000
+            );
+          }
           controls.target.copy(lookAtPosition);
           
       } else {
@@ -430,3 +443,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    

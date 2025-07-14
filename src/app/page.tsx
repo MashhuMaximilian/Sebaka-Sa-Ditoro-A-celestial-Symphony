@@ -38,6 +38,7 @@ import {
 // 1 AU = 150 simulation units.
 const AU_TO_UNITS = 150;
 const SEBAKA_YEAR_IN_DAYS = 324;
+const HOURS_IN_SEBAKA_DAY = 24;
 
 const initialStars: StarData[] = [
   {
@@ -154,7 +155,7 @@ const initialPlanets: PlanetData[] = [
 
 export default function Home() {
   const [planets, setPlanets] = useState<PlanetData[]>(initialPlanets);
-  const [speedMultiplier, setSpeedMultiplier] = useState(1);
+  const [speedMultiplier, setSpeedMultiplier] = useState(24); // Default to 24 hours/sec (1 day/sec)
   const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
@@ -168,7 +169,7 @@ export default function Home() {
   const [currentDay, setCurrentDay] = useState(0);
   const [targetYear, setTargetYear] = useState(0);
   const [targetDay, setTargetDay] = useState(1);
-  const [elapsedDays, setElapsedDays] = useState(0);
+  const [elapsedHours, setElapsedHours] = useState(0);
   const [goToTime, setGoToTime] = useState<number | null>(null);
 
   const handleApplyPalette = (newColors: string[]) => {
@@ -196,7 +197,7 @@ export default function Home() {
   };
 
   const resetSpeed = () => {
-    setSpeedMultiplier(1);
+    setSpeedMultiplier(24);
   };
   
   const handleBodyClick = (bodyName: string) => {
@@ -236,18 +237,19 @@ export default function Home() {
 
   const handleGoToTime = () => {
     const year = Math.max(0, targetYear);
-    const day = Math.max(1, Math.min(324, targetDay));
-    const newElapsedDays = year * SEBAKA_YEAR_IN_DAYS + day;
-    setElapsedDays(newElapsedDays);
-    setGoToTime(newElapsedDays);
+    const day = Math.max(1, Math.min(SEBAKA_YEAR_IN_DAYS, targetDay));
+    const newElapsedHours = (year * SEBAKA_YEAR_IN_DAYS + day) * HOURS_IN_SEBAKA_DAY;
+    setElapsedHours(newElapsedHours);
+    setGoToTime(newElapsedHours);
     setCurrentYear(year);
     setCurrentDay(day);
   }
 
-  const handleTimeUpdate = (days: number) => {
-    setElapsedDays(days);
-    setCurrentYear(Math.floor(days / SEBAKA_YEAR_IN_DAYS));
-    setCurrentDay(Math.floor(days % SEBAKA_YEAR_IN_DAYS) + 1);
+  const handleTimeUpdate = (hours: number) => {
+    setElapsedHours(hours);
+    const totalDays = hours / HOURS_IN_SEBAKA_DAY;
+    setCurrentYear(Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS));
+    setCurrentDay(Math.floor(totalDays % SEBAKA_YEAR_IN_DAYS) + 1);
   }
 
   return (
@@ -265,6 +267,7 @@ export default function Home() {
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
         isBeaconView={isBeaconView}
+        onRotationAngleChange={setSebakaRotationAngle}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -409,7 +412,7 @@ export default function Home() {
           </div>
           <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
               <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                  Speed (x)
+                  Speed (hrs/s)
               </Label>
               <Input
                   id="speed-input"
@@ -428,7 +431,7 @@ export default function Home() {
                           </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                          <p>Reset Speed</p>
+                          <p>Reset Speed to 1 day/sec</p>
                       </TooltipContent>
                   </Tooltip>
               </TooltipProvider>
@@ -437,3 +440,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
