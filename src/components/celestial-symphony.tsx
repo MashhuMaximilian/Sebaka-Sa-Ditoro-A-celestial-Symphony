@@ -272,17 +272,17 @@ const CelestialSymphony = ({
       
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (viewFromSebakaRef.current && sebakaMesh) {
-          const surfaceOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
+          const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
+          const surfaceOffset = sebakaRadius + 5;
           const cameraSurfacePosition = sebakaMesh.position.clone().add(new THREE.Vector3(0, surfaceOffset, 0));
+          
           camera.position.copy(cameraSurfacePosition);
 
           if (isSebakaRotatingRef.current) {
-              controls.enableRotate = false;
               const lookAtRotation = new THREE.Euler(0, sebakaMesh.rotation.y, 0, 'YXZ');
               const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
               controls.target.copy(sebakaMesh.position).add(lookAtDirection);
           } else {
-              controls.enableRotate = true;
               const manualRotation = THREE.MathUtils.degToRad(sebakaRotationAngleRef.current);
               const lookAtRotation = new THREE.Euler(0, manualRotation, 0, 'YXZ');
               const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
@@ -359,10 +359,11 @@ const CelestialSymphony = ({
     if (sebakaMesh) sebakaMesh.visible = !viewFromSebaka;
 
     if (viewFromSebaka) {
-        controls.enablePan = false;
+        controls.enablePan = true; // Allow panning in surface view
         controls.enableZoom = true;
-        controls.minDistance = 5;
+        controls.minDistance = 1;
         controls.maxDistance = 1000;
+        controls.enableRotate = true;
     } else {
         controls.minDistance = 1;
         controls.maxDistance = 200000;
@@ -381,11 +382,11 @@ const CelestialSymphony = ({
     if (!viewFromSebaka) {
       if (isBeaconView) {
         const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
-        camera.position.copy(beaconCamPos);
-        controls.target.copy(beaconPositionRef.current);
+        camera.position.lerp(beaconCamPos, 0.1);
+        controls.target.lerp(beaconPositionRef.current, 0.1);
       } else {
-        camera.position.copy(originalCameraPos.current);
-        controls.target.set(0, 0, 0);
+        camera.position.lerp(originalCameraPos.current, 0.1);
+        controls.target.lerp(new THREE.Vector3(0, 0, 0), 0.1);
       }
     }
     controls.update();
