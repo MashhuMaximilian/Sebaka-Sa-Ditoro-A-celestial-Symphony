@@ -105,7 +105,7 @@ const CelestialSymphony = ({
         bodyMesh.position.set(x, y, z);
 
         if (bodyMesh.name === 'Sebaka') {
-            const dayLengthInSeconds = 1; // 1 Sebaka day rotation per real second at speed 1
+             // 1 Sebaka day rotation (2PI) per day.
             const rotationPerDay = Math.PI * 2;
             bodyMesh.rotation.y = currentDays * rotationPerDay;
         }
@@ -267,7 +267,7 @@ const CelestialSymphony = ({
               const brightnessFactor = (Math.cos(phase * 2 * Math.PI) + 1) / 2; // Range 0.0 to 1.0, starts at 1, goes to 0, back to 1
 
               const minIntensity = 0.1;
-              const maxIntensity = 0.8;
+              const maxIntensity = 1.0;
               const targetIntensity = minIntensity + (maxIntensity - minIntensity) * brightnessFactor;
 
               const targetColor = viridisOriginalColor.current.clone().multiplyScalar(brightnessFactor);
@@ -282,7 +282,7 @@ const CelestialSymphony = ({
               }
                // Reset to default when animation is off
                viridisMesh.material.color.lerp(viridisOriginalColor.current, 0.1);
-               viridisMesh.material.emissive.lerp(viridisOriginalColor.current, 0.1);
+               viridisMesh.material.emissive.lerp(new THREE.Color(0x000000), 0.1);
                viridisMesh.material.emissiveIntensity = THREE.MathUtils.lerp(viridisMesh.material.emissiveIntensity, 0, 0.1);
           }
       }
@@ -291,26 +291,38 @@ const CelestialSymphony = ({
       if (viewFromSebaka && sebakaMesh && camera && controls) {
           const sebakaPosition = sebakaMesh.position.clone();
           const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
-          
+          const cameraOffset = new THREE.Vector3(0, surfaceYOffset, 0);
+
           if (isSebakaRotating) {
-            const cameraOffset = new THREE.Vector3(0, surfaceYOffset, 0);
+            // Camera is on surface, looking out, rotating with planet
             cameraOffset.applyEuler(sebakaMesh.rotation);
             camera.position.copy(sebakaPosition).add(cameraOffset);
             
+            // Look direction also rotates with planet
             const lookAtOffset = new THREE.Vector3(0, surfaceYOffset, -100); 
             lookAtOffset.applyEuler(sebakaMesh.rotation);
             controls.target.copy(sebakaPosition).add(lookAtOffset);
 
           } else {
-            const cameraOffset = new THREE.Vector3(0, surfaceYOffset, 0);
-            const rotationY = THREE.MathUtils.degToRad(sebakaRotationAngle);
-            const manualRotation = new THREE.Euler(0, rotationY, 0, 'YXZ');
-            
+             // Camera is on surface, but its rotation is controlled by the slider and mouse
             camera.position.copy(sebakaPosition).add(cameraOffset);
-
-            const lookAtOffset = new THREE.Vector3(0, 0, -100);
-            lookAtOffset.applyEuler(manualRotation);
-            controls.target.copy(camera.position).add(lookAtOffset);
+            
+            // Use slider for manual Y rotation, but don't force target
+            const totalRotationY = sebakaMesh.rotation.y + THREE.MathUtils.degToRad(sebakaRotationAngle);
+            
+            // Create a look-at vector based on the camera's current direction
+            const lookDirection = new THREE.Vector3(0,0,-1);
+            
+            // Apply manual rotation from slider
+            const manualRotation = new THREE.Euler(0, THREE.MathUtils.degToRad(sebakaRotationAngle), 0);
+            lookDirection.applyEuler(manualRotation);
+            
+            // We let OrbitControls handle the target based on mouse movement, 
+            // but we need to update its internal state to reflect the slider change.
+            // This is a bit of a workaround to get slider and mouse to coexist.
+            // We set the camera's rotation directly.
+            const currentTarget = controls.target.clone();
+            camera.lookAt(currentTarget); // Ensure camera is looking at the last controlled point
           }
       }
 
@@ -409,17 +421,14 @@ const CelestialSymphony = ({
     }
 
     if (viewFromSebaka) {
+        // You can look around and zoom, but not move your position.
         controls.enablePan = false;
-        controls.enableZoom = false; 
-        controls.minDistance = 0;
-        controls.maxDistance = 1;
-        controls.screenSpacePanning = false;
+        controls.enableZoom = true; 
+        controls.enableRotate = true; // Allow looking around the sky
 
         if (isSebakaRotating) {
-            controls.enableRotate = false;
-        } else {
-             // Disable rotation controls when slider is active
-            controls.enableRotate = false;
+            // When auto-rotating, lock controls completely for a cinematic view.
+             controls.enableRotate = false;
         }
 
     } else {
@@ -443,6 +452,24 @@ const CelestialSymphony = ({
     controls.target.set(0, 0, 0);
     controls.update();
   }, [resetViewToggle, viewFromSebaka]);
+
+  // Handle manual rotation from slider
+  useEffect(() => {
+      const camera = cameraRef.current;
+      const controls = controlsRef.current;
+      if (!camera || !controls || !viewFromSebaka || isSebakaRotating) return;
+
+      // Calculate a new target for the camera based on the angle
+      const currentCameraPosition = camera.position.clone();
+      const rotationY = THREE.MathUtils.degToRad(sebakaRotationAngle);
+      
+      const lookAtVector = new THREE.Vector3(0, 0, -100); // Look "forward"
+      lookAtVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
+      lookAtVector.add(currentCameraPosition);
+
+      controls.target.copy(lookAtVector);
+  }, [sebakaRotationAngle, viewFromSebaka, isSebakaRotating]);
+
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };
