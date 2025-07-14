@@ -485,14 +485,23 @@ const CelestialSymphony = ({
   }, [sebakaRotationAngle, viewFromSebaka, isSebakaRotating]);
   
   useEffect(() => {
+    const camera = cameraRef.current;
     const controls = controlsRef.current;
-    if (!controls) return;
+    if (!controls || !camera) return;
     
-    if(isBeaconView) {
+    if (isBeaconView) {
+        // Set target to Beacon
         controls.target.copy(beaconPositionRef.current);
-    } else {
-        controls.target.set(0,0,0);
+        
+        // Move camera to a good viewing position relative to Beacon
+        const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
+        camera.position.copy(beaconCamPos);
+    } else if (!viewFromSebaka) { // Only reset if not in Sebaka view
+        // Revert to original view
+        controls.target.set(0, 0, 0);
+        camera.position.copy(originalCameraPos.current);
     }
+    controls.update();
   }, [isBeaconView]);
 
 
