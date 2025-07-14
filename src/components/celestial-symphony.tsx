@@ -273,7 +273,7 @@ const CelestialSymphony = ({
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (viewFromSebakaRef.current && sebakaMesh) {
           const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
-          const surfaceOffset = sebakaRadius * 1.1; 
+          const surfaceOffset = sebakaRadius * 1.01; 
 
           camera.position.set(
               sebakaMesh.position.x,
