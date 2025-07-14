@@ -272,31 +272,26 @@ const CelestialSymphony = ({
       
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (viewFromSebakaRef.current && sebakaMesh) {
-          const sebakaPosition = sebakaMesh.position;
           const surfaceOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
-          const cameraSurfacePosition = new THREE.Vector3().copy(sebakaPosition).add(new THREE.Vector3(0, surfaceOffset, 0));
-          
+          const cameraSurfacePosition = sebakaMesh.position.clone().add(new THREE.Vector3(0, surfaceOffset, 0));
           camera.position.copy(cameraSurfacePosition);
 
           if (isSebakaRotatingRef.current) {
               controls.enableRotate = false;
               const lookAtRotation = new THREE.Euler(0, sebakaMesh.rotation.y, 0, 'YXZ');
               const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
-              controls.target.copy(sebakaPosition).add(lookAtDirection);
+              controls.target.copy(sebakaMesh.position).add(lookAtDirection);
           } else {
               controls.enableRotate = true;
               const manualRotation = THREE.MathUtils.degToRad(sebakaRotationAngleRef.current);
               const lookAtRotation = new THREE.Euler(0, manualRotation, 0, 'YXZ');
               const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
-              controls.target.copy(sebakaPosition).add(lookAtDirection);
+              controls.target.copy(sebakaMesh.position).add(lookAtDirection);
           }
       } else if (isBeaconViewRef.current) {
-        const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
-        camera.position.lerp(beaconCamPos, 0.1);
-        controls.target.lerp(beaconPositionRef.current, 0.1);
+        controls.target.lerp(beaconPositionRef.current, 0.05);
       } else if (!viewFromSebakaRef.current && !isBeaconViewRef.current) {
-        camera.position.lerp(originalCameraPos.current, 0.1);
-        controls.target.lerp(new THREE.Vector3(0,0,0), 0.1);
+        controls.target.lerp(new THREE.Vector3(0,0,0), 0.05);
       }
 
       controls.update();
@@ -363,9 +358,8 @@ const CelestialSymphony = ({
     const controls = controlsRef.current;
     if (!controls) return;
     
-    orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
-    
     const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+    orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
     if (sebakaMesh) sebakaMesh.visible = !viewFromSebaka;
 
     if (viewFromSebaka) {
@@ -389,11 +383,15 @@ const CelestialSymphony = ({
     if (!camera || !controls) return;
 
     if (!viewFromSebaka && !isBeaconView) {
-        camera.position.copy(originalCameraPos.current);
-        controls.target.set(0, 0, 0);
+        camera.position.lerp(originalCameraPos.current, 0.05);
+        controls.target.lerp(new THREE.Vector3(0, 0, 0), 0.05);
+    } else if (isBeaconView) {
+        const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
+        camera.position.lerp(beaconCamPos, 0.05);
+        controls.target.lerp(beaconPositionRef.current, 0.05);
     }
     controls.update();
-  }, [resetViewToggle]);
+  }, [isBeaconView, resetViewToggle]);
 
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
