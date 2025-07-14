@@ -30,4 +30,5 @@ export interface PlanetData extends CelestialBody {
 
 export interface StarData extends CelestialBody {
   type: 'Star';
+  luminosity?: number;
 }

@@ -44,7 +44,7 @@ const initialStars: StarData[] = [
       name: "Golden Giver", color: "#FFD700", size: 6.96, orbitPeriodDays: 26,
       type: 'Star', classification: 'Yellow Dwarf',
       orbitalRole: 'Central Binary (orbits Twilight)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
-      radius: '~1.0 R☉', mass: '1.0 M☉',
+      radius: '~1.0 R☉', mass: '1.0 M☉', luminosity: 1,
       surface: 'Typical yellow dwarf stellar surface, radiating warm golden light.',
       characteristics: 'Primary illuminator and dominant light source.',
       appearance: 'Bright golden disk, creates vibrant sunrises and is the primary driver of the day-night cycle.',
@@ -54,7 +54,7 @@ const initialStars: StarData[] = [
       name: "Twilight", color: "#FF6400", size: 4.87, orbitPeriodDays: 26,
       type: 'Star', classification: 'Orange Dwarf',
       orbitalRole: 'Central Binary (orbits Golden Giver)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
-      radius: '~0.7 R☉', mass: '0.6 M☉',
+      radius: '~0.7 R☉', mass: '0.6 M☉', luminosity: 0.7,
       surface: 'Typical orange dwarf stellar surface, emitting a warm reddish glow.',
       characteristics: 'Secondary illuminator, less luminous than Golden Giver.',
       appearance: 'Smaller, orange-red disk, prominent at dusk and dawn.',
@@ -64,7 +64,7 @@ const initialStars: StarData[] = [
       name: "Beacon", color: "#B4DCFF", size: 34.8, orbitPeriodDays: 12328 * SEBAKA_YEAR_IN_DAYS, orbitRadius: 1000 * AU_TO_UNITS,
       type: 'Star', classification: 'Blue-White Giant',
       orbitalRole: 'Distant Companion (orbits common barycenter of Golden Giver-Twilight)', orbitalPeriod: '12,328 years', orbitalDistance: '1,000 AU',
-      radius: '~5-10 R☉', mass: '5.0 M☉',
+      radius: '~5-10 R☉', mass: '5.0 M☉', luminosity: 100,
       surface: 'Brilliant blue-white giant, intensely luminous.',
       characteristics: 'Significantly more luminous than the binary pair. Hosts its own planetary subsystem (Gelidis, Liminis).',
       appearance: 'Extraordinarily bright point of light. Visible at night, occasionally during the day.',
@@ -436,5 +436,4 @@ export default function Home() {
       </div>
     </main>
   );
-
-    
+}

@@ -30,6 +30,7 @@ const InfoPanel = ({ data }: InfoPanelProps) => {
         <dl className="space-y-2">
           <DataDisplay label="Radius" value={data.radius} />
           <DataDisplay label="Mass" value={data.mass} />
+          {'luminosity' in data && <DataDisplay label="Luminosity (L☉)" value={data.luminosity} />}
           {'rotation' in data && <DataDisplay label="Rotation / Day Length" value={data.rotation} />}
           {'axialTilt' in data && <DataDisplay label="Axial Tilt" value={data.axialTilt} />}
           {'moons' in data && <DataDisplay label="Moons" value={data.moons} />}

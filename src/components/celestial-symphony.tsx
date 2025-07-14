@@ -92,15 +92,22 @@ const CelestialSymphony = ({
         let x, z;
         
         let orbitCenter = new THREE.Vector3(0,0,0);
-        if (data.name === 'Gelidis' || data.name === 'Liminis') {
-            orbitCenter = beaconPositionRef.current;
-        }
-
+        
+        // First update beacon's position if it's beacon
         if (data.type === 'Star' && data.name === 'Beacon') {
             x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
             z = orbitCenter.z + semiMajorAxis * Math.sin(angle);
             beaconPositionRef.current.set(x, 0, z);
-        } else if ((data as PlanetData).eccentric) {
+            bodyMesh.position.set(x, 0, z);
+            return; // Beacon position is set, continue to next body
+        }
+
+        // Then, check if the body orbits beacon
+        if (data.name === 'Gelidis' || data.name === 'Liminis') {
+            orbitCenter = beaconPositionRef.current;
+        }
+
+        if ((data as PlanetData).eccentric) {
             const eccentricity = data.name === 'Spectris' ? 0.2 : 0.5;
             const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
             x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
@@ -187,8 +194,9 @@ const CelestialSymphony = ({
           metalness: 0.1,
       };
       if (body.type === 'Star') {
-        materialOptions.emissive = body.color;
-        materialOptions.emissiveIntensity = 2;
+        const starData = body as StarData;
+        materialOptions.emissive = starData.color;
+        materialOptions.emissiveIntensity = Math.log10(starData.luminosity || 1) + 1;
       }
       if (body.name === 'Liminis') {
         materialOptions.emissive = body.color;
@@ -205,8 +213,11 @@ const CelestialSymphony = ({
       if (body.type === 'Planet') {
          planetMeshesRef.current.push(mesh);
       } else {
+        const starData = body as StarData;
         starMeshesRef.current.push(mesh);
-        const pointLightStar = new THREE.PointLight(body.color, 5, 0, 1);
+        // Use luminosity to scale light intensity. Add a base value for visibility.
+        const lightIntensity = (starData.luminosity || 1) * 2;
+        const pointLightStar = new THREE.PointLight(starData.color, lightIntensity, 0, 1);
         mesh.add(pointLightStar);
       }
       
@@ -513,5 +524,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    
