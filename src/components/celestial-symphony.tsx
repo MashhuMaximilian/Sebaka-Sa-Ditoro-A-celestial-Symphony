@@ -279,6 +279,10 @@ const CelestialSymphony = ({
     // Animation loop
     const animate = () => {
       animationFrameId.current = requestAnimationFrame(animate);
+      const camera = cameraRef.current;
+      const controls = controlsRef.current;
+      if (!camera || !controls) return;
+      
       // A day is 1 second at speed 1.
       const daysPassedThisFrame = clockRef.current.getDelta() * speedMultiplierRef.current;
       elapsedDaysRef.current += daysPassedThisFrame;
@@ -331,7 +335,7 @@ const CelestialSymphony = ({
       }
       
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-      if (viewFromSebaka && sebakaMesh && camera && controls) {
+      if (viewFromSebaka && sebakaMesh) {
           const sebakaPosition = sebakaMesh.position.clone();
           const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
           
@@ -386,7 +390,7 @@ const CelestialSymphony = ({
         mouse.x = ((x - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((y - rect.top) / rect.height) * 2 + 1;
 
-        raycaster.setFromCamera(mouse, camera);
+        raycaster.setFromCamera(camera, camera);
 
         const intersects = raycaster.intersectObjects(clickableObjects, true);
 
@@ -407,8 +411,10 @@ const CelestialSymphony = ({
     currentMount.addEventListener('touchstart', onClick, { passive: true });
 
     const handleResize = () => {
-      camera.aspect = currentMount.clientWidth / currentMount.clientHeight;
-      camera.updateProjectionMatrix();
+      if(cameraRef.current) {
+        cameraRef.current.aspect = currentMount.clientWidth / currentMount.clientHeight;
+        cameraRef.current.updateProjectionMatrix();
+      }
       renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
     };
     window.addEventListener("resize", handleResize);
@@ -485,15 +491,8 @@ const CelestialSymphony = ({
     camera.position.copy(originalCameraPos.current);
     controls.target.set(0, 0, 0);
     controls.update();
-  }, [resetViewToggle, viewFromSebaka]);
+  }, [resetViewToggle]);
 
-  // Handle manual rotation from slider
-  useEffect(() => {
-      const controls = controlsRef.current;
-      if (!controls || !viewFromSebaka || isSebakaRotating) return;
-      // We don't need this hook anymore as the camera's quaternion is set in the animate loop
-  }, [sebakaRotationAngle, viewFromSebaka, isSebakaRotating]);
-  
   useEffect(() => {
     const camera = cameraRef.current;
     const controls = controlsRef.current;
@@ -512,7 +511,7 @@ const CelestialSymphony = ({
         camera.position.copy(originalCameraPos.current);
     }
     controls.update();
-  }, [isBeaconView]);
+  }, [isBeaconView, resetViewToggle]);
 
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
