@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Eye, PersonStanding, Orbit, RotateCw } from "lucide-react";
+import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus } from "lucide-react";
 
 import type { PlanetData, StarData } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
@@ -41,7 +41,7 @@ const SEBAKA_YEAR_IN_DAYS = 324;
 
 const initialStars: StarData[] = [
     { 
-        name: "Golden Giver", color: "#FFD700", size: 6.96, position: [-0.1 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 26,
+        name: "Golden Giver", color: "#FFD700", size: 6.96, orbitPeriodDays: 26,
         type: 'Star', classification: 'Yellow Dwarf',
         orbitalRole: 'Central Binary (orbits Twilight)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
         radius: '1 R☉ (696,000 km)', mass: '1 M☉',
@@ -51,7 +51,7 @@ const initialStars: StarData[] = [
         lore: 'Symbolizes action and passion in Hypodia’s Sky-Writing, revered as a life-giving force. Influences magical energies in the Aerolith Zones.'
     },
     { 
-        name: "Twilight", color: "#FF6400", size: 4.87, position: [0.1 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 26,
+        name: "Twilight", color: "#FF6400", size: 4.87, orbitPeriodDays: 26,
         type: 'Star', classification: 'Orange Dwarf',
         orbitalRole: 'Central Binary (orbits Golden Giver)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
         radius: '0.7 R☉ (487,200 km)', mass: '0.6 M☉',
@@ -61,7 +61,7 @@ const initialStars: StarData[] = [
         lore: 'Represents quiet strength and endurance in Hypodia’s Sky-Writing, a counterpoint to Golden Giver’s vibrancy. May amplify calming magical effects in the Aerolith Zones.'
     },
     { 
-        name: "Beacon", color: "#B4DCFF", size: 27.84, position: [1000 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 12328 * SEBAKA_YEAR_IN_DAYS,
+        name: "Beacon", color: "#B4DCFF", size: 27.84, orbitPeriodDays: 12328 * SEBAKA_YEAR_IN_DAYS, orbitRadius: 1000 * AU_TO_UNITS,
         type: 'Star', classification: 'Blue-White Giant',
         orbitalRole: 'Distant Companion (orbits common barycenter of Golden Giver-Twilight)', orbitalPeriod: '12,328 years', orbitalDistance: '1,000 AU',
         radius: '4 R☉ (2,784,000 km)', mass: '5 M☉',
@@ -129,7 +129,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Marks long-term cycles. Magnetosphere enhances protective magic. Hypodia’s Sky-Writing portrays it as a majestic, calming presence.'
     },
     {
-        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 2236, orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
+        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 2236,
         type: 'Planet', classification: 'Ice Giant',
         orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '2,236 days (~6.12 years)', orbitalDistance: '5.7 AU from Beacon',
         rotation: '16 hours', axialTilt: '28°', moons: '2-3 (small)',
@@ -140,7 +140,7 @@ const initialPlanets: PlanetData[] = [
         lore: 'Known only through advanced astronomical calculations, a mysterious, remote world. May influence distant magical currents.'
     },
     {
-        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 18.9 * AU_TO_UNITS, orbitPeriodDays: 13416, orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
+        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 18.9 * AU_TO_UNITS, orbitPeriodDays: 13416,
         type: 'Planet', classification: 'Ice Dwarf',
         orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '13,416 days (~36.73 years)', orbitalDistance: '18.9 AU from Beacon',
         rotation: '48 hours', axialTilt: '5°', moons: 'None',
@@ -162,6 +162,7 @@ export default function Home() {
   const [resetViewToggle, setResetViewToggle] = useState(false);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [sebakaRotationAngle, setSebakaRotationAngle] = useState(0);
+  const [isBeaconView, setIsBeaconView] = useState(false);
 
   const [currentYear, setCurrentYear] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
@@ -214,6 +215,9 @@ export default function Home() {
     if (isSebakaRotating) {
         setIsSebakaRotating(false);
     }
+    if (isBeaconView) {
+        setIsBeaconView(false);
+    }
     setResetViewToggle(prev => !prev);
   }
 
@@ -260,6 +264,7 @@ export default function Home() {
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
+        isBeaconView={isBeaconView}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -282,6 +287,17 @@ export default function Home() {
                 )}
             </Dialog>
             <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                         <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsBeaconView(prev => !prev)}>
+                            <Focus className="h-5 w-5" />
+                            <span className="sr-only">Toggle Beacon View</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{isBeaconView ? 'Focus on Binary Stars' : 'Focus on Beacon'}</p>
+                    </TooltipContent>
+                </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
                          <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
