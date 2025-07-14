@@ -288,10 +288,6 @@ const CelestialSymphony = ({
               const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
               controls.target.copy(sebakaMesh.position).add(lookAtDirection);
           }
-      } else if (isBeaconViewRef.current) {
-        controls.target.lerp(beaconPositionRef.current, 0.05);
-      } else if (!viewFromSebakaRef.current && !isBeaconViewRef.current) {
-        controls.target.lerp(new THREE.Vector3(0,0,0), 0.05);
       }
 
       controls.update();
@@ -382,16 +378,18 @@ const CelestialSymphony = ({
     const controls = controlsRef.current;
     if (!camera || !controls) return;
 
-    if (!viewFromSebaka && !isBeaconView) {
-        camera.position.lerp(originalCameraPos.current, 0.05);
-        controls.target.lerp(new THREE.Vector3(0, 0, 0), 0.05);
-    } else if (isBeaconView) {
+    if (!viewFromSebaka) {
+      if (isBeaconView) {
         const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
-        camera.position.lerp(beaconCamPos, 0.05);
-        controls.target.lerp(beaconPositionRef.current, 0.05);
+        camera.position.copy(beaconCamPos);
+        controls.target.copy(beaconPositionRef.current);
+      } else {
+        camera.position.copy(originalCameraPos.current);
+        controls.target.set(0, 0, 0);
+      }
     }
     controls.update();
-  }, [isBeaconView, resetViewToggle]);
+  }, [isBeaconView, resetViewToggle, viewFromSebaka]);
 
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
