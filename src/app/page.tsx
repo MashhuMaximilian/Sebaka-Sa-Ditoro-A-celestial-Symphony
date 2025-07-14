@@ -163,6 +163,7 @@ export default function Home() {
   const [resetViewToggle, setResetViewToggle] = useState(false);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [sebakaRotationAngle, setSebakaRotationAngle] = useState(0);
+  const [latitude, setLatitude] = useState(0);
   const [isBeaconView, setIsBeaconView] = useState(false);
 
   const [currentYear, setCurrentYear] = useState(0);
@@ -194,6 +195,10 @@ export default function Home() {
 
   const handleRotationChange = (value: number[]) => {
     setSebakaRotationAngle(value[0]);
+  };
+
+  const handleLatitudeChange = (value: number[]) => {
+    setLatitude(value[0]);
   };
 
   const resetSpeed = () => {
@@ -230,6 +235,7 @@ export default function Home() {
           }
           if(newView) {
             setSebakaRotationAngle(0);
+            setLatitude(0);
           }
           return newView;
       })
@@ -370,6 +376,22 @@ export default function Home() {
       </div>
       
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-lg p-4 space-y-2">
+          {viewFromSebaka && (
+             <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                 <Label htmlFor="latitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  Latitude: {latitude.toFixed(0)}°
+                </Label>
+                <Slider
+                    id="latitude-slider"
+                    min={-90}
+                    max={90}
+                    step={1}
+                    value={[latitude]}
+                    onValueChange={handleLatitudeChange}
+                    className="w-full"
+                />
+            </div>
+          )}
           {viewFromSebaka && !isSebakaRotating && (
              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                  <Label htmlFor="rotation-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
