@@ -41,7 +41,7 @@ const SEBAKA_YEAR_IN_DAYS = 324;
 
 const initialStars: StarData[] = [
     { 
-        name: "Alpha", color: "#FFD700", size: 6.96, position: [-0.1 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 26,
+        name: "Golden Giver", color: "#FFD700", size: 6.96, position: [-0.1 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 26,
         type: 'Star', classification: 'Yellow Dwarf',
         orbitalRole: 'Central Binary (orbits Twilight)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
         radius: '1 R☉ (696,000 km)', mass: '1 M☉',
@@ -53,20 +53,20 @@ const initialStars: StarData[] = [
     { 
         name: "Twilight", color: "#FF6400", size: 4.87, position: [0.1 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 26,
         type: 'Star', classification: 'Orange Dwarf',
-        orbitalRole: 'Central Binary (orbits Alpha)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
+        orbitalRole: 'Central Binary (orbits Golden Giver)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
         radius: '0.7 R☉ (487,200 km)', mass: '0.6 M☉',
         surface: 'Typical orange dwarf stellar surface, emitting a warm reddish glow.',
-        characteristics: 'Less luminous than Alpha, creates a subtler light.',
-        appearance: 'Appears as a secondary sun, smaller and redder than Alpha. Creates deep orange/red sunsets, lingers after Alpha sets.',
-        lore: 'Represents quiet strength and endurance in Hypodia’s Sky-Writing, a counterpoint to Alpha’s vibrancy. May amplify calming magical effects in the Aerolith Zones.'
+        characteristics: 'Less luminous than Golden Giver, creates a subtler light.',
+        appearance: 'Appears as a secondary sun, smaller and redder than Golden Giver. Creates deep orange/red sunsets, lingers after Golden Giver sets.',
+        lore: 'Represents quiet strength and endurance in Hypodia’s Sky-Writing, a counterpoint to Golden Giver’s vibrancy. May amplify calming magical effects in the Aerolith Zones.'
     },
     { 
         name: "Beacon", color: "#B4DCFF", size: 27.84, position: [1000 * AU_TO_UNITS, 0, 0], orbitPeriodDays: 12328 * SEBAKA_YEAR_IN_DAYS,
         type: 'Star', classification: 'Blue-White Giant',
-        orbitalRole: 'Distant Companion (orbits common barycenter of Alpha-Twilight)', orbitalPeriod: '12,328 years', orbitalDistance: '1,000 AU',
+        orbitalRole: 'Distant Companion (orbits common barycenter of Golden Giver-Twilight)', orbitalPeriod: '12,328 years', orbitalDistance: '1,000 AU',
         radius: '4 R☉ (2,784,000 km)', mass: '5 M☉',
         surface: 'Brilliant blue-white giant, intensely luminous.',
-        characteristics: 'Significantly more luminous than Alpha and Twilight combined, hosts its own planetary subsystem (Gelidis, Liminis).',
+        characteristics: 'Significantly more luminous than Golden Giver and Twilight combined, hosts its own planetary subsystem (Gelidis, Liminis).',
         appearance: 'Extraordinarily bright, unblinking point of light. Visible at night, occasionally during day. Its slow annual shift provides a fundamental marker for long-term cycles.',
         lore: 'Symbolizes constancy and endurance in Hypodia’s Sky-Writing, a guiding star for navigation and rituals. Marks long-term seasons or “Great Years”.'
     },
@@ -76,7 +76,7 @@ const initialPlanets: PlanetData[] = [
     { 
         name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitPeriodDays: 169,
         type: 'Planet', classification: 'Terrestrial',
-        orbitalRole: 'Innermost planet orbiting Alpha-Twilight binary', orbitalPeriod: '169 days', orbitalDistance: '0.7 AU',
+        orbitalRole: 'Innermost planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '169 days', orbitalDistance: '0.7 AU',
         rotation: '40 days', axialTilt: '10°', moons: 'None',
         radius: '0.5 R⊕ (3,189 km)', mass: '0.125 M⊕',
         surface: 'Scorched, sulfur-yellow crust with bleeding magma lines, thin atmosphere with volcanic outgassing.',
@@ -87,18 +87,18 @@ const initialPlanets: PlanetData[] = [
     { 
         name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitPeriodDays: 324,
         type: 'Planet', classification: 'Terrestrial',
-        orbitalRole: 'Second planet orbiting Alpha-Twilight binary', orbitalPeriod: '324 days', orbitalDistance: '1.08 AU',
+        orbitalRole: 'Second planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '324 days', orbitalDistance: '1.08 AU',
         rotation: '24 hours', axialTilt: '23.5°', moons: 'None',
         radius: '1 R⊕ (6,371 km)', mass: '1 M⊕',
         surface: 'Earth-like, with oceans, continents, and a breathable atmosphere.',
         characteristics: 'Habitable zone, supports life, experiences Aerolith Zone phenomena. A year is 324 days, consisting of 12 months, with each month having 3 weeks of 9 days each.',
-        appearance: 'N/A (observer’s planet). Hosts vibrant sunrises/sunsets from Alpha and Twilight, auroras from Aerolith Zones.',
+        appearance: 'N/A (observer’s planet). Hosts vibrant sunrises/sunsets from Golden Giver and Twilight, auroras from Aerolith Zones.',
         lore: 'Central to Hypodia’s Sky-Writing. Defines year (324 days). Aerolith Zones amplify magical energies.'
     },
     { 
         name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitPeriodDays: 818, eccentric: true,
         type: 'Planet', classification: 'Terrestrial',
-        orbitalRole: 'Third planet orbiting Alpha-Twilight binary', orbitalPeriod: '818 days', orbitalDistance: '2.0 AU',
+        orbitalRole: 'Third planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '818 days', orbitalDistance: '2.0 AU',
         rotation: '30 hours', axialTilt: '15°', moons: '1 (28-day orbital period)',
         radius: '0.8 R⊕ (5,097 km)', mass: '0.512 M⊕',
         surface: 'Hazy, greyish-white atmosphere, iridescent icy rings.',
@@ -109,7 +109,7 @@ const initialPlanets: PlanetData[] = [
     { 
         name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitPeriodDays: 1500,
         type: 'Planet', classification: 'Terrestrial',
-        orbitalRole: 'Fourth planet orbiting Alpha-Twilight binary', orbitalPeriod: '1,500 days', orbitalDistance: '3.0 AU',
+        orbitalRole: 'Fourth planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '1,500 days', orbitalDistance: '3.0 AU',
         rotation: '20 hours', axialTilt: '20°', moons: 'None',
         radius: '1.3 R⊕ (8,282 km)', mass: '2.0 M⊕',
         surface: 'Sulfur-yellow crust, bleeding magma lines, thick atmosphere with volcanic plumes.',
@@ -120,7 +120,7 @@ const initialPlanets: PlanetData[] = [
     { 
         name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true,
         type: 'Planet', classification: 'Gas Giant',
-        orbitalRole: 'Fifth planet orbiting Alpha-Twilight binary', orbitalPeriod: '4,241 days (~11.62 years)', orbitalDistance: '6.0 AU',
+        orbitalRole: 'Fifth planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '4,241 days (~11.62 years)', orbitalDistance: '6.0 AU',
         rotation: '10 hours', axialTilt: '25°', moons: 'Multiple (5–10 visible)',
         radius: '15 R⊕ (95,565 km)', mass: '400 M⊕',
         surface: 'Banded atmosphere with blue, purple, green hues, internal heat glow.',

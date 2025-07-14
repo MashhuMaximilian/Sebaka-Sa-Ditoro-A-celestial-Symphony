@@ -82,6 +82,11 @@ const CelestialSymphony = ({
      allBodiesRef.current.forEach(bodyMesh => {
         const data = bodyData.find(d => d.name === bodyMesh.name);
         if (!data) return;
+        
+        // Skip Beacon's orbital calculation as its position is fixed and distant
+        if (data.name === 'Beacon') {
+            return;
+        }
 
         const angle = currentDays * data.radsPerDay;
         
@@ -95,10 +100,10 @@ const CelestialSymphony = ({
             const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
             x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
             z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
-        } else if (data.type === 'Star' && (data.name === 'Alpha' || data.name === 'Twilight')) {
+        } else if (data.type === 'Star' && (data.name === 'Golden Giver' || data.name === 'Twilight')) {
             const r1 = 0.1 * 150; // 0.1 AU
-            x = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.cos(angle);
-            z = (data.name === 'Alpha' ? 1 : -1) * r1 * Math.sin(angle);
+            x = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.cos(angle);
+            z = (data.name === 'Golden Giver' ? 1 : -1) * r1 * Math.sin(angle);
         } else {
             const semiMinorAxis = semiMajorAxis; // For circular orbit, semi-minor is same as semi-major
             x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
@@ -191,11 +196,11 @@ const CelestialSymphony = ({
       
       if (body.type === 'Planet') {
          planetMeshesRef.current.push(mesh);
-      } else if (body.name === "Alpha" || body.name === "Twilight") {
+      } else if (body.name === "Golden Giver" || body.name === "Twilight") {
         binaryStarMeshesRef.current.push(mesh);
       } else { // Beacon
         const pointLightBeacon = new THREE.PointLight(body.color, 5, 0, 1);
-        pointLightBeacon.position.set(...body.position);
+        pointLightBeacon.position.set(...(body.position as [number, number, number]));
         scene.add(pointLightBeacon);
       }
       
@@ -461,23 +466,10 @@ const CelestialSymphony = ({
 
       const rotationY = THREE.MathUtils.degToRad(sebakaRotationAngle);
       
-      const euler = new THREE.Euler(0, rotationY, 0, 'YXZ');
-      const quaternion = new THREE.Quaternion().setFromEuler(euler);
-      
-      const cameraDirection = new THREE.Vector3(0, 0, -1);
-      cameraDirection.applyQuaternion(controls.object.quaternion);
+      const up = new THREE.Vector3(0,1,0); 
 
       // We only want to control the horizontal (yaw) rotation with the slider.
       // We keep the vertical (pitch) rotation from the mouse controls.
-      // This is a simplified approach; a more robust one might involve more complex quaternion math.
-      const currentTarget = controls.target.clone();
-      const cameraPosition = controls.object.position.clone();
-      const up = new THREE.Vector3(0,1,0); // Assuming Y is up
-
-      const newCamPos = sebakaMesh.position.clone().add(new THREE.Vector3(0, (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5, 0));
-      const newTarget = new THREE.Vector3().setFromCylindricalCoords(100, rotationY, 0).add(newCamPos);
-
-      // This part is tricky. Let's try a different approach.
       // Let's just update the target based on the angle.
       const targetOffset = new THREE.Vector3(0, 0, -100).applyAxisAngle(up, rotationY);
       controls.target.copy(sebakaMesh.position.clone().add(targetOffset));
