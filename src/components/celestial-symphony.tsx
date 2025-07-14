@@ -275,10 +275,11 @@ const CelestialSymphony = ({
           const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
           const surfaceOffset = sebakaRadius + 15;
           
-          // Use a point above the surface in local coordinates and transform it
-          const cameraPosition = new THREE.Vector3(0, surfaceOffset, 0);
-          cameraPosition.applyMatrix4(sebakaMesh.matrixWorld);
-          camera.position.copy(cameraPosition);
+          camera.position.set(
+            sebakaMesh.position.x,
+            sebakaMesh.position.y + surfaceOffset,
+            sebakaMesh.position.z
+          );
 
           const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
           
@@ -409,5 +410,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    
