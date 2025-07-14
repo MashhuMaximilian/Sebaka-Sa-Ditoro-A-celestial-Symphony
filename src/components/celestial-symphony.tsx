@@ -88,7 +88,7 @@ const CelestialSymphony = ({
         const semiMajorAxis = (data as PlanetData).orbitRadius || 0.1 * 150; // Star radius
         let x, z;
         
-        const orbitCenter = (data as PlanetData).orbitCenter ? new THREE.Vector3(...(data as PlanetData).orbitCenter!) : new THREE.Vector3(0,0,0);
+        const orbitCenter = (data as PlanetData).orbitCenter ? new THREE.Vector3(...(data as PlanetData).orbitCenter) : new THREE.Vector3(0,0,0);
 
         if ((data as PlanetData).eccentric) {
             const eccentricity = data.name === 'Spectris' ? 0.2 : 0.5;
@@ -209,12 +209,12 @@ const CelestialSymphony = ({
           }
         `;
         const fragmentShader = `
+          varying vec3 vUv;
           vec3 hsv2rgb(vec3 c) {
             vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
             vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
             return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
           }
-          varying vec3 vUv;
           void main() {
             float angle = atan(vUv.y, vUv.x);
             float hue = (angle + 3.14159) / (2.0 * 3.14159);
@@ -323,15 +323,9 @@ const CelestialSymphony = ({
             // Apply manual rotation first to get the correct 'up' vector
             const manualRotation = new THREE.Euler(0, THREE.MathUtils.degToRad(sebakaRotationAngle), 0, 'YXZ');
             cameraOffset.applyEuler(manualRotation);
-
-            // Then apply the planet's rotation to the offset
-            // This part is removed as it caused conflicts. The camera is now stationary relative to Sebaka's center unless rotating.
             
             // Set camera position
             camera.position.copy(sebakaPosition).add(cameraOffset);
-
-            // Let OrbitControls handle the target based on mouse movement.
-            // When slider moves, we'll update the target in a separate useEffect.
           }
       }
 
@@ -417,14 +411,13 @@ const CelestialSymphony = ({
   useEffect(() => {
     const camera = cameraRef.current;
     const controls = controlsRef.current;
-    const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-
     if (!camera || !controls) return;
     
     orbitMeshesRef.current.forEach(orbit => {
         orbit.visible = !viewFromSebaka;
     });
     
+    const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
     if (sebakaMesh) {
       sebakaMesh.visible = !viewFromSebaka;
     }
@@ -462,19 +455,33 @@ const CelestialSymphony = ({
 
   // Handle manual rotation from slider
   useEffect(() => {
-      const camera = cameraRef.current;
       const controls = controlsRef.current;
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-      if (!camera || !controls || !viewFromSebaka || isSebakaRotating || !sebakaMesh) return;
+      if (!controls || !viewFromSebaka || isSebakaRotating || !sebakaMesh) return;
 
-      const sebakaPosition = sebakaMesh.position;
       const rotationY = THREE.MathUtils.degToRad(sebakaRotationAngle);
       
-      const lookAtVector = new THREE.Vector3(0, 0, -1);
-      lookAtVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotationY);
-      lookAtVector.add(camera.position);
+      const euler = new THREE.Euler(0, rotationY, 0, 'YXZ');
+      const quaternion = new THREE.Quaternion().setFromEuler(euler);
+      
+      const cameraDirection = new THREE.Vector3(0, 0, -1);
+      cameraDirection.applyQuaternion(controls.object.quaternion);
 
-      controls.target.copy(lookAtVector);
+      // We only want to control the horizontal (yaw) rotation with the slider.
+      // We keep the vertical (pitch) rotation from the mouse controls.
+      // This is a simplified approach; a more robust one might involve more complex quaternion math.
+      const currentTarget = controls.target.clone();
+      const cameraPosition = controls.object.position.clone();
+      const up = new THREE.Vector3(0,1,0); // Assuming Y is up
+
+      const newCamPos = sebakaMesh.position.clone().add(new THREE.Vector3(0, (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5, 0));
+      const newTarget = new THREE.Vector3().setFromCylindricalCoords(100, rotationY, 0).add(newCamPos);
+
+      // This part is tricky. Let's try a different approach.
+      // Let's just update the target based on the angle.
+      const targetOffset = new THREE.Vector3(0, 0, -100).applyAxisAngle(up, rotationY);
+      controls.target.copy(sebakaMesh.position.clone().add(targetOffset));
+      controls.update();
   }, [sebakaRotationAngle, viewFromSebaka, isSebakaRotating]);
 
 
@@ -482,5 +489,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    

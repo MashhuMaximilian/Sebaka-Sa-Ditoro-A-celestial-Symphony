@@ -128,21 +128,21 @@ const initialPlanets: PlanetData[] = [
         appearance: 'Varies in size from large disk to smaller point. Dominant at night. Moons orbit like “silent thoughts.”',
         lore: 'Marks long-term cycles. Magnetosphere enhances protective magic. Hypodia’s Sky-Writing portrays it as a majestic, calming presence.'
     },
-    { 
-        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 10 * AU_TO_UNITS, orbitPeriodDays: 2236, orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
+    {
+        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 2236, orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
         type: 'Planet', classification: 'Ice Giant',
-        orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '2,236 days (~6.12 years)', orbitalDistance: '10 AU from Beacon',
+        orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '2,236 days (~6.12 years)', orbitalDistance: '5.7 AU from Beacon',
         rotation: '16 hours', axialTilt: '28°', moons: '2-3 (small)',
         radius: '4 R⊕ (25,484 km)', mass: '15 M⊕',
         surface: 'Vast atmosphere with swirling storm systems, faint icy cloud bands, frigid temperatures.',
         characteristics: 'Remote, dimly lit by Beacon’s light.',
         appearance: 'Not visible to the naked eye, requires powerful telescopes.',
-        lore: 'Known only through advanced astronomical calculations, a mysterious, remote world.'
+        lore: 'Known only through advanced astronomical calculations, a mysterious, remote world. May influence distant magical currents.'
     },
-    { 
-        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 30 * AU_TO_UNITS, orbitPeriodDays: 13416, orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
+    {
+        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 18.9 * AU_TO_UNITS, orbitPeriodDays: 13416, orbitCenter: [1000 * AU_TO_UNITS, 0, 0],
         type: 'Planet', classification: 'Ice Dwarf',
-        orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '13,416 days (~36.73 years)', orbitalDistance: '30 AU from Beacon',
+        orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '13,416 days (~36.73 years)', orbitalDistance: '18.9 AU from Beacon',
         rotation: '48 hours', axialTilt: '5°', moons: 'None',
         radius: '0.2 R⊕ (1,274 km)', mass: '0.05 M⊕',
         surface: 'Frozen expanse of rock and ice, thin atmosphere, perpetually shrouded in twilight.',
@@ -421,5 +421,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
