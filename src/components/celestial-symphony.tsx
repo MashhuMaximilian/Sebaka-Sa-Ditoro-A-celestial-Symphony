@@ -273,40 +273,21 @@ const CelestialSymphony = ({
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (viewFromSebakaRef.current && sebakaMesh) {
           const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
-          const surfaceOffset = sebakaRadius + 5;
+          const surfaceOffset = sebakaRadius + 15;
           
-          // Position camera on the surface
           const cameraPosition = new THREE.Vector3(0, surfaceOffset, 0);
           cameraPosition.applyMatrix4(sebakaMesh.matrixWorld);
           camera.position.copy(cameraPosition);
 
-          // By default, look at the sun (Golden Giver)
           const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
           
-          if (isSebakaRotatingRef.current) {
-              // Rotate with planet
-              const lookAtRotation = new THREE.Euler(0, sebakaMesh.rotation.y, 0, 'YXZ');
-              const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
-              controls.target.copy(sebakaMesh.position).add(lookAtDirection);
-          } else if (goldenGiver) {
-              // Manual rotation (slider) or initial view towards the sun
-              const manualRotation = THREE.MathUtils.degToRad(sebakaRotationAngleRef.current);
-              
-              // Base direction from planet center to camera
-              const upVector = new THREE.Vector3(0, 1, 0);
+          if (goldenGiver) {
+              const lookAtRotation = new THREE.Euler(0, THREE.MathUtils.degToRad(sebakaRotationAngleRef.current), 0, 'YXZ');
               const directionToSun = new THREE.Vector3().subVectors(goldenGiver.position, sebakaMesh.position).normalize();
-              
-              // Project directionToSun onto the planet's equatorial plane
-              const projectedDirection = directionToSun.clone().projectOnPlane(upVector).normalize();
-              
-              // Create a quaternion for manual rotation around the 'up' axis
-              const manualRotQuat = new THREE.Quaternion().setFromAxisAngle(upVector, manualRotation);
-              
-              // Apply the manual rotation to the projected direction
-              const finalDirection = projectedDirection.clone().applyQuaternion(manualRotQuat);
-              
-              // Set the control target
-              controls.target.copy(sebakaMesh.position).add(finalDirection);
+              const lookAtDirection = directionToSun.applyEuler(lookAtRotation);
+              controls.target.copy(sebakaMesh.position).add(lookAtDirection);
+          } else {
+              controls.target.copy(sebakaMesh.position);
           }
       }
 
@@ -417,5 +398,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    
