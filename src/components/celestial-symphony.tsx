@@ -55,7 +55,6 @@ const CelestialSymphony = ({
     const all = [...stars, ...planets];
     return all.map(body => ({
       ...body,
-      // 1 day = 1 second at speed 1. So speed is how many radians per second.
       // Radian speed per day: (2 * PI) / period in days
       radsPerDay: (2 * Math.PI) / (body.orbitPeriodDays || Infinity)
     }));
@@ -97,8 +96,9 @@ const CelestialSymphony = ({
             x = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.cos(angle);
             z = (data.name === 'Alpha' ? 1 : -1) * r1 * Math.sin(angle);
         } else {
+            const semiMinorAxis = semiMajorAxis; // For circular orbit, semi-minor is same as semi-major
             x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
-            z = orbitCenter.z + semiMajorAxis * Math.sin(angle);
+            z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
         }
 
         const y = orbitCenter.y;
@@ -264,7 +264,7 @@ const CelestialSymphony = ({
               const cycleDuration = 4.0; // 2 seconds to dim, 2 seconds to brighten
               const phase = (realElapsedTime % cycleDuration) / cycleDuration;
               
-              const brightnessFactor = (Math.cos(phase * 2 * Math.PI - Math.PI) + 1) / 2; // Range 0.0 to 1.0, starts at 1
+              const brightnessFactor = (Math.cos(phase * 2 * Math.PI) + 1) / 2; // Range 0.0 to 1.0, starts at 1, goes to 0, back to 1
 
               const minIntensity = 0.1;
               const maxIntensity = 0.8;
@@ -283,7 +283,7 @@ const CelestialSymphony = ({
                // Reset to default when animation is off
                viridisMesh.material.color.lerp(viridisOriginalColor.current, 0.1);
                viridisMesh.material.emissive.lerp(viridisOriginalColor.current, 0.1);
-               viridisMesh.material.emissiveIntensity = THREE.MathUtils.lerp(viridisMesh.material.emissiveIntensity, 0.8, 0.1);
+               viridisMesh.material.emissiveIntensity = THREE.MathUtils.lerp(viridisMesh.material.emissiveIntensity, 0, 0.1);
           }
       }
       
@@ -448,3 +448,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    

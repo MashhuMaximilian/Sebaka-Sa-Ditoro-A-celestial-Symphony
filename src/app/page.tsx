@@ -166,6 +166,7 @@ export default function Home() {
   const [currentYear, setCurrentYear] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
   const [targetYear, setTargetYear] = useState(0);
+  const [targetDay, setTargetDay] = useState(1);
   const [elapsedDays, setElapsedDays] = useState(0);
   const [goToTime, setGoToTime] = useState<number | null>(null);
 
@@ -229,18 +230,20 @@ export default function Home() {
       })
   }
 
-  const handleGoToYear = () => {
-    const newElapsedDays = targetYear * SEBAKA_YEAR_IN_DAYS;
+  const handleGoToTime = () => {
+    const year = Math.max(0, targetYear);
+    const day = Math.max(1, Math.min(324, targetDay));
+    const newElapsedDays = year * SEBAKA_YEAR_IN_DAYS + day;
     setElapsedDays(newElapsedDays);
     setGoToTime(newElapsedDays);
-    setCurrentYear(targetYear);
-    setCurrentDay(0);
+    setCurrentYear(year);
+    setCurrentDay(day);
   }
 
   const handleTimeUpdate = (days: number) => {
     setElapsedDays(days);
     setCurrentYear(Math.floor(days / SEBAKA_YEAR_IN_DAYS));
-    setCurrentDay(Math.floor(days % SEBAKA_YEAR_IN_DAYS));
+    setCurrentDay(Math.floor(days % SEBAKA_YEAR_IN_DAYS) + 1);
   }
 
   return (
@@ -347,7 +350,7 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-sm md:max-w-md p-4 space-y-2">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-lg p-4 space-y-2">
           {viewFromSebaka && !isSebakaRotating && (
              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                  <Label htmlFor="rotation-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
@@ -365,17 +368,28 @@ export default function Home() {
             </div>
           )}
           <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-              <Label htmlFor="year-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                  Go to Year
+              <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  Go to Time
               </Label>
               <Input
                   id="year-input"
                   type="number"
+                  placeholder="Year"
                   value={targetYear}
                   onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
                   className="w-full"
               />
-              <Button onClick={handleGoToYear}>Go</Button>
+              <Input
+                  id="day-input"
+                  type="number"
+                  placeholder="Day"
+                  value={targetDay}
+                  onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
+                  className="w-full"
+                  min={1}
+                  max={324}
+              />
+              <Button onClick={handleGoToTime}>Go</Button>
           </div>
           <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
               <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
@@ -407,3 +421,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
