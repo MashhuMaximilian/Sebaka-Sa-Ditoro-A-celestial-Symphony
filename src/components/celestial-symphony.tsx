@@ -275,18 +275,22 @@ const CelestialSymphony = ({
           const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
           const surfaceOffset = sebakaRadius + 15;
           
+          // Use a point above the surface in local coordinates and transform it
           const cameraPosition = new THREE.Vector3(0, surfaceOffset, 0);
           cameraPosition.applyMatrix4(sebakaMesh.matrixWorld);
           camera.position.copy(cameraPosition);
 
           const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
           
-          if (goldenGiver) {
+          if (!isSebakaRotatingRef.current && goldenGiver) {
               const lookAtRotation = new THREE.Euler(0, THREE.MathUtils.degToRad(sebakaRotationAngleRef.current), 0, 'YXZ');
               const directionToSun = new THREE.Vector3().subVectors(goldenGiver.position, sebakaMesh.position).normalize();
               const lookAtDirection = directionToSun.applyEuler(lookAtRotation);
               controls.target.copy(sebakaMesh.position).add(lookAtDirection);
+          } else if (goldenGiver) {
+              controls.target.copy(goldenGiver.position);
           } else {
+              // Fallback if Golden Giver is not found
               controls.target.copy(sebakaMesh.position);
           }
       }
@@ -365,6 +369,13 @@ const CelestialSymphony = ({
         controls.minDistance = 1;
         controls.maxDistance = 1000;
         controls.enableRotate = true;
+        
+        // Point camera at Golden Giver by default
+        const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
+        if (goldenGiver) {
+            controls.target.copy(goldenGiver.position);
+        }
+
     } else {
         controls.minDistance = 1;
         controls.maxDistance = 200000;
@@ -398,3 +409,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    
