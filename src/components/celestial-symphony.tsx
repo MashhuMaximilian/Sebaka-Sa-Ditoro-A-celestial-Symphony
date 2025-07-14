@@ -283,8 +283,8 @@ const CelestialSymphony = ({
       }
       
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-      const goldenGiverMesh = starMeshesRef.current.find(p => p.name === 'Golden Giver');
       if (viewFromSebakaRef.current && sebakaMesh) {
+          sebakaMesh.visible = true;
           const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
           const surfaceOffset = sebakaRadius * 1.01; 
 
@@ -306,19 +306,16 @@ const CelestialSymphony = ({
             isSebakaRotatingRef.current ? internalRotationAngleRef.current : sebakaRotationAngleRef.current
           );
 
-          let lookAtPosition: THREE.Vector3;
-          if (goldenGiverMesh && sebakaRotationAngleRef.current === 0 && !isSebakaRotatingRef.current) {
-             lookAtPosition = goldenGiverMesh.position.clone();
-          } else {
-             lookAtPosition = new THREE.Vector3(
+          const lookAtPosition = new THREE.Vector3(
               sebakaMesh.position.x + Math.sin(angle) * 1000,
-              sebakaMesh.position.y,
+              sebakaMesh.position.y + 10, // Look slightly up for a natural sky view
               sebakaMesh.position.z + Math.cos(angle) * 1000
-            );
-          }
-          controls.target.copy(lookAtPosition);
+          );
+          
+          controls.target.lerp(lookAtPosition, 0.1);
           
       } else {
+         if (sebakaMesh) sebakaMesh.visible = true;
          const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
          if (!isBeaconViewRef.current && goldenGiver) {
             controls.target.lerp(goldenGiver.position, 0.01);
@@ -387,12 +384,14 @@ const CelestialSymphony = ({
 
   useEffect(() => {
     const controls = controlsRef.current;
-    if (!controls) return;
+    const camera = cameraRef.current;
+    if (!controls || !camera) return;
     
     const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
     orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
     
     if (viewFromSebaka) {
+        camera.near = 0.001;
         controls.enablePan = true;
         controls.enableZoom = true;
         controls.minDistance = 0.01;
@@ -400,17 +399,18 @@ const CelestialSymphony = ({
         controls.enableRotate = true;
         
         const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
-        if (goldenGiver) {
+        if (sebakaMesh && goldenGiver) {
             const angle = THREE.MathUtils.degToRad(sebakaRotationAngleRef.current);
             const lookAtPosition = new THREE.Vector3(
-                sebakaMesh!.position.x + Math.sin(angle) * 1000,
-                sebakaMesh!.position.y,
-                sebakaMesh!.position.z + Math.cos(angle) * 1000
+                sebakaMesh.position.x + Math.sin(angle) * 1000,
+                sebakaMesh.position.y + 10,
+                sebakaMesh.position.z + Math.cos(angle) * 1000
             );
             controls.target.copy(lookAtPosition);
         }
 
     } else {
+        camera.near = 0.001; // Keep it small for smooth transitions
         controls.minDistance = 1;
         controls.maxDistance = 200000;
         controls.enablePan = true;
@@ -418,6 +418,7 @@ const CelestialSymphony = ({
         controls.enableRotate = true;
         controls.screenSpacePanning = true;
     }
+    camera.updateProjectionMatrix();
   }, [viewFromSebaka]);
   
   useEffect(() => {
@@ -443,5 +444,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    
