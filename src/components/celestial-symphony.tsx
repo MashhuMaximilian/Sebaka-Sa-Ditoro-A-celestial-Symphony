@@ -273,21 +273,33 @@ const CelestialSymphony = ({
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (viewFromSebakaRef.current && sebakaMesh) {
           const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
-          const surfaceOffset = sebakaRadius * 1.3; 
+          const surfaceOffset = sebakaRadius * 1.1; 
 
-          const cameraPosition = new THREE.Vector3(
+          camera.position.set(
               sebakaMesh.position.x,
               sebakaMesh.position.y + surfaceOffset,
               sebakaMesh.position.z
           );
-          camera.position.copy(cameraPosition);
 
-          const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
-          if (goldenGiver) {
-              controls.target.copy(goldenGiver.position);
-          } else {
-              controls.target.copy(sebakaMesh.position);
+          if(isSebakaRotatingRef.current){
+            sebakaMesh.rotation.y += daysPassedThisFrame * (Math.PI / 180) * 0.1; // Slow rotation
           }
+          
+          if (!isSebakaRotatingRef.current) {
+             const angle = THREE.MathUtils.degToRad(sebakaRotationAngleRef.current);
+             const lookAtPosition = new THREE.Vector3(
+                sebakaMesh.position.x + Math.sin(angle) * 1000,
+                sebakaMesh.position.y,
+                sebakaMesh.position.z + Math.cos(angle) * 1000
+             );
+             controls.target.copy(lookAtPosition);
+          } else {
+            const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
+            if (goldenGiver) {
+              controls.target.copy(goldenGiver.position);
+            }
+          }
+
       }
 
       controls.update();
