@@ -40,31 +40,31 @@ const AU_TO_UNITS = 150;
 const SEBAKA_YEAR_IN_DAYS = 324;
 
 const initialStars: StarData[] = [
-    { 
+    {
         name: "Golden Giver", color: "#FFD700", size: 6.96, orbitPeriodDays: 26,
-        type: 'Star', classification: 'Yellow Dwarf',
+        type: 'Star', classification: 'Yellow Dwarf (G-type)',
         orbitalRole: 'Central Binary (orbits Twilight)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
-        radius: '1 R☉ (696,000 km)', mass: '1 M☉',
+        radius: '1 R☉', mass: '1 M☉',
         surface: 'Typical yellow dwarf stellar surface, radiating warm golden light.',
         characteristics: 'Dominant light source, slightly larger and more luminous than Twilight.',
         appearance: 'Appears as the primary sun, a bright golden disk. Creates vibrant golden sunrises, primary driver of day-night cycle.',
-        lore: 'Symbolizes action and passion in Hypodia’s Sky-Writing, revered as a life-giving force. Influences magical energies in the Aerolith Zones.'
+        lore: 'Symbolizes action and passion in Hypodia’s Sky-Writing, revered as a life-giving force.'
     },
-    { 
+    {
         name: "Twilight", color: "#FF6400", size: 4.87, orbitPeriodDays: 26,
-        type: 'Star', classification: 'Orange Dwarf',
+        type: 'Star', classification: 'Orange Dwarf (K-type)',
         orbitalRole: 'Central Binary (orbits Golden Giver)', orbitalPeriod: '26 days', orbitalDistance: '0.2 AU',
-        radius: '0.7 R☉ (487,200 km)', mass: '0.6 M☉',
+        radius: '0.7 R☉', mass: '0.6 M☉',
         surface: 'Typical orange dwarf stellar surface, emitting a warm reddish glow.',
         characteristics: 'Less luminous than Golden Giver, creates a subtler light.',
         appearance: 'Appears as a secondary sun, smaller and redder than Golden Giver. Creates deep orange/red sunsets, lingers after Golden Giver sets.',
-        lore: 'Represents quiet strength and endurance in Hypodia’s Sky-Writing, a counterpoint to Golden Giver’s vibrancy. May amplify calming magical effects in the Aerolith Zones.'
+        lore: 'Represents quiet strength and endurance in Hypodia’s Sky-Writing, a counterpoint to Golden Giver’s vibrancy.'
     },
-    { 
+    {
         name: "Beacon", color: "#B4DCFF", size: 27.84, orbitPeriodDays: 12328 * SEBAKA_YEAR_IN_DAYS, orbitRadius: 1000 * AU_TO_UNITS,
-        type: 'Star', classification: 'Blue-White Giant',
+        type: 'Star', classification: 'Blue-White Giant (B-type)',
         orbitalRole: 'Distant Companion (orbits common barycenter of Golden Giver-Twilight)', orbitalPeriod: '12,328 years', orbitalDistance: '1,000 AU',
-        radius: '4 R☉ (2,784,000 km)', mass: '5 M☉',
+        radius: '4 R☉', mass: '5 M☉',
         surface: 'Brilliant blue-white giant, intensely luminous.',
         characteristics: 'Significantly more luminous than Golden Giver and Twilight combined, hosts its own planetary subsystem (Gelidis, Liminis).',
         appearance: 'Extraordinarily bright, unblinking point of light. Visible at night, occasionally during day. Its slow annual shift provides a fundamental marker for long-term cycles.',
@@ -73,78 +73,78 @@ const initialStars: StarData[] = [
 ];
   
 const initialPlanets: PlanetData[] = [
-    { 
+    {
         name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitPeriodDays: 169,
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Innermost planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '169 days', orbitalDistance: '0.7 AU',
-        rotation: '40 days', axialTilt: '10°', moons: 'None',
-        radius: '0.5 R⊕ (3,189 km)', mass: '0.125 M⊕',
+        rotation: '40 hours', axialTilt: '10°', moons: 'None',
+        radius: '0.5 R⊕', mass: '0.125 M⊕',
         surface: 'Scorched, sulfur-yellow crust with bleeding magma lines, thin atmosphere with volcanic outgassing.',
         characteristics: 'Intense heat due to proximity to binary, strong magnetic field from dense iron core.',
-        appearance: 'Bright, ember-like point of light. Visible at twilight, occasionally during day. Flickers with volcanic activity.',
-        lore: 'Seen as a fiery, untamed world in Hypodia’s Sky-Writing, symbolizing raw passion. Magnetic field may enhance fire-based magic.'
+        appearance: 'Bright, ember-like point of light. Visible at twilight, occasionally during day.',
+        lore: 'Seen as a fiery, untamed world in Hypodia’s Sky-Writing, symbolizing raw passion.'
     },
-    { 
+    {
         name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitPeriodDays: 324,
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Second planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '324 days', orbitalDistance: '1.08 AU',
         rotation: '24 hours', axialTilt: '23.5°', moons: 'None',
-        radius: '1 R⊕ (6,371 km)', mass: '1 M⊕',
+        radius: '1 R⊕', mass: '1 M⊕',
         surface: 'Earth-like, with oceans, continents, and a breathable atmosphere.',
-        characteristics: 'Habitable zone, supports life, experiences Aerolith Zone phenomena. A year is 324 days, consisting of 12 months, with each month having 3 weeks of 9 days each.',
-        appearance: 'N/A (observer’s planet). Hosts vibrant sunrises/sunsets from Golden Giver and Twilight, auroras from Aerolith Zones.',
-        lore: 'Central to Hypodia’s Sky-Writing. Defines year (324 days). Aerolith Zones amplify magical energies.'
+        characteristics: 'Habitable zone, supports life. A year is 324 days (12 months of 27 days each).',
+        appearance: 'N/A (observer’s planet). Hosts vibrant sunrises/sunsets from Golden Giver and Twilight.',
+        lore: 'Central to Hypodia’s Sky-Writing. Defines the calendar. Experiences the Gathering of Witnesses.'
     },
-    { 
+    {
         name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitPeriodDays: 818, eccentric: true,
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Third planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '818 days', orbitalDistance: '2.0 AU',
-        rotation: '30 hours', axialTilt: '15°', moons: '1 (28-day orbital period)',
-        radius: '0.8 R⊕ (5,097 km)', mass: '0.512 M⊕',
+        rotation: '30 hours', axialTilt: '15°', moons: '1',
+        radius: '0.8 R⊕', mass: '0.512 M⊕',
         surface: 'Hazy, greyish-white atmosphere, iridescent icy rings.',
         characteristics: 'Eccentric orbit (e = 0.2) causes brightness variations. Known as the “Dream-Weaver”.',
-        appearance: 'Fist-sized orb with shimmering rings. Prominent at sunset, visible at night. Rings reflect binary starlight.',
-        lore: 'Called the Calendar Planet, it marks months via sunset position and its moon’s phases. Rings may influence dream-related magic.'
+        appearance: 'Fist-sized orb with shimmering rings. Prominent at night. Rings reflect binary starlight.',
+        lore: 'Called the Calendar Planet in some cultures. Rings may influence dream-related magic.'
     },
-    { 
+    {
         name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitPeriodDays: 1500,
         type: 'Planet', classification: 'Terrestrial',
         orbitalRole: 'Fourth planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '1,500 days', orbitalDistance: '3.0 AU',
         rotation: '20 hours', axialTilt: '20°', moons: 'None',
-        radius: '1.3 R⊕ (8,282 km)', mass: '2.0 M⊕',
+        radius: '1.3 R⊕', mass: '2.0 M⊕',
         surface: 'Sulfur-yellow crust, bleeding magma lines, thick atmosphere with volcanic plumes.',
-        characteristics: 'Intense volcanism creates ~27.75-day brightness cycle (albedo 0.1–0.5).',
-        appearance: 'Bright orange-red disk during eruptions, faint crescent-like glow when ash-covered. Cycles of “flame and shade” mark days within a month.',
-        lore: 'The Phase Maker. Volcanic activity may amplify fire or chaotic magic. Hypodia’s Sky-Writing describes it as a fiery, mysterious world.'
+        characteristics: 'Features a 27-day volcanic brightness cycle (Bright, Waning, Dim).',
+        appearance: 'Bright orange-red disk during eruptions, faint crescent-like glow when ash-covered. Visible at night.',
+        lore: 'The Phase Maker. Its 27-day cycle serves as the basis for Sebaka\'s 27-day months.'
     },
-    { 
+    {
         name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true,
         type: 'Planet', classification: 'Gas Giant',
         orbitalRole: 'Fifth planet orbiting Golden Giver-Twilight binary', orbitalPeriod: '4,241 days (~11.62 years)', orbitalDistance: '6.0 AU',
         rotation: '10 hours', axialTilt: '25°', moons: 'Multiple (5–10 visible)',
-        radius: '15 R⊕ (95,565 km)', mass: '400 M⊕',
+        radius: '15 R⊕', mass: '400 M⊕',
         surface: 'Banded atmosphere with blue, purple, green hues, internal heat glow.',
         characteristics: 'Eccentric orbit (e = 0.5, periapsis 3.0 AU, apoapsis 9.0 AU), large magnetosphere.',
         appearance: 'Varies in size from large disk to smaller point. Dominant at night. Moons orbit like “silent thoughts.”',
-        lore: 'Marks long-term cycles. Magnetosphere enhances protective magic. Hypodia’s Sky-Writing portrays it as a majestic, calming presence.'
+        lore: 'Marks long-term cycles. Magnetosphere enhances protective magic.'
     },
     {
-        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 2236,
+        name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 5163,
         type: 'Planet', classification: 'Ice Giant',
-        orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '2,236 days (~6.12 years)', orbitalDistance: '5.7 AU from Beacon',
+        orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '5,163 days (~14.1 years)', orbitalDistance: '5.7 AU from Beacon',
         rotation: '16 hours', axialTilt: '28°', moons: '2-3 (small)',
-        radius: '4 R⊕ (25,484 km)', mass: '15 M⊕',
+        radius: '4 R⊕', mass: '15 M⊕',
         surface: 'Vast atmosphere with swirling storm systems, faint icy cloud bands, frigid temperatures.',
         characteristics: 'Remote, dimly lit by Beacon’s light.',
         appearance: 'Not visible to the naked eye, requires powerful telescopes.',
-        lore: 'Known only through advanced astronomical calculations, a mysterious, remote world. May influence distant magical currents.'
+        lore: 'Known only through advanced astronomical calculations, a mysterious, remote world.'
     },
     {
-        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 18.9 * AU_TO_UNITS, orbitPeriodDays: 13416,
+        name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 18.9 * AU_TO_UNITS, orbitPeriodDays: 26820,
         type: 'Planet', classification: 'Ice Dwarf',
-        orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '13,416 days (~36.73 years)', orbitalDistance: '18.9 AU from Beacon',
+        orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '26,820 days (~73.4 years)', orbitalDistance: '18.9 AU from Beacon',
         rotation: '48 hours', axialTilt: '5°', moons: 'None',
-        radius: '0.2 R⊕ (1,274 km)', mass: '0.05 M⊕',
+        radius: '0.2 R⊕', mass: '0.05 M⊕',
         surface: 'Frozen expanse of rock and ice, thin atmosphere, perpetually shrouded in twilight.',
         characteristics: 'Furthest known planet, minimal light from Beacon.',
         appearance: 'Not visible to the naked eye, requires powerful telescopes.',
