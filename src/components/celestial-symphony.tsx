@@ -88,7 +88,6 @@ const CelestialSymphony = ({
         if (!bodyMesh) return;
 
         let orbitCenter = new THREE.Vector3(0,0,0);
-        let angle = currentDays * data.radsPerDay;
         
         const beaconData = bodyData.find(d => d.name === 'Beacon');
         if (beaconData) {
@@ -108,8 +107,9 @@ const CelestialSymphony = ({
             orbitCenter.copy(beaconPositionRef.current);
         }
 
-        const semiMajorAxis = (data as PlanetData | StarData).orbitRadius || 0;
+        const semiMajorAxis = data.orbitRadius || 0;
         let x, z;
+        let angle = currentDays * data.radsPerDay;
 
         if ((data as PlanetData).eccentric) {
             const eccentricity = data.name === 'Spectris' ? 0.2 : data.name === 'Aetheris' ? 0.5 : 0.1;
@@ -118,8 +118,9 @@ const CelestialSymphony = ({
             z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
         } else if (data.type === 'Star' && (data.name === 'Golden Giver' || data.name === 'Twilight')) {
             const r1 = 0.1 * 150;
-            x = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.cos(angle);
-            z = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.sin(angle);
+            const binaryAngle = currentDays * data.radsPerDay;
+            x = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.cos(binaryAngle);
+            z = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.sin(binaryAngle);
         } else {
             const semiMinorAxis = semiMajorAxis;
             x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
@@ -213,7 +214,7 @@ const CelestialSymphony = ({
       }
       
       if (body.type === 'Planet' || body.name === 'Beacon') {
-          const orbitRadius = (body as PlanetData | StarData).orbitRadius;
+          const orbitRadius = body.orbitRadius;
           if (orbitRadius) {
             const orbitGeometry = new THREE.TorusGeometry(orbitRadius, body.name === 'Beacon' ? 5 : 0.5, 8, 200);
             const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
@@ -272,26 +273,30 @@ const CelestialSymphony = ({
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (viewFromSebakaRef.current && sebakaMesh) {
           const sebakaPosition = sebakaMesh.position;
-          const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
+          const surfaceOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
+          const cameraSurfacePosition = new THREE.Vector3().copy(sebakaPosition).add(new THREE.Vector3(0, surfaceOffset, 0));
+          
+          camera.position.copy(cameraSurfacePosition);
 
           if (isSebakaRotatingRef.current) {
               controls.enableRotate = false;
-              const cameraOffset = new THREE.Vector3(0, surfaceYOffset, 0);
-              camera.position.copy(sebakaPosition).add(cameraOffset);
-              
               const lookAtRotation = new THREE.Euler(0, sebakaMesh.rotation.y, 0, 'YXZ');
               const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
               controls.target.copy(sebakaPosition).add(lookAtDirection);
           } else {
               controls.enableRotate = true;
-              const cameraSurfacePosition = new THREE.Vector3(sebakaPosition.x, sebakaPosition.y + surfaceYOffset, sebakaPosition.z);
-              camera.position.copy(cameraSurfacePosition);
-              
               const manualRotation = THREE.MathUtils.degToRad(sebakaRotationAngleRef.current);
               const lookAtRotation = new THREE.Euler(0, manualRotation, 0, 'YXZ');
               const lookAtDirection = new THREE.Vector3(0, 0, -1).applyEuler(lookAtRotation);
               controls.target.copy(sebakaPosition).add(lookAtDirection);
           }
+      } else if (isBeaconViewRef.current) {
+        const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
+        camera.position.lerp(beaconCamPos, 0.1);
+        controls.target.lerp(beaconPositionRef.current, 0.1);
+      } else if (!viewFromSebakaRef.current && !isBeaconViewRef.current) {
+        camera.position.lerp(originalCameraPos.current, 0.1);
+        controls.target.lerp(new THREE.Vector3(0,0,0), 0.1);
       }
 
       controls.update();
@@ -376,35 +381,20 @@ const CelestialSymphony = ({
         controls.enableRotate = true;
         controls.screenSpacePanning = true;
     }
-  }, [viewFromSebaka, isSebakaRotating, sebakaRotationAngle]);
+  }, [viewFromSebaka]);
   
   useEffect(() => {
     const camera = cameraRef.current;
     const controls = controlsRef.current;
-    if (!camera || !controls || viewFromSebaka) return;
+    if (!camera || !controls) return;
 
-    if (!isBeaconView) {
+    if (!viewFromSebaka && !isBeaconView) {
         camera.position.copy(originalCameraPos.current);
         controls.target.set(0, 0, 0);
     }
     controls.update();
   }, [resetViewToggle]);
 
-  useEffect(() => {
-    const camera = cameraRef.current;
-    const controls = controlsRef.current;
-    if (!controls || !camera) return;
-    
-    if (isBeaconView) {
-        const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
-        camera.position.lerp(beaconCamPos, 0.1);
-        controls.target.lerp(beaconPositionRef.current, 0.1);
-    } else if (!viewFromSebaka) { 
-        camera.position.lerp(originalCameraPos.current, 0.1);
-        controls.target.lerp(new THREE.Vector3(0,0,0), 0.1);
-    }
-    controls.update();
-  }, [isBeaconView, viewFromSebaka]);
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };
