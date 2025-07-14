@@ -190,6 +190,10 @@ const CelestialSymphony = ({
         materialOptions.emissive = body.color;
         materialOptions.emissiveIntensity = 2;
       }
+      if (body.name === 'Liminis') {
+        materialOptions.emissive = body.color;
+        materialOptions.emissiveIntensity = 0.2;
+      }
       const material = new THREE.MeshStandardMaterial(materialOptions);
       
       const mesh = new THREE.Mesh(geometry, material);
@@ -509,3 +513,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    
