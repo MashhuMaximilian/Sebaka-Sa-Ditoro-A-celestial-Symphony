@@ -154,7 +154,7 @@ const CelestialSymphony = ({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.1, 200000);
+    const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.001, 200000);
     camera.position.copy(originalCameraPos.current);
     cameraRef.current = camera;
 
@@ -295,7 +295,8 @@ const CelestialSymphony = ({
           );
 
           if (isSebakaRotatingRef.current) {
-            const degreesPerSecond = 360 / (HOURS_IN_SEBAKA_DAY / speedMultiplierRef.current);
+            const degreesPerHour = 360 / HOURS_IN_SEBAKA_DAY;
+            const degreesPerSecond = degreesPerHour * speedMultiplierRef.current;
             internalRotationAngleRef.current += deltaTime * degreesPerSecond;
             internalRotationAngleRef.current %= 360;
             onRotationAngleChange(internalRotationAngleRef.current);
@@ -390,12 +391,11 @@ const CelestialSymphony = ({
     
     const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
     orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
-    if (sebakaMesh) sebakaMesh.visible = !viewFromSebaka;
-
+    
     if (viewFromSebaka) {
         controls.enablePan = true;
         controls.enableZoom = true;
-        controls.minDistance = 1;
+        controls.minDistance = 0.01;
         controls.maxDistance = 1000;
         controls.enableRotate = true;
         
