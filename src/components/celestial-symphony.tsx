@@ -390,7 +390,7 @@ const CelestialSymphony = ({
         mouse.x = ((x - rect.left) / rect.width) * 2 - 1;
         mouse.y = -((y - rect.top) / rect.height) * 2 + 1;
 
-        raycaster.setFromCamera(camera, camera);
+        raycaster.setFromCamera(mouse, camera);
 
         const intersects = raycaster.intersectObjects(clickableObjects, true);
 
@@ -473,6 +473,7 @@ const CelestialSymphony = ({
         }
 
     } else {
+        controls.target.set(0, 0, 0);
         controls.minDistance = 1;
         controls.maxDistance = 200000;
         controls.enablePan = true;
@@ -518,3 +519,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    
