@@ -52,6 +52,7 @@ const CelestialSymphony = ({
   const beaconPositionRef = useRef(new THREE.Vector3());
   
   const elapsedDaysRef = useRef(0);
+  const viewFromSebakaRef = useRef(viewFromSebaka);
 
   // Memoize body data to avoid recalculations
   const bodyData = useMemo(() => {
@@ -86,26 +87,26 @@ const CelestialSymphony = ({
         const data = bodyData.find(d => d.name === bodyMesh.name);
         if (!data) return;
 
-        const angle = currentDays * data.radsPerDay;
-        
-        const semiMajorAxis = (data as PlanetData | StarData).orbitRadius || 0.1 * 150; // Default for binary stars
-        let x, z;
-        
         let orbitCenter = new THREE.Vector3(0,0,0);
-        
-        // First update beacon's position if it's beacon
-        if (data.type === 'Star' && data.name === 'Beacon') {
-            x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
-            z = orbitCenter.z + semiMajorAxis * Math.sin(angle);
-            beaconPositionRef.current.set(x, 0, z);
-            bodyMesh.position.set(x, 0, z);
+        let angle = currentDays * data.radsPerDay;
+
+        // Beacon orbits the central binary barycenter
+        if (data.name === 'Beacon') {
+            const beaconOrbitRadius = data.orbitRadius!;
+            const beaconX = beaconOrbitRadius * Math.cos(angle);
+            const beaconZ = beaconOrbitRadius * Math.sin(angle);
+            beaconPositionRef.current.set(beaconX, 0, beaconZ);
+            bodyMesh.position.set(beaconX, 0, beaconZ);
             return; // Beacon position is set, continue to next body
         }
 
-        // Then, check if the body orbits beacon
+        // Planets orbiting Beacon
         if (data.name === 'Gelidis' || data.name === 'Liminis') {
             orbitCenter = beaconPositionRef.current;
         }
+
+        const semiMajorAxis = (data as PlanetData | StarData).orbitRadius || 0;
+        let x, z;
 
         if ((data as PlanetData).eccentric) {
             const eccentricity = data.name === 'Spectris' ? 0.2 : data.name === 'Aetheris' ? 0.5 : 0.1;
@@ -113,11 +114,11 @@ const CelestialSymphony = ({
             x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
             z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
         } else if (data.type === 'Star' && (data.name === 'Golden Giver' || data.name === 'Twilight')) {
-            const r1 = 0.1 * 150; // 0.1 AU
+            const r1 = 0.1 * 150; // 0.1 AU for binary separation
             x = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.cos(angle);
-            z = (data.name === 'Golden Giver' ? 1 : -1) * r1 * Math.sin(angle);
+            z = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.sin(angle);
         } else {
-            const semiMinorAxis = semiMajorAxis; // For circular orbit, semi-minor is same as semi-major
+            const semiMinorAxis = semiMajorAxis;
             x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
             z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
         }
@@ -126,7 +127,6 @@ const CelestialSymphony = ({
         bodyMesh.position.set(x, y, z);
 
         if (bodyMesh.name === 'Sebaka') {
-             // 1 Sebaka day rotation (2PI) per day.
             const rotationPerDay = Math.PI * 2;
             bodyMesh.rotation.y = currentDays * rotationPerDay;
         }
@@ -174,8 +174,6 @@ const CelestialSymphony = ({
 
     // Lighting
     scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-    const pointLight = new THREE.PointLight(0xffffff, 2, 0, 1);
-    scene.add(pointLight);
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -196,7 +194,6 @@ const CelestialSymphony = ({
       if (body.type === 'Star') {
         const starData = body as StarData;
         materialOptions.emissive = starData.color;
-        // Use a logarithmic scale for luminosity to make differences more apparent
         materialOptions.emissiveIntensity = Math.log1p(starData.luminosity || 0) * 0.5 + 0.5;
       }
       if (body.name === 'Liminis') {
@@ -216,7 +213,6 @@ const CelestialSymphony = ({
       } else {
         const starData = body as StarData;
         starMeshesRef.current.push(mesh);
-        // Use luminosity to scale light intensity. Add a base value for visibility.
         const lightIntensity = (starData.luminosity || 1) * 2;
         const pointLightStar = new THREE.PointLight(starData.color, lightIntensity, 0, 1);
         mesh.add(pointLightStar);
@@ -263,7 +259,6 @@ const CelestialSymphony = ({
             const orbitGeometry = new THREE.TorusGeometry(orbitRadius, body.name === 'Beacon' ? 5 : 0.5, 8, 200);
             const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
             const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
-            // Beacon orbits center, its planets orbit beacon.
             if(body.name !== 'Gelidis' && body.name !== 'Liminis') {
                 orbit.position.set(0, 0, 0);
             }
@@ -283,7 +278,6 @@ const CelestialSymphony = ({
       const controls = controlsRef.current;
       if (!camera || !controls) return;
       
-      // A day is 1 second at speed 1.
       const daysPassedThisFrame = clockRef.current.getDelta() * speedMultiplierRef.current;
       elapsedDaysRef.current += daysPassedThisFrame;
       
@@ -303,7 +297,6 @@ const CelestialSymphony = ({
             
             const darkeningDuration = 9;
             const darkDuration = 9;
-            const brighteningDuration = 9;
             
             let brightnessFactor = 1.0;
             
@@ -315,6 +308,7 @@ const CelestialSymphony = ({
               brightnessFactor = 0.1;
             } 
             else {
+              const brighteningDuration = 9;
               const progress = (currentDayInCycle - (darkeningDuration + darkDuration)) / brighteningDuration; // 0 to 1
               brightnessFactor = 0.1 + progress * 0.9; // from 0.1 up to 1.0
             }
@@ -327,7 +321,6 @@ const CelestialSymphony = ({
             viridisMesh.material.emissiveIntensity = THREE.MathUtils.lerp(viridisMesh.material.emissiveIntensity, targetIntensity, 0.1);
 
           } else {
-             // Reset to default when animation is off
              viridisMesh.material.color.lerp(viridisOriginalColor.current, 0.1);
              viridisMesh.material.emissive.lerp(new THREE.Color(0x000000), 0.1);
              viridisMesh.material.emissiveIntensity = THREE.MathUtils.lerp(viridisMesh.material.emissiveIntensity, 0, 0.1);
@@ -335,34 +328,33 @@ const CelestialSymphony = ({
       }
       
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-      if (viewFromSebaka && sebakaMesh) {
-          const sebakaPosition = sebakaMesh.position.clone();
+      if (viewFromSebakaRef.current && sebakaMesh) {
+          const sebakaPosition = sebakaMesh.position;
           const surfaceYOffset = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius + 5;
-          
+
           if (isSebakaRotating) {
-            // Camera is on surface, looking out, rotating with planet
             const cameraOffset = new THREE.Vector3(0, surfaceYOffset, 0);
             cameraOffset.applyEuler(sebakaMesh.rotation);
             camera.position.copy(sebakaPosition).add(cameraOffset);
             
-            // Look direction also rotates with planet
             const lookAtOffset = new THREE.Vector3(0, surfaceYOffset, -100); 
             lookAtOffset.applyEuler(sebakaMesh.rotation);
             controls.target.copy(sebakaPosition).add(lookAtOffset);
-
           } else {
-             // Camera is on surface, but its rotation is controlled by the slider and mouse
-             const cameraOffset = new THREE.Vector3(0, surfaceYOffset, 0);
- 
-             // Apply manual rotation first to get the correct 'up' vector
-             const manualRotation = new THREE.Euler(0, THREE.MathUtils.degToRad(sebakaRotationAngle), 0, 'YXZ');
-             
-             // Base camera position on Sebaka's surface
-             camera.position.copy(sebakaPosition).add(cameraOffset);
-             
-             // Set camera's rotation quaternion directly from the Euler angle.
-             // This decouples it from orbit controls' target.
-             camera.quaternion.setFromEuler(manualRotation);
+            const lastCameraDistance = camera.position.distanceTo(controls.target);
+            
+            const rotationY = THREE.MathUtils.degToRad(sebakaRotationAngle);
+            const euler = new THREE.Euler(0, rotationY, 0, 'YXZ');
+            
+            const direction = new THREE.Vector3(0, 0, -1);
+            direction.applyEuler(euler);
+            direction.applyQuaternion(camera.quaternion);
+
+            const newTargetPosition = new THREE.Vector3().copy(sebakaPosition);
+            const newCameraPosition = new THREE.Vector3().copy(newTargetPosition).add(new THREE.Vector3(0, surfaceYOffset, 0));
+
+            controls.target.copy(newTargetPosition);
+            camera.position.copy(newCameraPosition);
           }
       }
 
@@ -396,7 +388,6 @@ const CelestialSymphony = ({
 
         if (intersects.length > 0) {
             let currentObject = intersects[0].object;
-            // Traverse up to find the parent mesh with the name
             while(currentObject.parent && !currentObject.name) {
               currentObject = currentObject.parent;
             }
@@ -451,6 +442,8 @@ const CelestialSymphony = ({
     const camera = cameraRef.current;
     const controls = controlsRef.current;
     if (!camera || !controls) return;
+
+    viewFromSebakaRef.current = viewFromSebaka;
     
     orbitMeshesRef.current.forEach(orbit => {
         orbit.visible = !viewFromSebaka;
@@ -463,17 +456,20 @@ const CelestialSymphony = ({
 
     if (viewFromSebaka) {
         controls.enablePan = false;
-        controls.enableZoom = true; 
+        controls.enableZoom = true;
+        controls.minDistance = 5;
+        controls.maxDistance = 1000;
         
         if (isSebakaRotating) {
             controls.enableRotate = false;
         } else {
-            // When not auto-rotating, enable mouse rotation for looking around
             controls.enableRotate = true; 
         }
 
     } else {
-        controls.target.set(0, 0, 0);
+        if (!isBeaconView) {
+            controls.target.set(0, 0, 0);
+        }
         controls.minDistance = 1;
         controls.maxDistance = 200000;
         controls.enablePan = true;
@@ -482,15 +478,17 @@ const CelestialSymphony = ({
         controls.screenSpacePanning = true;
     }
     controls.update();
-  }, [viewFromSebaka, isSebakaRotating]);
+  }, [viewFromSebaka, isSebakaRotating, isBeaconView]);
   
   useEffect(() => {
     const camera = cameraRef.current;
     const controls = controlsRef.current;
     if (!camera || !controls || viewFromSebaka) return;
 
-    camera.position.copy(originalCameraPos.current);
-    controls.target.set(0, 0, 0);
+    if (!isBeaconView) {
+        camera.position.copy(originalCameraPos.current);
+        controls.target.set(0, 0, 0);
+    }
     controls.update();
   }, [resetViewToggle]);
 
@@ -500,14 +498,10 @@ const CelestialSymphony = ({
     if (!controls || !camera) return;
     
     if (isBeaconView) {
-        // Set target to Beacon
         controls.target.copy(beaconPositionRef.current);
-        
-        // Move camera to a good viewing position relative to Beacon
         const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
         camera.position.copy(beaconCamPos);
-    } else if (!viewFromSebaka) { // Only reset if not in Sebaka view
-        // Revert to original view
+    } else if (!viewFromSebaka) { 
         controls.target.set(0, 0, 0);
         camera.position.copy(originalCameraPos.current);
     }
@@ -519,5 +513,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    
