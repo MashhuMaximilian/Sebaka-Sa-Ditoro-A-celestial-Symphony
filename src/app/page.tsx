@@ -280,6 +280,7 @@ export default function Home() {
         isBeaconView={isBeaconView}
         onRotationAngleChange={setSebakaRotationAngle}
         cameraYaw={cameraYaw}
+        latitude={latitude}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -385,12 +386,12 @@ export default function Home() {
           {viewFromSebaka && (
              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                  <Label htmlFor="latitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                  Latitude: {latitude.toFixed(0)}°
+                  Forward/Back
                 </Label>
                 <Slider
                     id="latitude-slider"
-                    min={-90}
-                    max={90}
+                    min={-180}
+                    max={180}
                     step={1}
                     value={[latitude]}
                     onValueChange={handleLatitudeChange}
@@ -398,15 +399,15 @@ export default function Home() {
                 />
             </div>
           )}
-          {viewFromSebaka && !isSebakaRotating && (
+          {viewFromSebaka && (
              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                  <Label htmlFor="look-angle-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                  Look Angle
+                  Look Up/Down
                 </Label>
                 <Slider
                     id="look-angle-slider"
-                    min={-180}
-                    max={180}
+                    min={-90}
+                    max={90}
                     step={1}
                     value={[cameraYaw]}
                     onValueChange={handleCameraYawChange}
@@ -414,15 +415,15 @@ export default function Home() {
                 />
             </div>
           )}
-          {viewFromSebaka && !isSebakaRotating && (
+          {viewFromSebaka && (
              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                  <Label htmlFor="rotation-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                  Rotation: {sebakaRotationAngle.toFixed(0)}°
+                  Turn Left/Right
                 </Label>
                 <Slider
                     id="rotation-slider"
-                    min={0}
-                    max={360}
+                    min={-180}
+                    max={180}
                     step={1}
                     value={[sebakaRotationAngle]}
                     onValueChange={handleRotationChange}

@@ -21,6 +21,7 @@ interface CelestialSymphonyProps {
   isBeaconView: boolean;
   onRotationAngleChange: (angle: number) => void;
   cameraYaw: number;
+  latitude: number;
 }
 
 const HOURS_IN_SEBAKA_DAY = 24;
@@ -40,6 +41,7 @@ const CelestialSymphony = ({
   isBeaconView,
   onRotationAngleChange,
   cameraYaw,
+  latitude,
 }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
@@ -56,8 +58,6 @@ const CelestialSymphony = ({
   const isViridisAnimationActiveRef = useRef(isViridisAnimationActive);
   const viewFromSebakaRef = useRef(viewFromSebaka);
   const isSebakaRotatingRef = useRef(isSebakaRotating);
-  const sebakaRotationAngleRef = useRef(sebakaRotationAngle);
-  const cameraYawRef = useRef(cameraYaw);
   const isBeaconViewRef = useRef(isBeaconView);
 
   const originalCameraPos = useRef(new THREE.Vector3(0, 400, 800));
@@ -65,7 +65,18 @@ const CelestialSymphony = ({
   const beaconPositionRef = useRef(new THREE.Vector3());
   
   const elapsedHoursRef = useRef(0);
-  const internalRotationAngleRef = useRef(sebakaRotationAngle);
+  
+  // === Player Controller State ===
+  const playerRef = useRef<{
+    position: THREE.Vector3;
+    orientation: THREE.Quaternion;
+  }>({
+    position: new THREE.Vector3(),
+    orientation: new THREE.Quaternion(),
+  });
+  const playerInputsRef = useRef({ yaw: 0, pitch: 0, move: 0 });
+  const sebakaRadiusRef = useRef(0);
+  // =============================
 
   const bodyData = useMemo(() => {
     const all = [...stars, ...planets];
@@ -80,12 +91,14 @@ const CelestialSymphony = ({
   useEffect(() => { viewFromSebakaRef.current = viewFromSebaka; }, [viewFromSebaka]);
   useEffect(() => { isSebakaRotatingRef.current = isSebakaRotating; }, [isSebakaRotating]);
   useEffect(() => { 
-    if(!isSebakaRotating) {
-        sebakaRotationAngleRef.current = sebakaRotationAngle; 
-        internalRotationAngleRef.current = sebakaRotationAngle;
-    }
-  }, [sebakaRotationAngle, isSebakaRotating]);
-  useEffect(() => { cameraYawRef.current = cameraYaw; }, [cameraYaw]);
+    playerInputsRef.current.yaw = sebakaRotationAngle;
+  }, [sebakaRotationAngle]);
+  useEffect(() => { 
+    playerInputsRef.current.pitch = cameraYaw;
+  }, [cameraYaw]);
+  useEffect(() => { 
+    playerInputsRef.current.move = latitude;
+  }, [latitude]);
   useEffect(() => { isBeaconViewRef.current = isBeaconView; }, [isBeaconView]);
 
   useEffect(() => {
@@ -211,6 +224,11 @@ const CelestialSymphony = ({
       let material;
       if (body.name === 'Sebaka' && checkerboardTexture) {
           material = new THREE.MeshStandardMaterial({ map: checkerboardTexture });
+          sebakaRadiusRef.current = body.size;
+          // Initialize player position on the surface of Sebaka
+          const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+          const sebakaPosition = sebakaMesh ? sebakaMesh.position : new THREE.Vector3(0,0,0);
+          playerRef.current.position.set(sebakaPosition.x, sebakaPosition.y + sebakaRadiusRef.current, sebakaPosition.z);
       } else {
           const materialOptions: THREE.MeshStandardMaterialParameters = { color: body.color, roughness: 0.8, metalness: 0.1 };
           if (body.type === 'Star') {
@@ -242,8 +260,8 @@ const CelestialSymphony = ({
       
       if (body.type === 'Planet' && body.name === "Spectris") {
         const ringGeometry = new THREE.RingGeometry(body.size * 1.5, body.size * 3, 64);
-        const vertexShader = `varying vec3 vUv; void main() { vUv = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-        const fragmentShader = `varying vec3 vUv; vec3 hsv2rgb(vec3 c) { vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0); vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www); return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y); } void main() { float angle = atan(vUv.y, vUv.x); float hue = (angle + 3.14159) / (2.0 * 3.14159); gl_FragColor = vec4(hsv2rgb(vec3(hue, 0.7, 1.0)), 0.7); }`;
+        const vertexShader = "varying vec3 vUv; void main() { vUv = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }";
+        const fragmentShader = "varying vec3 vUv; vec3 hsv2rgb(vec3 c) { vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0); vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www); return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y); } void main() { float angle = atan(vUv.y, vUv.x); float hue = (angle + 3.14159) / (2.0 * 3.14159); gl_FragColor = vec4(hsv2rgb(vec3(hue, 0.7, 1.0)), 0.7); }";
         const ringMaterial = new THREE.ShaderMaterial({ vertexShader, fragmentShader, side: THREE.DoubleSide, transparent: true });
         const rings = new THREE.Mesh(ringGeometry, ringMaterial);
         rings.rotation.x = Math.PI / 2 + 0.2;
@@ -318,37 +336,48 @@ const CelestialSymphony = ({
       }
       
       if (viewFromSebakaRef.current && sebakaMesh) {
-          sebakaMesh.visible = true;
-          const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
-          const surfaceOffset = sebakaRadius * 1.01; 
+        // --- START OF PLAYER CONTROLLER LOGIC ---
+        const yawAngle = THREE.MathUtils.degToRad(playerInputsRef.current.yaw);
+        const pitchAngle = THREE.MathUtils.degToRad(playerInputsRef.current.pitch);
+        const moveSpeed = playerInputsRef.current.move * deltaTime * 0.05;
 
-          camera.position.set(
-              sebakaMesh.position.x,
-              sebakaMesh.position.y + surfaceOffset,
-              sebakaMesh.position.z
-          );
+        // 1. Update Player Orientation (Yaw/Left-Right Turn)
+        const yawQuaternion = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawAngle);
+        playerRef.current.orientation.copy(yawQuaternion);
 
-          if (isSebakaRotatingRef.current) {
-            const degreesPerHour = 360 / HOURS_IN_SEBAKA_DAY;
-            const degreesPerSecond = degreesPerHour * speedMultiplierRef.current;
-            internalRotationAngleRef.current += deltaTime * degreesPerSecond;
-            internalRotationAngleRef.current %= 360;
-            onRotationAngleChange(internalRotationAngleRef.current);
-          }
-          
-          const planetRotationAngle = THREE.MathUtils.degToRad(
-            isSebakaRotatingRef.current ? internalRotationAngleRef.current : sebakaRotationAngleRef.current
-          );
+        // 2. Update Player Position (Forward/Backward Movement)
+        if (moveSpeed !== 0) {
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(playerRef.current.orientation);
+            const moveQuaternion = new THREE.Quaternion().setFromAxisAngle(
+                new THREE.Vector3().crossVectors(playerRef.current.position.clone().normalize(), forward).normalize(),
+                -moveSpeed
+            );
+            playerRef.current.position.applyQuaternion(moveQuaternion);
+        }
 
-          const lookAngle = planetRotationAngle + THREE.MathUtils.degToRad(cameraYawRef.current);
+        // Ensure player stays on the surface
+        playerRef.current.position.normalize().multiplyScalar(sebakaRadiusRef.current);
+        const playerGlobalPosition = playerRef.current.position.clone().add(sebakaMesh.position);
 
-          const lookAtPosition = new THREE.Vector3(
-              sebakaMesh.position.x + Math.sin(lookAngle) * 1000,
-              sebakaMesh.position.y,
-              sebakaMesh.position.z + Math.cos(lookAngle) * 1000
-          );
-          
-          controls.target.lerp(lookAtPosition, 0.1);
+        // 3. Update Camera
+        // Calculate camera's "up" vector (normal to the planet surface at player's position)
+        const cameraUp = playerGlobalPosition.clone().sub(sebakaMesh.position).normalize();
+
+        // Calculate pitch rotation for looking up/down
+        const forwardVector = new THREE.Vector3(0, 0, -1).applyQuaternion(playerRef.current.orientation);
+        const rightVector = new THREE.Vector3(1, 0, 0).applyQuaternion(playerRef.current.orientation);
+        const pitchQuaternion = new THREE.Quaternion().setFromAxisAngle(rightVector, pitchAngle);
+
+        // Combine player orientation with camera pitch
+        const finalCameraOrientation = playerRef.current.orientation.clone().multiply(pitchQuaternion);
+
+        // Set camera position and orientation
+        const eyeHeight = 0.5;
+        camera.position.copy(playerGlobalPosition.clone().add(cameraUp.clone().multiplyScalar(eyeHeight)));
+        camera.quaternion.slerp(finalCameraOrientation, 0.1);
+        
+        controls.target.copy(camera.position); // Look from the camera's new position
+        // --- END OF PLAYER CONTROLLER LOGIC ---
           
       } else {
          if (sebakaMesh) sebakaMesh.visible = true;
@@ -356,9 +385,9 @@ const CelestialSymphony = ({
          if (!isBeaconViewRef.current && goldenGiver) {
             controls.target.lerp(goldenGiver.position, 0.01);
          }
+         controls.update();
       }
 
-      controls.update();
       renderer.render(scene, camera);
     };
 
@@ -410,9 +439,7 @@ const CelestialSymphony = ({
     planetMeshesRef.current.forEach((mesh) => {
       const planetData = planets.find(p => p.name === mesh.name);
       if (planetData && mesh.material instanceof THREE.MeshStandardMaterial) {
-        // Do not change Sebaka's material here if it has the checkerboard texture
         if (mesh.name === 'Sebaka' && mesh.material.map) return;
-
         mesh.material.color.set(planetData.color);
         if (mesh.name === 'Viridis') {
             viridisOriginalColor.current.set(planetData.color);
@@ -430,33 +457,20 @@ const CelestialSymphony = ({
     orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
     
     if (viewFromSebaka) {
-        camera.near = 0.001;
-        controls.enablePan = false;
-        controls.enableZoom = false;
-        controls.enableRotate = false; // Disable orbit controls rotation to use our own logic
-        
-        const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
-        if (sebakaMesh && goldenGiver) {
-            const angle = THREE.MathUtils.degToRad(sebakaRotationAngleRef.current);
-            const lookAtPosition = new THREE.Vector3(
-                sebakaMesh.position.x + Math.sin(angle) * 1000,
-                sebakaMesh.position.y + 10,
-                sebakaMesh.position.z + Math.cos(angle) * 1000
-            );
-            controls.target.copy(lookAtPosition);
+        if (sebakaMesh) {
+          playerRef.current.position.set(0, sebakaRadiusRef.current, 0).add(sebakaMesh.position);
+          playerRef.current.orientation.set(0, 0, 0, 1);
         }
+        camera.near = 0.001;
+        controls.enabled = false;
+        if(sebakaMesh) sebakaMesh.visible = true;
 
     } else {
-        camera.near = 0.001; // Keep it small for smooth transitions
-        controls.minDistance = 1;
-        controls.maxDistance = 200000;
-        controls.enablePan = true;
-        controls.enableZoom = true;
-        controls.enableRotate = true;
-        controls.screenSpacePanning = true;
+        camera.near = 0.001;
+        controls.enabled = true;
     }
     camera.updateProjectionMatrix();
-  }, [viewFromSebaka]);
+  }, [viewFromSebaka, resetViewToggle]);
   
   useEffect(() => {
     const camera = cameraRef.current;
