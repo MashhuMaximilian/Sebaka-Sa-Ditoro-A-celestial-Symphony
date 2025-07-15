@@ -178,35 +178,32 @@ const CelestialSymphony = ({
     planetMeshesRef.current = [];
     orbitMeshesRef.current = [];
 
-    const createCheckerboardTexture = () => {
+    const createStripedTexture = () => {
         const canvas = document.createElement('canvas');
         canvas.width = 512;
         canvas.height = 256;
         const context = canvas.getContext('2d');
         if (!context) return null;
 
-        const checksX = 16;
-        const checksY = 8;
-        const checkWidth = canvas.width / checksX;
-        const checkHeight = canvas.height / checksY;
+        const numberOfStripes = 32;
+        const stripeWidth = canvas.width / numberOfStripes;
+        const colors = ['#ADD8E6', '#FFFFFF'];
 
-        for (let i = 0; i < checksY; i++) {
-            for (let j = 0; j < checksX; j++) {
-                context.fillStyle = (i + j) % 2 === 0 ? '#ADD8E6' : '#FFFFFF';
-                context.fillRect(j * checkWidth, i * checkHeight, checkWidth, checkHeight);
-            }
+        for (let i = 0; i < numberOfStripes; i++) {
+            context.fillStyle = colors[i % 2];
+            context.fillRect(i * stripeWidth, 0, stripeWidth, canvas.height);
         }
         return new THREE.CanvasTexture(canvas);
     };
 
-    const checkerboardTexture = createCheckerboardTexture();
+    const sebakaTexture = createStripedTexture();
 
     bodyData.forEach(body => {
       const geometry = new THREE.SphereGeometry(body.size, 32, 32);
       
       let material;
-      if (body.name === 'Sebaka' && checkerboardTexture) {
-          material = new THREE.MeshStandardMaterial({ map: checkerboardTexture });
+      if (body.name === 'Sebaka' && sebakaTexture) {
+          material = new THREE.MeshStandardMaterial({ map: sebakaTexture });
           sebakaRadiusRef.current = body.size;
       } else {
           const materialOptions: THREE.MeshStandardMaterialParameters = { color: body.color, roughness: 0.8, metalness: 0.1 };
@@ -270,17 +267,21 @@ const CelestialSymphony = ({
       
       const deltaTime = clockRef.current.getDelta();
       const hoursPassedThisFrame = deltaTime * speedMultiplierRef.current;
-      elapsedHoursRef.current += hoursPassedThisFrame;
+      if (!viewFromSebakaRef.current) {
+        elapsedHoursRef.current += hoursPassedThisFrame;
+      }
       
       onTimeUpdate(elapsedHoursRef.current);
       updateAllBodyPositions(elapsedHoursRef.current);
 
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (sebakaMesh) {
-         if (!viewFromSebakaRef.current && isSebakaRotatingRef.current) {
+         if (isSebakaRotatingRef.current && !viewFromSebakaRef.current) {
             const rotationPerHour = (2 * Math.PI) / HOURS_IN_SEBAKA_DAY;
             sebakaMesh.rotation.y = elapsedHoursRef.current * rotationPerHour;
-        }
+         } else {
+            sebakaMesh.rotation.y = 0;
+         }
       }
       
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.geometry.parameters.radius === planets.find(p=>p.name === 'Gelidis')?.orbitRadius);
@@ -315,63 +316,45 @@ const CelestialSymphony = ({
       }
       
       if (viewFromSebakaRef.current && sebakaMesh) {
-        // --- START OF SPHERICAL COORDINATE CAMERA ---
-        
-        // 1. Get slider inputs (in degrees)
         const lat = playerInputsRef.current.latitude;
         const lon = playerInputsRef.current.longitude;
         const pitch = playerInputsRef.current.pitch;
 
-        // 2. Convert angles to radians for calculation
-        const latRad = THREE.MathUtils.degToRad(lat);
+        const latRad = THREE.MathUtils.degToRad(90 - lat);
         const lonRad = THREE.MathUtils.degToRad(lon);
         const pitchRad = THREE.MathUtils.degToRad(pitch);
         
-        // 3. Calculate camera position on the sphere's surface
         const radius = sebakaRadiusRef.current + eyeHeight;
-        const cameraPosition = new THREE.Vector3();
-        cameraPosition.setFromSphericalCoords(radius, Math.PI / 2 - latRad, lonRad);
         
-        // 4. Position camera relative to Sebaka's current position
+        const cameraPosition = new THREE.Vector3();
+        cameraPosition.setFromSphericalCoords(radius, latRad, lonRad);
+        
         camera.position.copy(sebakaMesh.position).add(cameraPosition);
 
-        // 5. Calculate camera orientation
-        //    The "up" vector is always from the center of the planet to the camera
         camera.up.copy(cameraPosition).normalize();
         
-        // 6. Calculate the "look at" target
-        //    Start with a "forward" vector (along Z-axis in local space)
         const forward = new THREE.Vector3(0, 0, -1);
 
-        //    Create a quaternion for the pitch (up/down look)
         const pitchQuat = new THREE.Quaternion().setFromAxisAngle(
-          new THREE.Vector3(1, 0, 0), // Rotate around the local X-axis
+          new THREE.Vector3(1, 0, 0),
           pitchRad
         );
 
-        //    Apply the pitch rotation to the forward vector
-        forward.applyQuaternion(pitchQuat);
-
-        //    Create a quaternion for the camera's position on the sphere. This orients our local space
-        //    so that Z is forward, Y is up, and X is right.
         const orientationQuat = new THREE.Quaternion().setFromUnitVectors(
-          new THREE.Vector3(0, 1, 0), // Default 'up'
-          camera.up // Our new 'up'
+          new THREE.Vector3(0, 1, 0),
+          camera.up
         );
-
-        //    Apply the main orientation to our pitched forward vector
+        
+        forward.applyQuaternion(pitchQuat);
         forward.applyQuaternion(orientationQuat);
         
-        //    The final lookAt target is the camera's position plus this new forward vector
         const lookAtTarget = new THREE.Vector3().copy(camera.position).add(forward);
         
-        // 7. Tell the camera to look at the target
         camera.lookAt(lookAtTarget);
 
         controls.target.copy(lookAtTarget);
         controls.update();
 
-        // --- END OF SPHERICAL COORDINATE CAMERA ---
       } else {
          if (sebakaMesh) sebakaMesh.visible = true;
          const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
