@@ -162,9 +162,9 @@ export default function Home() {
   const [isSebakaRotating, setIsSebakaRotating] = useState(true);
   const [resetViewToggle, setResetViewToggle] = useState(false);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
-  const [sebakaRotationAngle, setSebakaRotationAngle] = useState(0);
-  const [cameraYaw, setCameraYaw] = useState(0);
+  const [longitude, setLongitude] = useState(0);
   const [latitude, setLatitude] = useState(0);
+  const [cameraPitch, setCameraPitch] = useState(0);
   const [isBeaconView, setIsBeaconView] = useState(false);
 
   const [currentYear, setCurrentYear] = useState(0);
@@ -194,16 +194,16 @@ export default function Home() {
     }
   };
 
-  const handleRotationChange = (value: number[]) => {
-    setSebakaRotationAngle(value[0]);
+  const handleLongitudeChange = (value: number[]) => {
+    setLongitude(value[0]);
   };
 
   const handleLatitudeChange = (value: number[]) => {
     setLatitude(value[0]);
   };
   
-  const handleCameraYawChange = (value: number[]) => {
-    setCameraYaw(value[0]);
+  const handleCameraPitchChange = (value: number[]) => {
+    setCameraPitch(value[0]);
   }
 
   const resetSpeed = () => {
@@ -236,9 +236,9 @@ export default function Home() {
       setViewFromSebaka(prev => {
           const newView = !prev;
           if (newView) {
-            setSebakaRotationAngle(0);
+            setLongitude(0);
             setLatitude(0);
-            setCameraYaw(0);
+            setCameraPitch(0);
           }
           return newView;
       })
@@ -270,15 +270,14 @@ export default function Home() {
         onBodyClick={handleBodyClick}
         viewFromSebaka={viewFromSebaka}
         isSebakaRotating={isSebakaRotating}
-        sebakaRotationAngle={sebakaRotationAngle}
+        longitude={longitude}
+        latitude={latitude}
+        cameraPitch={cameraPitch}
         resetViewToggle={resetViewToggle}
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
         isBeaconView={isBeaconView}
-        onRotationAngleChange={setSebakaRotationAngle}
-        cameraYaw={cameraYaw}
-        latitude={latitude}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -382,13 +381,13 @@ export default function Home() {
           {viewFromSebaka && (
              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                  <Label htmlFor="latitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                  Forward/Back
+                  Latitude
                 </Label>
                 <Slider
                     id="latitude-slider"
-                    min={-10}
-                    max={10}
-                    step={0.1}
+                    min={-90}
+                    max={90}
+                    step={1}
                     value={[latitude]}
                     onValueChange={handleLatitudeChange}
                     className="w-full"
@@ -405,24 +404,24 @@ export default function Home() {
                     min={-90}
                     max={90}
                     step={1}
-                    value={[cameraYaw]}
-                    onValueChange={handleCameraYawChange}
+                    value={[cameraPitch]}
+                    onValueChange={handleCameraPitchChange}
                     className="w-full"
                 />
             </div>
           )}
           {viewFromSebaka && (
              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                 <Label htmlFor="rotation-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                  Turn Left/Right
+                 <Label htmlFor="longitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  Longitude
                 </Label>
                 <Slider
-                    id="rotation-slider"
-                    min={-10}
-                    max={10}
-                    step={0.1}
-                    value={[sebakaRotationAngle]}
-                    onValueChange={handleRotationChange}
+                    id="longitude-slider"
+                    min={0}
+                    max={360}
+                    step={1}
+                    value={[longitude]}
+                    onValueChange={handleLongitudeChange}
                     className="w-full"
                 />
             </div>
