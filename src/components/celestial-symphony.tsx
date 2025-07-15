@@ -187,20 +187,48 @@ const CelestialSymphony = ({
     planetMeshesRef.current = [];
     orbitMeshesRef.current = [];
 
+    const createCheckerboardTexture = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 256;
+        const context = canvas.getContext('2d');
+        if (!context) return null;
+
+        const checksX = 16;
+        const checksY = 8;
+        const checkWidth = canvas.width / checksX;
+        const checkHeight = canvas.height / checksY;
+
+        for (let i = 0; i < checksY; i++) {
+            for (let j = 0; j < checksX; j++) {
+                context.fillStyle = (i + j) % 2 === 0 ? '#000000' : '#FFFFFF';
+                context.fillRect(j * checkWidth, i * checkHeight, checkWidth, checkHeight);
+            }
+        }
+        return new THREE.CanvasTexture(canvas);
+    };
+
+    const checkerboardTexture = createCheckerboardTexture();
+
     bodyData.forEach(body => {
       const geometry = new THREE.SphereGeometry(body.size, 32, 32);
-      const materialOptions: THREE.MeshStandardMaterialParameters = { color: body.color, roughness: 0.8, metalness: 0.1 };
       
-      if (body.type === 'Star') {
-        const starData = body as StarData;
-        materialOptions.emissive = starData.color;
-        materialOptions.emissiveIntensity = Math.log1p(starData.luminosity || 0) * 0.5 + 0.5;
+      let material;
+      if (body.name === 'Sebaka' && checkerboardTexture) {
+          material = new THREE.MeshStandardMaterial({ map: checkerboardTexture });
+      } else {
+          const materialOptions: THREE.MeshStandardMaterialParameters = { color: body.color, roughness: 0.8, metalness: 0.1 };
+          if (body.type === 'Star') {
+            const starData = body as StarData;
+            materialOptions.emissive = starData.color;
+            materialOptions.emissiveIntensity = Math.log1p(starData.luminosity || 0) * 0.5 + 0.5;
+          }
+          if (body.name === 'Liminis') {
+            materialOptions.emissive = body.color;
+            materialOptions.emissiveIntensity = 0.2;
+          }
+          material = new THREE.MeshStandardMaterial(materialOptions);
       }
-      if (body.name === 'Liminis') {
-        materialOptions.emissive = body.color;
-        materialOptions.emissiveIntensity = 0.2;
-      }
-      const material = new THREE.MeshStandardMaterial(materialOptions);
       
       const mesh = new THREE.Mesh(geometry, material);
       mesh.name = body.name;
@@ -380,6 +408,9 @@ const CelestialSymphony = ({
     planetMeshesRef.current.forEach((mesh) => {
       const planetData = planets.find(p => p.name === mesh.name);
       if (planetData && mesh.material instanceof THREE.MeshStandardMaterial) {
+        // Do not change Sebaka's material here if it has the checkerboard texture
+        if (mesh.name === 'Sebaka' && mesh.material.map) return;
+
         mesh.material.color.set(planetData.color);
         if (mesh.name === 'Viridis') {
             viridisOriginalColor.current.set(planetData.color);
@@ -448,3 +479,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    
