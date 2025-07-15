@@ -159,7 +159,7 @@ export default function Home() {
   const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
-  const [isSebakaRotating, setIsSebakaRotating] = useState(false);
+  const [isSebakaRotating, setIsSebakaRotating] = useState(true);
   const [resetViewToggle, setResetViewToggle] = useState(false);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [sebakaRotationAngle, setSebakaRotationAngle] = useState(0);
@@ -223,8 +223,8 @@ export default function Home() {
     if (viewFromSebaka) {
       setViewFromSebaka(false);
     }
-    if (isSebakaRotating) {
-        setIsSebakaRotating(false);
+    if (!isSebakaRotating) {
+        setIsSebakaRotating(true);
     }
     if (isBeaconView) {
         setIsBeaconView(false);
@@ -235,12 +235,10 @@ export default function Home() {
   const toggleSebakaView = () => {
       setViewFromSebaka(prev => {
           const newView = !prev;
-          if (!newView && isSebakaRotating) {
-              setIsSebakaRotating(false);
-          }
-          if(newView) {
+          if (newView) {
             setSebakaRotationAngle(0);
             setLatitude(0);
+            setCameraYaw(0);
           }
           return newView;
       })
@@ -336,19 +334,17 @@ export default function Home() {
                         <p>{viewFromSebaka ? 'Exit Sebaka View' : 'View from Sebaka'}</p>
                     </TooltipContent>
                 </Tooltip>
-                {viewFromSebaka && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsSebakaRotating(prev => !prev)}>
-                                <RotateCw className="h-5 w-5" />
-                                <span className="sr-only">Toggle Sebaka Rotation</span>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>{isSebakaRotating ? 'Stop Sebaka Rotation' : 'Rotate with Sebaka'}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                )}
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsSebakaRotating(prev => !prev)}>
+                            <RotateCw className="h-5 w-5" />
+                            <span className="sr-only">Toggle Planet Rotation</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{isSebakaRotating ? 'Pause Planet Rotation' : 'Resume Planet Rotation'}</p>
+                    </TooltipContent>
+                </Tooltip>
                  <Tooltip>
                     <TooltipTrigger asChild>
                          <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={handleResetView}>
@@ -390,9 +386,9 @@ export default function Home() {
                 </Label>
                 <Slider
                     id="latitude-slider"
-                    min={-180}
-                    max={180}
-                    step={1}
+                    min={-10}
+                    max={10}
+                    step={0.1}
                     value={[latitude]}
                     onValueChange={handleLatitudeChange}
                     className="w-full"
@@ -422,9 +418,9 @@ export default function Home() {
                 </Label>
                 <Slider
                     id="rotation-slider"
-                    min={-180}
-                    max={180}
-                    step={1}
+                    min={-10}
+                    max={10}
+                    step={0.1}
                     value={[sebakaRotationAngle]}
                     onValueChange={handleRotationChange}
                     className="w-full"

@@ -226,9 +226,8 @@ const CelestialSymphony = ({
           material = new THREE.MeshStandardMaterial({ map: checkerboardTexture });
           sebakaRadiusRef.current = body.size;
           // Initialize player position on the surface of Sebaka
-          const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-          const sebakaPosition = sebakaMesh ? sebakaMesh.position : new THREE.Vector3(0,0,0);
-          playerRef.current.position.set(sebakaPosition.x, sebakaPosition.y + sebakaRadiusRef.current, sebakaPosition.z);
+          const sebakaPosition = new THREE.Vector3().setFromCylindricalCoords(sebakaRadiusRef.current, Math.PI / 2, 0);
+          playerRef.current.position.copy(sebakaPosition);
       } else {
           const materialOptions: THREE.MeshStandardMaterialParameters = { color: body.color, roughness: 0.8, metalness: 0.1 };
           if (body.type === 'Star') {
@@ -298,7 +297,9 @@ const CelestialSymphony = ({
 
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (sebakaMesh) {
-        if (!viewFromSebakaRef.current || isSebakaRotatingRef.current) {
+         // When in Sebaka view, the planet's surface should be our static frame of reference.
+         // Do not rotate the sebakaMesh itself. The sky will move around us.
+         if (!viewFromSebakaRef.current && isSebakaRotatingRef.current) {
             const rotationPerHour = (2 * Math.PI) / HOURS_IN_SEBAKA_DAY;
             sebakaMesh.rotation.y = elapsedHoursRef.current * rotationPerHour;
         }
@@ -337,13 +338,17 @@ const CelestialSymphony = ({
       
       if (viewFromSebakaRef.current && sebakaMesh) {
         // --- START OF PLAYER CONTROLLER LOGIC ---
-        const yawAngle = THREE.MathUtils.degToRad(playerInputsRef.current.yaw);
+        const yawDelta = THREE.MathUtils.degToRad(playerInputsRef.current.yaw) * deltaTime * 5;
         const pitchAngle = THREE.MathUtils.degToRad(playerInputsRef.current.pitch);
-        const moveSpeed = playerInputsRef.current.move * deltaTime * 0.05;
+        const moveSpeed = playerInputsRef.current.move * deltaTime * 5;
 
         // 1. Update Player Orientation (Yaw/Left-Right Turn)
-        const yawQuaternion = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawAngle);
-        playerRef.current.orientation.copy(yawQuaternion);
+        const yawQuaternion = new THREE.Quaternion().setFromAxisAngle(
+          playerRef.current.position.clone().normalize(), // Rotate around the normal to the surface
+          -yawDelta
+        );
+        playerRef.current.orientation.premultiply(yawQuaternion);
+
 
         // 2. Update Player Position (Forward/Backward Movement)
         if (moveSpeed !== 0) {
@@ -355,28 +360,29 @@ const CelestialSymphony = ({
             playerRef.current.position.applyQuaternion(moveQuaternion);
         }
 
-        // Ensure player stays on the surface
+        // 3. Stick player to surface ("Gravity")
         playerRef.current.position.normalize().multiplyScalar(sebakaRadiusRef.current);
         const playerGlobalPosition = playerRef.current.position.clone().add(sebakaMesh.position);
 
-        // 3. Update Camera
-        // Calculate camera's "up" vector (normal to the planet surface at player's position)
-        const cameraUp = playerGlobalPosition.clone().sub(sebakaMesh.position).normalize();
+        // 4. Update Camera
+        // The camera's "up" is always pointing away from the planet's center
+        const cameraUp = playerRef.current.position.clone().normalize();
 
-        // Calculate pitch rotation for looking up/down
-        const forwardVector = new THREE.Vector3(0, 0, -1).applyQuaternion(playerRef.current.orientation);
+        // The camera is positioned slightly above the surface at the player's location
+        const eyeHeight = 0.1;
+        camera.position.copy(playerGlobalPosition).add(cameraUp.clone().multiplyScalar(eyeHeight));
+
+        // Calculate pitch (up/down look)
         const rightVector = new THREE.Vector3(1, 0, 0).applyQuaternion(playerRef.current.orientation);
         const pitchQuaternion = new THREE.Quaternion().setFromAxisAngle(rightVector, pitchAngle);
 
-        // Combine player orientation with camera pitch
+        // Combine base orientation with pitch
         const finalCameraOrientation = playerRef.current.orientation.clone().multiply(pitchQuaternion);
-
-        // Set camera position and orientation
-        const eyeHeight = 0.5;
-        camera.position.copy(playerGlobalPosition.clone().add(cameraUp.clone().multiplyScalar(eyeHeight)));
-        camera.quaternion.slerp(finalCameraOrientation, 0.1);
+        camera.quaternion.slerp(finalCameraOrientation, 0.5); // Use slerp for smooth transition
         
-        controls.target.copy(camera.position); // Look from the camera's new position
+        // Disable orbit controls target
+        controls.target.copy(camera.position.clone().add(new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion)));
+
         // --- END OF PLAYER CONTROLLER LOGIC ---
           
       } else {
@@ -395,6 +401,7 @@ const CelestialSymphony = ({
     animate();
 
     const onClick = (event: MouseEvent | TouchEvent) => {
+        if (viewFromSebakaRef.current) return;
         const rect = renderer.domElement.getBoundingClientRect();
         let x, y;
         if (event instanceof MouseEvent) { x = event.clientX; y = event.clientY; } 
@@ -458,7 +465,7 @@ const CelestialSymphony = ({
     
     if (viewFromSebaka) {
         if (sebakaMesh) {
-          playerRef.current.position.set(0, sebakaRadiusRef.current, 0).add(sebakaMesh.position);
+          playerRef.current.position.set(0, sebakaRadiusRef.current, 0);
           playerRef.current.orientation.set(0, 0, 0, 1);
         }
         camera.near = 0.001;
