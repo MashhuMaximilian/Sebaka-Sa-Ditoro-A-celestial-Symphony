@@ -196,7 +196,7 @@ const CelestialSymphony = ({
 
         for (let i = 0; i < checksY; i++) {
             for (let j = 0; j < checksX; j++) {
-                context.fillStyle = (i + j) % 2 === 0 ? '#000000' : '#FFFFFF';
+                context.fillStyle = (i + j) % 2 === 0 ? '#ADD8E6' : '#FFFFFF';
                 context.fillRect(j * checkWidth, i * checkHeight, checkWidth, checkHeight);
             }
         }
