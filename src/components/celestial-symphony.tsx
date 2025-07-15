@@ -143,11 +143,6 @@ const CelestialSymphony = ({
 
         const y = orbitCenter.y;
         bodyMesh.position.set(x, y, z);
-
-        if (bodyMesh.name === 'Sebaka') {
-            const rotationPerHour = (2 * Math.PI) / HOURS_IN_SEBAKA_DAY;
-            bodyMesh.rotation.y = currentHours * rotationPerHour;
-        }
     });
   }
 
@@ -282,6 +277,14 @@ const CelestialSymphony = ({
       
       onTimeUpdate(elapsedHoursRef.current);
       updateAllBodyPositions(elapsedHoursRef.current);
+
+      const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+      if (sebakaMesh) {
+        if (!viewFromSebakaRef.current || isSebakaRotatingRef.current) {
+            const rotationPerHour = (2 * Math.PI) / HOURS_IN_SEBAKA_DAY;
+            sebakaMesh.rotation.y = elapsedHoursRef.current * rotationPerHour;
+        }
+      }
       
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.geometry.parameters.radius === planets.find(p=>p.name === 'Gelidis')?.orbitRadius);
       const liminisOrbit = orbitMeshesRef.current.find(o => o.geometry.parameters.radius === planets.find(p=>p.name === 'Liminis')?.orbitRadius);
@@ -314,7 +317,6 @@ const CelestialSymphony = ({
           }
       }
       
-      const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (viewFromSebakaRef.current && sebakaMesh) {
           sebakaMesh.visible = true;
           const sebakaRadius = (sebakaMesh.geometry as THREE.SphereGeometry).parameters.radius;
@@ -479,5 +481,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    
