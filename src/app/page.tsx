@@ -163,6 +163,7 @@ export default function Home() {
   const [resetViewToggle, setResetViewToggle] = useState(false);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [sebakaRotationAngle, setSebakaRotationAngle] = useState(0);
+  const [cameraYaw, setCameraYaw] = useState(0);
   const [latitude, setLatitude] = useState(0);
   const [isBeaconView, setIsBeaconView] = useState(false);
 
@@ -200,6 +201,10 @@ export default function Home() {
   const handleLatitudeChange = (value: number[]) => {
     setLatitude(value[0]);
   };
+  
+  const handleCameraYawChange = (value: number[]) => {
+    setCameraYaw(value[0]);
+  }
 
   const resetSpeed = () => {
     setSpeedMultiplier(24);
@@ -274,6 +279,7 @@ export default function Home() {
         goToTime={goToTime}
         isBeaconView={isBeaconView}
         onRotationAngleChange={setSebakaRotationAngle}
+        cameraYaw={cameraYaw}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -394,6 +400,22 @@ export default function Home() {
           )}
           {viewFromSebaka && !isSebakaRotating && (
              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                 <Label htmlFor="look-angle-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  Look Angle
+                </Label>
+                <Slider
+                    id="look-angle-slider"
+                    min={-180}
+                    max={180}
+                    step={1}
+                    value={[cameraYaw]}
+                    onValueChange={handleCameraYawChange}
+                    className="w-full"
+                />
+            </div>
+          )}
+          {viewFromSebaka && !isSebakaRotating && (
+             <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                  <Label htmlFor="rotation-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                   Rotation: {sebakaRotationAngle.toFixed(0)}°
                 </Label>
@@ -462,5 +484,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

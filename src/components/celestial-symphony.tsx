@@ -20,6 +20,7 @@ interface CelestialSymphonyProps {
   goToTime: number | null;
   isBeaconView: boolean;
   onRotationAngleChange: (angle: number) => void;
+  cameraYaw: number;
 }
 
 const HOURS_IN_SEBAKA_DAY = 24;
@@ -38,6 +39,7 @@ const CelestialSymphony = ({
   goToTime,
   isBeaconView,
   onRotationAngleChange,
+  cameraYaw,
 }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
@@ -55,6 +57,7 @@ const CelestialSymphony = ({
   const viewFromSebakaRef = useRef(viewFromSebaka);
   const isSebakaRotatingRef = useRef(isSebakaRotating);
   const sebakaRotationAngleRef = useRef(sebakaRotationAngle);
+  const cameraYawRef = useRef(cameraYaw);
   const isBeaconViewRef = useRef(isBeaconView);
 
   const originalCameraPos = useRef(new THREE.Vector3(0, 400, 800));
@@ -82,6 +85,7 @@ const CelestialSymphony = ({
         internalRotationAngleRef.current = sebakaRotationAngle;
     }
   }, [sebakaRotationAngle, isSebakaRotating]);
+  useEffect(() => { cameraYawRef.current = cameraYaw; }, [cameraYaw]);
   useEffect(() => { isBeaconViewRef.current = isBeaconView; }, [isBeaconView]);
 
   useEffect(() => {
@@ -302,14 +306,16 @@ const CelestialSymphony = ({
             onRotationAngleChange(internalRotationAngleRef.current);
           }
           
-          const angle = THREE.MathUtils.degToRad(
+          const planetRotationAngle = THREE.MathUtils.degToRad(
             isSebakaRotatingRef.current ? internalRotationAngleRef.current : sebakaRotationAngleRef.current
           );
 
+          const lookAngle = planetRotationAngle + THREE.MathUtils.degToRad(cameraYawRef.current);
+
           const lookAtPosition = new THREE.Vector3(
-              sebakaMesh.position.x + Math.sin(angle) * 1000,
-              sebakaMesh.position.y + 10, // Look slightly up for a natural sky view
-              sebakaMesh.position.z + Math.cos(angle) * 1000
+              sebakaMesh.position.x + Math.sin(lookAngle) * 1000,
+              sebakaMesh.position.y,
+              sebakaMesh.position.z + Math.cos(lookAngle) * 1000
           );
           
           controls.target.lerp(lookAtPosition, 0.1);
@@ -392,11 +398,9 @@ const CelestialSymphony = ({
     
     if (viewFromSebaka) {
         camera.near = 0.001;
-        controls.enablePan = true;
-        controls.enableZoom = true;
-        controls.minDistance = 0.01;
-        controls.maxDistance = 1000;
-        controls.enableRotate = true;
+        controls.enablePan = false;
+        controls.enableZoom = false;
+        controls.enableRotate = false; // Disable orbit controls rotation to use our own logic
         
         const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
         if (sebakaMesh && goldenGiver) {
