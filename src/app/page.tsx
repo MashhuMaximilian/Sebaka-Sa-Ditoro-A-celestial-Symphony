@@ -385,131 +385,137 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-lg p-4 space-y-2">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl p-4 space-y-2">
           {viewFromSebaka ? (
-              <Accordion type="single" collapsible className="w-full" defaultValue="time">
-                  <AccordionItem value="time" className="border-none">
-                      <AccordionTrigger className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90">Time</AccordionTrigger>
-                      <AccordionContent className="space-y-2 pt-2">
-                          <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                              <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                  Go to Time
-                              </Label>
-                              <Input
-                                  id="year-input"
-                                  type="number"
-                                  placeholder="Year"
-                                  value={targetYear}
-                                  onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
-                                  className="w-full"
-                              />
-                              <Input
-                                  id="day-input"
-                                  type="number"
-                                  placeholder="Day"
-                                  value={targetDay}
-                                  onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
-                                  className="w-full"
-                                  min={1}
-                                  max={324}
-                              />
-                              <Button onClick={handleGoToTime}>Go</Button>
-                          </div>
-                          <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                              <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                  Speed (hrs/s)
-                              </Label>
-                              <Input
-                                  id="speed-input"
-                                  type="number"
-                                  value={speedMultiplier}
-                                  onChange={handleSpeedChange}
-                                  className="w-full"
-                                  min={0.1}
-                                  step={0.1}
-                              />
-                               <TooltipProvider>
-                                  <Tooltip>
-                                      <TooltipTrigger asChild>
-                                          <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-background/30 hover:text-primary-foreground">
-                                              <History className="h-5 w-5" />
-                                          </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                          <p>Reset Speed to 1 day/sec</p>
-                                      </TooltipContent>
-                                  </Tooltip>
-                              </TooltipProvider>
-                          </div>
-                      </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="look" className="border-none">
-                      <AccordionTrigger className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 mt-2">Look</AccordionTrigger>
-                      <AccordionContent className="space-y-2 pt-2">
-                          <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                              <Label htmlFor="look-angle-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                Look Up/Down
-                              </Label>
-                              <Slider
-                                  id="look-angle-slider"
-                                  min={-90}
-                                  max={90}
-                                  step={1}
-                                  value={[cameraPitch]}
-                                  onValueChange={handleCameraPitchChange}
-                                  className="w-full"
-                              />
-                          </div>
-                          <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                              <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                Look Left/Right
-                              </Label>
-                              <Slider
-                                  id="look-yaw-slider"
-                                  min={0}
-                                  max={360}
-                                  step={1}
-                                  value={[cameraYaw]}
-                                  onValueChange={handleCameraYawChange}
-                                  className="w-full"
-                              />
-                          </div>
-                      </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="move" className="border-none">
-                      <AccordionTrigger className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 mt-2">Move</AccordionTrigger>
-                      <AccordionContent className="space-y-2 pt-2">
-                          <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                              <Label htmlFor="latitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                Latitude
-                              </Label>
-                              <Slider
-                                  id="latitude-slider"
-                                  min={-90}
-                                  max={90}
-                                  step={1}
-                                  value={[latitude]}
-                                  onValueChange={handleLatitudeChange}
-                                  className="w-full"
-                              />
-                          </div>
-                          <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                              <Label htmlFor="longitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                Longitude
-                              </Label>
-                              <Slider
-                                  id="longitude-slider"
-                                  min={0}
-                                  max={360}
-                                  step={1}
-                                  value={[longitude]}
-                                  onValueChange={handleLongitudeChange}
-                                  className="w-full"
-                              />
-                          </div>
-                      </AccordionContent>
-                  </AccordionItem>
-              </Accordion>
+              <div className="flex items-start justify-center gap-2">
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="time" className="border-none">
+                        <AccordionTrigger className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90">Time</AccordionTrigger>
+                        <AccordionContent className="space-y-2 pt-2">
+                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                                <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                                    Go to Time
+                                </Label>
+                                <Input
+                                    id="year-input"
+                                    type="number"
+                                    placeholder="Year"
+                                    value={targetYear}
+                                    onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
+                                    className="w-full"
+                                />
+                                <Input
+                                    id="day-input"
+                                    type="number"
+                                    placeholder="Day"
+                                    value={targetDay}
+                                    onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
+                                    className="w-full"
+                                    min={1}
+                                    max={324}
+                                />
+                                <Button onClick={handleGoToTime}>Go</Button>
+                            </div>
+                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                                <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                                    Speed (hrs/s)
+                                </Label>
+                                <Input
+                                    id="speed-input"
+                                    type="number"
+                                    value={speedMultiplier}
+                                    onChange={handleSpeedChange}
+                                    className="w-full"
+                                    min={0.1}
+                                    step={0.1}
+                                />
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-background/30 hover:text-primary-foreground">
+                                                <History className="h-5 w-5" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Reset Speed to 1 day/sec</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="look" className="border-none">
+                        <AccordionTrigger className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90">Look</AccordionTrigger>
+                        <AccordionContent className="space-y-2 pt-2">
+                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                                <Label htmlFor="look-angle-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                                  Look Up/Down
+                                </Label>
+                                <Slider
+                                    id="look-angle-slider"
+                                    min={-90}
+                                    max={90}
+                                    step={1}
+                                    value={[cameraPitch]}
+                                    onValueChange={handleCameraPitchChange}
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                                <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                                  Look Left/Right
+                                </Label>
+                                <Slider
+                                    id="look-yaw-slider"
+                                    min={0}
+                                    max={360}
+                                    step={1}
+                                    value={[cameraYaw]}
+                                    onValueChange={handleCameraYawChange}
+                                    className="w-full"
+                                />
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+                <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="move" className="border-none">
+                        <AccordionTrigger className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90">Move</AccordionTrigger>
+                        <AccordionContent className="space-y-2 pt-2">
+                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                                <Label htmlFor="latitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                                  Latitude
+                                </Label>
+                                <Slider
+                                    id="latitude-slider"
+                                    min={-90}
+                                    max={90}
+                                    step={1}
+                                    value={[latitude]}
+                                    onValueChange={handleLatitudeChange}
+                                    className="w-full"
+                                />
+                            </div>
+                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                                <Label htmlFor="longitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                                  Longitude
+                                </Label>
+                                <Slider
+                                    id="longitude-slider"
+                                    min={0}
+                                    max={360}
+                                    step={1}
+                                    value={[longitude]}
+                                    onValueChange={handleLongitudeChange}
+                                    className="w-full"
+                                />
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+              </div>
           ) : (
             <>
               <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
