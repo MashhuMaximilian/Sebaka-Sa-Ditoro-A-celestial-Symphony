@@ -419,21 +419,31 @@ const CelestialSymphony = ({
         controls.update();
 
       } else {
-         if (sebakaMesh) sebakaMesh.visible = true;
-         
-        let targetPosition = new THREE.Vector3(0, 0, 0);
-        const target = cameraTargetRef.current;
-        const targetBody = allBodiesRef.current.find(b => b.name === target);
+        if (sebakaMesh) sebakaMesh.visible = true;
 
-        if (target === 'Binary Stars') {
-            targetPosition.set(0, 0, 0); // Barycenter of binary system
-        } else if (target === 'Beacon') {
+        let targetPosition = new THREE.Vector3(0, 0, 0);
+        let desiredCameraPosition: THREE.Vector3 | null = null;
+        const targetName = cameraTargetRef.current;
+        const targetBodyMesh = allBodiesRef.current.find(b => b.name === targetName);
+        const targetBodyData = bodyData.find(b => b.name === targetName);
+
+        if (targetName === 'Binary Stars') {
+            targetPosition.set(0, 0, 0);
+            desiredCameraPosition = new THREE.Vector3(0, 200, 400);
+        } else if (targetName === 'Beacon System') {
             targetPosition.copy(beaconPositionRef.current);
-        } else if (targetBody) {
-            targetPosition.copy(targetBody.position);
+            desiredCameraPosition = new THREE.Vector3(targetPosition.x, targetPosition.y + 1000, targetPosition.z + 2000);
+        } else if (targetBodyMesh && targetBodyData) {
+            targetPosition.copy(targetBodyMesh.position);
+            const offset = targetBodyData.size * 4;
+            desiredCameraPosition = new THREE.Vector3(targetPosition.x, targetPosition.y + offset/2, targetPosition.z + offset);
+        }
+        
+        if (desiredCameraPosition) {
+            camera.position.lerp(desiredCameraPosition, 0.05);
+            controls.target.lerp(targetPosition, 0.05);
         }
 
-        controls.target.lerp(targetPosition, 0.05);
         controls.update();
       }
 
@@ -545,3 +555,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    
