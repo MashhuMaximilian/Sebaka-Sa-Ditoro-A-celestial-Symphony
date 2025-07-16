@@ -171,16 +171,8 @@ const CelestialSymphony = ({
     controlsRef.current = controls;
 
     // --- LIGHTING SETUP ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 3.0);
     scene.add(ambientLight);
-
-    const directionalLightDown = new THREE.DirectionalLight(0xffffff, 2.5);
-    directionalLightDown.position.set(0, 1, 0); // Pointing down
-    scene.add(directionalLightDown);
-
-    const directionalLightUp = new THREE.DirectionalLight(0xffffff, 2.5);
-    directionalLightUp.position.set(0, -1, 0); // Pointing up
-    scene.add(directionalLightUp);
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
