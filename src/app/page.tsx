@@ -159,7 +159,7 @@ const initialPlanets: PlanetData[] = [
   },
 ];
 
-type ActiveSebakaPanel = 'time' | 'look' | 'move' | null;
+type ActiveSebakaPanel = 'time' | 'look' | 'move';
 
 export default function Home() {
   const [planets, setPlanets] = useState<PlanetData[]>(initialPlanets);
@@ -175,7 +175,7 @@ export default function Home() {
   const [cameraPitch, setCameraPitch] = useState(0);
   const [cameraYaw, setCameraYaw] = useState(0);
   const [isBeaconView, setIsBeaconView] = useState(false);
-  const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel>(null);
+  const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
 
   const [currentYear, setCurrentYear] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
@@ -260,7 +260,7 @@ export default function Home() {
       })
   }
   
-  const handleSebakaPanelToggle = (panel: ActiveSebakaPanel) => {
+  const handleSebakaPanelToggle = (panel: ActiveSebakaPanel | null) => {
     setActiveSebakaPanel(current => current === panel ? null : panel);
   }
 
@@ -525,7 +525,7 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 space-y-2">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 space-y-2 pb-16 md:pb-4">
           {viewFromSebaka ? (
               <div className="flex flex-col-reverse items-center gap-2">
                   <div className="flex items-center justify-center gap-2 w-full">
