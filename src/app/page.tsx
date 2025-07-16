@@ -39,6 +39,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 
 // 1 AU = 150 simulation units.
@@ -174,7 +183,7 @@ export default function Home() {
   const [latitude, setLatitude] = useState(0);
   const [cameraPitch, setCameraPitch] = useState(0);
   const [cameraYaw, setCameraYaw] = useState(0);
-  const [isBeaconView, setIsBeaconView] = useState(false);
+  const [cameraTarget, setCameraTarget] = useState<string | null>(null);
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
 
   const [currentYear, setCurrentYear] = useState(0);
@@ -240,9 +249,7 @@ export default function Home() {
     if (!isSebakaRotating) {
         setIsSebakaRotating(true);
     }
-    if (isBeaconView) {
-        setIsBeaconView(false);
-    }
+    setCameraTarget(null);
     setResetViewToggle(prev => !prev);
   }
 
@@ -284,7 +291,7 @@ export default function Home() {
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;
     
-    const panels: Record<ActiveSebakaPanel, React.ReactNode> = {
+    const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
             <>
                 <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
@@ -425,7 +432,7 @@ export default function Home() {
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
-        isBeaconView={isBeaconView}
+        cameraTarget={cameraTarget}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -447,18 +454,53 @@ export default function Home() {
                     </DialogContent>
                 )}
             </Dialog>
+            
+            <DropdownMenu>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <DropdownMenuTrigger asChild>
+                                 <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm">
+                                    <Focus className="h-5 w-5" />
+                                    <span className="sr-only">Focus Camera</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Focus Camera</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                <DropdownMenuContent className="w-56">
+                    <DropdownMenuLabel>Focus Target</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                        <DropdownMenuLabel>Systems</DropdownMenuLabel>
+                        <DropdownMenuItem onSelect={() => setCameraTarget('Binary Stars')}>Binary Stars</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => setCameraTarget('Beacon')}>Beacon System</DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                         <DropdownMenuLabel>Stars</DropdownMenuLabel>
+                        {initialStars.map(star => (
+                            <DropdownMenuItem key={star.name} onSelect={() => setCameraTarget(star.name)}>
+                                {star.name}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                        <DropdownMenuLabel>Planets</DropdownMenuLabel>
+                        {initialPlanets.map(planet => (
+                            <DropdownMenuItem key={planet.name} onSelect={() => setCameraTarget(planet.name)}>
+                                {planet.name}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuGroup>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
             <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsBeaconView(prev => !prev)}>
-                            <Focus className="h-5 w-5" />
-                            <span className="sr-only">Toggle Beacon View</span>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>{isBeaconView ? 'Focus on Binary Stars' : 'Focus on Beacon'}</p>
-                    </TooltipContent>
-                </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
                          <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>

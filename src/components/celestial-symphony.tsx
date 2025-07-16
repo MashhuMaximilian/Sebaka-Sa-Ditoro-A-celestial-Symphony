@@ -21,7 +21,7 @@ interface CelestialSymphonyProps {
   isViridisAnimationActive: boolean;
   onTimeUpdate: (elapsedHours: number) => void;
   goToTime: number | null;
-  isBeaconView: boolean;
+  cameraTarget: string | null;
 }
 
 const HOURS_IN_SEBAKA_DAY = 24;
@@ -42,7 +42,7 @@ const CelestialSymphony = ({
   isViridisAnimationActive,
   onTimeUpdate,
   goToTime,
-  isBeaconView,
+  cameraTarget,
 }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
@@ -59,7 +59,7 @@ const CelestialSymphony = ({
   const isViridisAnimationActiveRef = useRef(isViridisAnimationActive);
   const viewFromSebakaRef = useRef(viewFromSebaka);
   const isSebakaRotatingRef = useRef(isSebakaRotating);
-  const isBeaconViewRef = useRef(isBeaconView);
+  const cameraTargetRef = useRef(cameraTarget);
 
   const originalCameraPos = useRef(new THREE.Vector3(0, 400, 800));
   const viridisOriginalColor = useRef(new THREE.Color("#9ACD32"));
@@ -85,7 +85,7 @@ const CelestialSymphony = ({
   useEffect(() => { playerInputsRef.current.latitude = latitude; }, [latitude]);
   useEffect(() => { playerInputsRef.current.pitch = cameraPitch; }, [cameraPitch]);
   useEffect(() => { playerInputsRef.current.yaw = cameraYaw; }, [cameraYaw]);
-  useEffect(() => { isBeaconViewRef.current = isBeaconView; }, [isBeaconView]);
+  useEffect(() => { cameraTargetRef.current = cameraTarget; }, [cameraTarget]);
 
   useEffect(() => {
     if (goToTime !== null) {
@@ -208,83 +208,71 @@ const CelestialSymphony = ({
     };
     
     const sebakaTexture = createStripedTexture();
-    const planetsWithTextures = ['Rutilus', 'Spectris', 'Viridis', 'Aetheris', 'Gelidis'];
 
     bodyData.forEach(body => {
       const geometry = new THREE.SphereGeometry(body.size, 64, 64);
       let material;
+      const materialOptions: THREE.MeshStandardMaterialParameters = { roughness: 0.8, metalness: 0.1 };
 
       switch(body.name) {
         case 'Sebaka':
           material = new THREE.MeshStandardMaterial({ map: sebakaTexture });
           sebakaRadiusRef.current = body.size;
           break;
-
         case 'Aetheris':
           material = new THREE.MeshStandardMaterial({
+            ...materialOptions,
             map: textureLoader.load('/maps/AetherisTexture.png'),
-            roughness: 0.9,
-            metalness: 0.1,
           });
           break;
-        
         case 'Gelidis':
           material = new THREE.MeshStandardMaterial({
+            ...materialOptions,
             map: textureLoader.load('/maps/GelidisTexture.png'),
             normalMap: textureLoader.load('/maps/GelidisTexture_normal.png'),
             displacementMap: textureLoader.load('/maps/GelidisTexture_displacement.png'),
             displacementScale: 0.2,
-            roughness: 0.8,
-            metalness: 0.1,
           });
           break;
-          
         case 'Rutilus':
            material = new THREE.MeshStandardMaterial({
+            ...materialOptions,
             map: textureLoader.load('/maps/RutiliusTexture.png'),
             normalMap: textureLoader.load('/maps/RutiliusTexture_normal.png'),
             displacementMap: textureLoader.load('/maps/RutiliusTexture_displacement.png'),
             aoMap: textureLoader.load('/maps/RutiliusTexture_ambient.png'),
             displacementScale: 0.1,
-            roughness: 0.7,
-            metalness: 0.2,
           });
           break;
-
         case 'Spectris':
           material = new THREE.MeshStandardMaterial({
+            ...materialOptions,
             map: textureLoader.load('/maps/SpectrisTexture.png'),
             normalMap: textureLoader.load('/maps/SpectrisTexture_normal.png'),
             displacementMap: textureLoader.load('/maps/SpectrisTexture_displacement.png'),
             aoMap: textureLoader.load('/maps/SpectrisTexture_ambient.png'),
             displacementScale: 0.05,
-            roughness: 0.6,
-            metalness: 0.1,
           });
           break;
-        
         case 'Viridis':
            material = new THREE.MeshStandardMaterial({
+            ...materialOptions,
             map: textureLoader.load('/maps/ViridisTexture.png'),
             normalMap: textureLoader.load('/maps/ViridisTexture_normal.png'),
             displacementMap: textureLoader.load('/maps/ViridisTexture_displacement.png'),
             aoMap: textureLoader.load('/maps/ViridisTexture_ambient.png'),
             displacementScale: 0.1,
-            roughness: 0.8,
-            metalness: 0.1,
           });
           break;
-
-        default:
-          const materialOptions: THREE.MeshStandardMaterialParameters = { color: body.color, roughness: 0.8, metalness: 0.1 };
+        case 'Liminis':
+            material = new THREE.MeshStandardMaterial({ ...materialOptions, color: body.color, emissive: body.color, emissiveIntensity: 0.2 });
+            break;
+        default: // Stars
+          materialOptions.color = body.color;
           if (body.type === 'Star') {
             const starData = body as StarData;
             materialOptions.emissive = starData.color;
             materialOptions.emissiveIntensity = 2; // Make stars glow brightly
-          }
-          if (body.name === 'Liminis') {
-            materialOptions.emissive = body.color;
-            materialOptions.emissiveIntensity = 0.2;
           }
           material = new THREE.MeshStandardMaterial(materialOptions);
           break;
@@ -432,11 +420,21 @@ const CelestialSymphony = ({
 
       } else {
          if (sebakaMesh) sebakaMesh.visible = true;
-         const goldenGiver = allBodiesRef.current.find(b => b.name === 'Golden Giver');
-         if (!isBeaconViewRef.current && goldenGiver) {
-            controls.target.lerp(goldenGiver.position, 0.01);
-         }
-         controls.update();
+         
+        let targetPosition = new THREE.Vector3(0, 0, 0);
+        const target = cameraTargetRef.current;
+        const targetBody = allBodiesRef.current.find(b => b.name === target);
+
+        if (target === 'Binary Stars') {
+            targetPosition.set(0, 0, 0); // Barycenter of binary system
+        } else if (target === 'Beacon') {
+            targetPosition.copy(beaconPositionRef.current);
+        } else if (targetBody) {
+            targetPosition.copy(targetBody.position);
+        }
+
+        controls.target.lerp(targetPosition, 0.05);
+        controls.update();
       }
 
       renderer.render(scene, camera);
@@ -536,18 +534,12 @@ const CelestialSymphony = ({
     const controls = controlsRef.current;
     if (!camera || !controls) return;
 
-    if (!viewFromSebaka) {
-      if (isBeaconView) {
-        const beaconCamPos = beaconPositionRef.current.clone().add(new THREE.Vector3(0, 2000, 4000));
-        camera.position.set(beaconCamPos.x, beaconCamPos.y, beaconCamPos.z);
-        controls.target.set(beaconPositionRef.current.x, beaconPositionRef.current.y, beaconPositionRef.current.z);
-      } else {
-        camera.position.set(originalCameraPos.current.x, originalCameraPos.current.y, originalCameraPos.current.z);
-        controls.target.set(0, 0, 0);
-      }
+    if (!viewFromSebaka && !cameraTarget) {
+        camera.position.lerp(originalCameraPos.current, 0.05);
+        controls.target.lerp(new THREE.Vector3(0, 0, 0), 0.05);
     }
     controls.update();
-  }, [isBeaconView, resetViewToggle, viewFromSebaka]);
+  }, [cameraTarget, resetViewToggle, viewFromSebaka]);
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };
