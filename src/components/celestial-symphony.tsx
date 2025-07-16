@@ -170,7 +170,7 @@ const CelestialSymphony = ({
     controls.target.set(0, 0, 0);
     controlsRef.current = controls;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -181,6 +181,8 @@ const CelestialSymphony = ({
     planetMeshesRef.current = [];
     orbitMeshesRef.current = [];
     
+    const textureLoader = new THREE.TextureLoader();
+
     const createStripedTexture = () => {
       const canvas = document.createElement('canvas');
       canvas.width = 128;
@@ -204,6 +206,7 @@ const CelestialSymphony = ({
     };
     
     const sebakaTexture = createStripedTexture();
+    const planetsWithTextures = ['Rutilus', 'Spectris', 'Viridis', 'Aetheris', 'Gelidis'];
 
     bodyData.forEach(body => {
       const geometry = new THREE.SphereGeometry(body.size, 32, 32);
@@ -212,7 +215,17 @@ const CelestialSymphony = ({
       if (body.name === 'Sebaka' && sebakaTexture) {
           material = new THREE.MeshStandardMaterial({ map: sebakaTexture });
           sebakaRadiusRef.current = body.size;
-      } else {
+      } else if (planetsWithTextures.includes(body.name)) {
+          const mapPath = `/maps/${body.name}/`;
+          material = new THREE.MeshStandardMaterial({
+              map: textureLoader.load(`${mapPath}diffuse.jpg`),
+              normalMap: textureLoader.load(`${mapPath}normal.jpg`),
+              roughnessMap: textureLoader.load(`${mapPath}roughness.jpg`),
+              displacementMap: textureLoader.load(`${mapPath}displacement.jpg`),
+              displacementScale: 0.1,
+          });
+      }
+      else {
           const materialOptions: THREE.MeshStandardMaterialParameters = { color: body.color, roughness: 0.8, metalness: 0.1 };
           if (body.type === 'Star') {
             const starData = body as StarData;
@@ -236,7 +249,7 @@ const CelestialSymphony = ({
       else {
         const starData = body as StarData;
         starMeshesRef.current.push(mesh);
-        const lightIntensity = (starData.luminosity || 1) * 2;
+        const lightIntensity = (starData.luminosity || 1) * 200;
         const pointLightStar = new THREE.PointLight(starData.color, lightIntensity, 0, 1);
         mesh.add(pointLightStar);
       }
@@ -274,20 +287,16 @@ const CelestialSymphony = ({
       
       const deltaTime = clockRef.current.getDelta();
       const hoursPassedThisFrame = deltaTime * speedMultiplierRef.current;
-      if (!viewFromSebakaRef.current) {
-        elapsedHoursRef.current += hoursPassedThisFrame;
-      }
+      elapsedHoursRef.current += hoursPassedThisFrame;
       
       onTimeUpdate(elapsedHoursRef.current);
       updateAllBodyPositions(elapsedHoursRef.current);
 
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (sebakaMesh) {
-         if (isSebakaRotatingRef.current && !viewFromSebakaRef.current) {
+         if (isSebakaRotatingRef.current) {
             const rotationPerHour = (2 * Math.PI) / HOURS_IN_SEBAKA_DAY;
             sebakaMesh.rotation.y = elapsedHoursRef.current * rotationPerHour;
-         } else {
-            sebakaMesh.rotation.y = 0;
          }
       }
       
@@ -311,14 +320,24 @@ const CelestialSymphony = ({
             } else { // Brightening
                 brightnessFactor = 0.1 + ((currentDayInCycle - phaseDuration * 2) / phaseDuration) * 0.9;
             }
-            const targetColor = viridisOriginalColor.current.clone().multiplyScalar(brightnessFactor);
-            viridisMesh.material.color.lerp(targetColor, 0.1);
-            viridisMesh.material.emissive.lerp(targetColor, 0.1);
-            viridisMesh.material.emissiveIntensity = THREE.MathUtils.lerp(viridisMesh.material.emissiveIntensity, brightnessFactor, 0.1);
+            if (viridisMesh.material.map) {
+                const originalColor = new THREE.Color(0xffffff);
+                const targetColor = originalColor.clone().multiplyScalar(brightnessFactor);
+                viridisMesh.material.color.lerp(targetColor, 0.1);
+            } else {
+                 const targetColor = viridisOriginalColor.current.clone().multiplyScalar(brightnessFactor);
+                 viridisMesh.material.color.lerp(targetColor, 0.1);
+                 viridisMesh.material.emissive.lerp(targetColor, 0.1);
+                 viridisMesh.material.emissiveIntensity = THREE.MathUtils.lerp(viridisMesh.material.emissiveIntensity, brightnessFactor, 0.1);
+            }
           } else {
-             viridisMesh.material.color.lerp(viridisOriginalColor.current, 0.1);
-             viridisMesh.material.emissive.lerp(new THREE.Color(0x000000), 0.1);
-             viridisMesh.material.emissiveIntensity = THREE.MathUtils.lerp(viridisMesh.material.emissiveIntensity, 0, 0.1);
+             if (viridisMesh.material.map) {
+                viridisMesh.material.color.lerp(new THREE.Color(0xffffff), 0.1);
+             } else {
+                viridisMesh.material.color.lerp(viridisOriginalColor.current, 0.1);
+                viridisMesh.material.emissive.lerp(new THREE.Color(0x000000), 0.1);
+                viridisMesh.material.emissiveIntensity = THREE.MathUtils.lerp(viridisMesh.material.emissiveIntensity, 0, 0.1);
+             }
           }
       }
       
@@ -338,6 +357,9 @@ const CelestialSymphony = ({
         const cameraPosition = new THREE.Vector3();
         cameraPosition.setFromSphericalCoords(radius, latRad, lonRad);
         
+        // This makes the camera rotate with the planet
+        cameraPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), sebakaMesh.rotation.y);
+
         camera.position.copy(sebakaMesh.position).add(cameraPosition);
 
         const cameraUp = cameraPosition.clone().normalize();
@@ -422,34 +444,16 @@ const CelestialSymphony = ({
       const planetData = planets.find(p => p.name === mesh.name);
       if (planetData && mesh.material instanceof THREE.MeshStandardMaterial) {
         if (mesh.name === 'Sebaka' && mesh.material.map) {
-            const createStripedTexture = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = 128;
-                canvas.height = 128;
-                const context = canvas.getContext('2d');
-                if (!context) return null;
-
-                const colors = ['#ADD8E6', '#FFFFFF'];
-                const stripeWidth = canvas.width / 16;
-
-                for (let i = 0; i < 16; i++) {
-                    context.fillStyle = colors[i % 2];
-                    context.fillRect(i * stripeWidth, 0, stripeWidth, canvas.height);
-                }
-                
-                const texture = new THREE.CanvasTexture(canvas);
-                texture.wrapS = THREE.RepeatWrapping;
-                texture.wrapT = THREE.RepeatWrapping;
-                texture.repeat.set(1, 1);
-                return texture;
-            };
-             const texture = createStripedTexture();
-             if(texture) mesh.material.map = texture;
-             mesh.material.needsUpdate = true;
+            // Sebaka is procedural, no color change needed
              return;
         }
-        mesh.material.color.set(planetData.color);
-        if (mesh.name === 'Viridis') {
+        
+        // This handles color changes from the harmonizer panel
+        if (!mesh.material.map) {
+             mesh.material.color.set(planetData.color);
+        }
+
+        if (mesh.name === 'Viridis' && !mesh.material.map) {
             viridisOriginalColor.current.set(planetData.color);
         }
       }
@@ -501,3 +505,5 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    
