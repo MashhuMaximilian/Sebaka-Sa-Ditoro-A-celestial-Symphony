@@ -16,6 +16,7 @@ interface CelestialSymphonyProps {
   longitude: number;
   latitude: number;
   cameraPitch: number;
+  cameraYaw: number;
   resetViewToggle: boolean;
   isViridisAnimationActive: boolean;
   onTimeUpdate: (elapsedHours: number) => void;
@@ -36,6 +37,7 @@ const CelestialSymphony = ({
   longitude,
   latitude,
   cameraPitch,
+  cameraYaw,
   resetViewToggle,
   isViridisAnimationActive,
   onTimeUpdate,
@@ -65,7 +67,7 @@ const CelestialSymphony = ({
   
   const elapsedHoursRef = useRef(0);
   const sebakaRadiusRef = useRef(0);
-  const playerInputsRef = useRef({ longitude, latitude, pitch: cameraPitch });
+  const playerInputsRef = useRef({ longitude, latitude, pitch: cameraPitch, yaw: cameraYaw });
   
   const bodyData = useMemo(() => {
     const all = [...stars, ...planets];
@@ -82,6 +84,7 @@ const CelestialSymphony = ({
   useEffect(() => { playerInputsRef.current.longitude = longitude; }, [longitude]);
   useEffect(() => { playerInputsRef.current.latitude = latitude; }, [latitude]);
   useEffect(() => { playerInputsRef.current.pitch = cameraPitch; }, [cameraPitch]);
+  useEffect(() => { playerInputsRef.current.yaw = cameraYaw; }, [cameraYaw]);
   useEffect(() => { isBeaconViewRef.current = isBeaconView; }, [isBeaconView]);
 
   useEffect(() => {
@@ -180,22 +183,26 @@ const CelestialSymphony = ({
 
     const createStripedTexture = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 256;
+        canvas.width = 2;
+        canvas.height = 512;
         const context = canvas.getContext('2d');
         if (!context) return null;
 
-        const numberOfStripes = 32;
-        const stripeWidth = canvas.width / numberOfStripes;
         const colors = ['#ADD8E6', '#FFFFFF'];
 
-        for (let i = 0; i < numberOfStripes; i++) {
-            context.fillStyle = colors[i % 2];
-            context.fillRect(i * stripeWidth, 0, stripeWidth, canvas.height);
-        }
-        return new THREE.CanvasTexture(canvas);
-    };
+        context.fillStyle = colors[0];
+        context.fillRect(0, 0, 1, canvas.height);
+        
+        context.fillStyle = colors[1];
+        context.fillRect(1, 0, 1, canvas.height);
 
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(128, 1);
+        return texture;
+    };
+    
     const sebakaTexture = createStripedTexture();
 
     bodyData.forEach(body => {
@@ -319,10 +326,12 @@ const CelestialSymphony = ({
         const lat = playerInputsRef.current.latitude;
         const lon = playerInputsRef.current.longitude;
         const pitch = playerInputsRef.current.pitch;
+        const yaw = playerInputsRef.current.yaw;
 
         const latRad = THREE.MathUtils.degToRad(90 - lat);
         const lonRad = THREE.MathUtils.degToRad(lon);
         const pitchRad = THREE.MathUtils.degToRad(pitch);
+        const yawRad = THREE.MathUtils.degToRad(yaw);
         
         const radius = sebakaRadiusRef.current + eyeHeight;
         
@@ -331,28 +340,24 @@ const CelestialSymphony = ({
         
         camera.position.copy(sebakaMesh.position).add(cameraPosition);
 
-        camera.up.copy(cameraPosition).normalize();
+        const cameraUp = cameraPosition.clone().normalize();
+        camera.up.copy(cameraUp);
         
-        const forward = new THREE.Vector3(0, 0, -1);
+        const lookAtTarget = new THREE.Vector3(0, 0, -1);
+        
+        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRad);
+        lookAtTarget.applyQuaternion(pitchQuat);
+        
+        const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawRad);
+        lookAtTarget.applyQuaternion(yawQuat);
 
-        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(
-          new THREE.Vector3(1, 0, 0),
-          pitchRad
-        );
+        const orientationQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), camera.up);
+        lookAtTarget.applyQuaternion(orientationQuat);
+        
+        const finalTarget = camera.position.clone().add(lookAtTarget);
+        camera.lookAt(finalTarget);
 
-        const orientationQuat = new THREE.Quaternion().setFromUnitVectors(
-          new THREE.Vector3(0, 1, 0),
-          camera.up
-        );
-        
-        forward.applyQuaternion(pitchQuat);
-        forward.applyQuaternion(orientationQuat);
-        
-        const lookAtTarget = new THREE.Vector3().copy(camera.position).add(forward);
-        
-        camera.lookAt(lookAtTarget);
-
-        controls.target.copy(lookAtTarget);
+        controls.target.copy(finalTarget);
         controls.update();
 
       } else {
@@ -416,7 +421,12 @@ const CelestialSymphony = ({
     planetMeshesRef.current.forEach((mesh) => {
       const planetData = planets.find(p => p.name === mesh.name);
       if (planetData && mesh.material instanceof THREE.MeshStandardMaterial) {
-        if (mesh.name === 'Sebaka' && mesh.material.map) return;
+        if (mesh.name === 'Sebaka' && mesh.material.map) {
+             const texture = createStripedTexture();
+             if(texture) mesh.material.map = texture;
+             mesh.material.needsUpdate = true;
+             return;
+        }
         mesh.material.color.set(planetData.color);
         if (mesh.name === 'Viridis') {
             viridisOriginalColor.current.set(planetData.color);
@@ -466,8 +476,31 @@ const CelestialSymphony = ({
     controls.update();
   }, [isBeaconView, resetViewToggle, viewFromSebaka]);
 
+  const createStripedTexture = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2;
+    canvas.height = 512;
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+
+    const colors = ['#ADD8E6', '#FFFFFF'];
+
+    context.fillStyle = colors[0];
+    context.fillRect(0, 0, 1, canvas.height);
+    
+    context.fillStyle = colors[1];
+    context.fillRect(1, 0, 1, canvas.height);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(128, 1);
+    return texture;
+  };
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };
 
 export default CelestialSymphony;
+
+    

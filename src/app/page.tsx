@@ -165,6 +165,7 @@ export default function Home() {
   const [longitude, setLongitude] = useState(0);
   const [latitude, setLatitude] = useState(0);
   const [cameraPitch, setCameraPitch] = useState(0);
+  const [cameraYaw, setCameraYaw] = useState(0);
   const [isBeaconView, setIsBeaconView] = useState(false);
 
   const [currentYear, setCurrentYear] = useState(0);
@@ -206,6 +207,10 @@ export default function Home() {
     setCameraPitch(value[0]);
   }
 
+  const handleCameraYawChange = (value: number[]) => {
+    setCameraYaw(value[0]);
+  }
+
   const resetSpeed = () => {
     setSpeedMultiplier(24);
   };
@@ -239,6 +244,7 @@ export default function Home() {
             setLongitude(0);
             setLatitude(0);
             setCameraPitch(0);
+            setCameraYaw(0);
           }
           return newView;
       })
@@ -273,6 +279,7 @@ export default function Home() {
         longitude={longitude}
         latitude={latitude}
         cameraPitch={cameraPitch}
+        cameraYaw={cameraYaw}
         resetViewToggle={resetViewToggle}
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
@@ -394,7 +401,7 @@ export default function Home() {
                 />
             </div>
           )}
-          {viewFromSebaka && (
+           {viewFromSebaka && (
              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                  <Label htmlFor="look-angle-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                   Look Up/Down
@@ -406,6 +413,22 @@ export default function Home() {
                     step={1}
                     value={[cameraPitch]}
                     onValueChange={handleCameraPitchChange}
+                    className="w-full"
+                />
+            </div>
+          )}
+           {viewFromSebaka && (
+             <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                 <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  Look Left/Right
+                </Label>
+                <Slider
+                    id="look-yaw-slider"
+                    min={0}
+                    max={360}
+                    step={1}
+                    value={[cameraYaw]}
+                    onValueChange={handleCameraYawChange}
                     className="w-full"
                 />
             </div>
@@ -480,3 +503,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
