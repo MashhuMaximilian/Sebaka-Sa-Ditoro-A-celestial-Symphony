@@ -170,7 +170,8 @@ const CelestialSymphony = ({
     controls.target.set(0, 0, 0);
     controlsRef.current = controls;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+    // --- LIGHTING SETUP ---
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.1));
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -247,13 +248,23 @@ const CelestialSymphony = ({
       allBodiesRef.current.push(mesh);
       clickableObjects.push(mesh);
       
-      if (body.type === 'Planet') planetMeshesRef.current.push(mesh);
-      else {
-        const starData = body as StarData;
+      if (body.type === 'Planet') {
+        planetMeshesRef.current.push(mesh);
+      } else {
         starMeshesRef.current.push(mesh);
-        const lightIntensity = (starData.luminosity || 1) * 200;
-        const pointLightStar = new THREE.PointLight(starData.color, lightIntensity, 0, 1);
-        mesh.add(pointLightStar);
+        // Add specific lights for binary stars
+        if (body.name === 'Golden Giver') {
+            const light = new THREE.PointLight(0xFFD700, 3_000_000, 0, 1);
+            mesh.add(light);
+        }
+        if (body.name === 'Twilight') {
+            const light = new THREE.PointLight(0xFF6400, 2_100_000, 0, 1); // 70% of 3M
+            mesh.add(light);
+        }
+        if (body.name === 'Beacon') {
+            const light = new THREE.PointLight(body.color, 10_000_000, 0, 1);
+            mesh.add(light);
+        }
       }
       
       if (body.type === 'Planet' && body.name === "Spectris") {
@@ -507,7 +518,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    
-
-    
