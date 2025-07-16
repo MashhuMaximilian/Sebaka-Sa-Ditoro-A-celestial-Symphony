@@ -145,6 +145,28 @@ const CelestialSymphony = ({
     });
   }
 
+  const createStripedTexture = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const context = canvas.getContext('2d');
+    if (!context) return null;
+
+    const colors = ['#ADD8E6', '#FFFFFF'];
+    const stripeWidth = canvas.width / 32;
+
+    for (let i = 0; i < 32; i++) {
+        context.fillStyle = colors[i % 2];
+        context.fillRect(i * stripeWidth, 0, stripeWidth, canvas.height);
+    }
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(1, 1);
+    return texture;
+  };
+
   useEffect(() => {
     if (!mountRef.current) return;
 
@@ -180,28 +202,6 @@ const CelestialSymphony = ({
     starMeshesRef.current = [];
     planetMeshesRef.current = [];
     orbitMeshesRef.current = [];
-
-    const createStripedTexture = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 2;
-        canvas.height = 512;
-        const context = canvas.getContext('2d');
-        if (!context) return null;
-
-        const colors = ['#ADD8E6', '#FFFFFF'];
-
-        context.fillStyle = colors[0];
-        context.fillRect(0, 0, 1, canvas.height);
-        
-        context.fillStyle = colors[1];
-        context.fillRect(1, 0, 1, canvas.height);
-
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(128, 1);
-        return texture;
-    };
     
     const sebakaTexture = createStripedTexture();
 
@@ -476,31 +476,7 @@ const CelestialSymphony = ({
     controls.update();
   }, [isBeaconView, resetViewToggle, viewFromSebaka]);
 
-  const createStripedTexture = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 2;
-    canvas.height = 512;
-    const context = canvas.getContext('2d');
-    if (!context) return null;
-
-    const colors = ['#ADD8E6', '#FFFFFF'];
-
-    context.fillStyle = colors[0];
-    context.fillRect(0, 0, 1, canvas.height);
-    
-    context.fillStyle = colors[1];
-    context.fillRect(1, 0, 1, canvas.height);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(128, 1);
-    return texture;
-  };
-
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };
 
 export default CelestialSymphony;
-
-    
