@@ -171,7 +171,12 @@ const CelestialSymphony = ({
     controlsRef.current = controls;
 
     // --- LIGHTING SETUP ---
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.1));
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    directionalLight.position.set(0, 1, 0); // Pointing down
+    scene.add(directionalLight);
 
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
@@ -210,36 +215,83 @@ const CelestialSymphony = ({
     const planetsWithTextures = ['Rutilus', 'Spectris', 'Viridis', 'Aetheris', 'Gelidis'];
 
     bodyData.forEach(body => {
-      const geometry = new THREE.SphereGeometry(body.size, 32, 32);
-      
+      const geometry = new THREE.SphereGeometry(body.size, 64, 64);
       let material;
-      if (body.name === 'Sebaka' && sebakaTexture) {
+
+      switch(body.name) {
+        case 'Sebaka':
           material = new THREE.MeshStandardMaterial({ map: sebakaTexture });
           sebakaRadiusRef.current = body.size;
-      } else if (planetsWithTextures.includes(body.name)) {
-          const mapPath = `/maps/${body.name}/`;
+          break;
+
+        case 'Aetheris':
           material = new THREE.MeshStandardMaterial({
-              map: textureLoader.load(`${mapPath}diffuse.jpg`),
-              normalMap: textureLoader.load(`${mapPath}normal.jpg`),
-              roughnessMap: textureLoader.load(`${mapPath}roughness.jpg`),
-              displacementMap: textureLoader.load(`${mapPath}displacement.jpg`),
-              displacementScale: 0.1,
-              roughness: 0.8,
-              metalness: 0.1,
+            map: textureLoader.load('/maps/AetherisTexture.png'),
+            roughness: 0.9,
+            metalness: 0.1,
           });
-      }
-      else {
+          break;
+        
+        case 'Gelidis':
+          material = new THREE.MeshStandardMaterial({
+            map: textureLoader.load('/maps/GelidisTexture.png'),
+            normalMap: textureLoader.load('/maps/GelidisTexture_normal.png'),
+            displacementMap: textureLoader.load('/maps/GelidisTexture_displacement.png'),
+            displacementScale: 0.2,
+            roughness: 0.8,
+            metalness: 0.1,
+          });
+          break;
+          
+        case 'Rutilus':
+           material = new THREE.MeshStandardMaterial({
+            map: textureLoader.load('/maps/RutilusTexture.png'),
+            normalMap: textureLoader.load('/maps/RutilusTexture_normal.png'),
+            displacementMap: textureLoader.load('/maps/RutilusTexture_displacement.png'),
+            aoMap: textureLoader.load('/maps/RutilusTexture_ambient.png'),
+            displacementScale: 0.1,
+            roughness: 0.7,
+            metalness: 0.2,
+          });
+          break;
+
+        case 'Spectris':
+          material = new THREE.MeshStandardMaterial({
+            map: textureLoader.load('/maps/SpectrisTexture.png'),
+            normalMap: textureLoader.load('/maps/SpectrisTexture_normal.png'),
+            displacementMap: textureLoader.load('/maps/SpectrisTexture_displacement.png'),
+            aoMap: textureLoader.load('/maps/SpectrisTexture_ambient.png'),
+            displacementScale: 0.05,
+            roughness: 0.6,
+            metalness: 0.1,
+          });
+          break;
+        
+        case 'Viridis':
+           material = new THREE.MeshStandardMaterial({
+            map: textureLoader.load('/maps/ViridisTexture.png'),
+            normalMap: textureLoader.load('/maps/ViridisTexture_normal.png'),
+            displacementMap: textureLoader.load('/maps/ViridisTexture_displacement.png'),
+            aoMap: textureLoader.load('/maps/ViridisTexture_ambient.png'),
+            displacementScale: 0.1,
+            roughness: 0.8,
+            metalness: 0.1,
+          });
+          break;
+
+        default:
           const materialOptions: THREE.MeshStandardMaterialParameters = { color: body.color, roughness: 0.8, metalness: 0.1 };
           if (body.type === 'Star') {
             const starData = body as StarData;
             materialOptions.emissive = starData.color;
-            materialOptions.emissiveIntensity = Math.log1p(starData.luminosity || 0) * 0.5 + 0.5;
+            materialOptions.emissiveIntensity = 2; // Make stars glow brightly
           }
           if (body.name === 'Liminis') {
             materialOptions.emissive = body.color;
             materialOptions.emissiveIntensity = 0.2;
           }
           material = new THREE.MeshStandardMaterial(materialOptions);
+          break;
       }
       
       const mesh = new THREE.Mesh(geometry, material);
