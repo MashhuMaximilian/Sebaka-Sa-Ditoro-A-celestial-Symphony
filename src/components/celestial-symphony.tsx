@@ -145,28 +145,6 @@ const CelestialSymphony = ({
     });
   }
 
-  const createStripedTexture = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 512;
-    const context = canvas.getContext('2d');
-    if (!context) return null;
-
-    const colors = ['#ADD8E6', '#FFFFFF'];
-    const stripeWidth = canvas.width / 32;
-
-    for (let i = 0; i < 32; i++) {
-        context.fillStyle = colors[i % 2];
-        context.fillRect(i * stripeWidth, 0, stripeWidth, canvas.height);
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 1);
-    return texture;
-  };
-
   useEffect(() => {
     if (!mountRef.current) return;
 
@@ -202,6 +180,28 @@ const CelestialSymphony = ({
     starMeshesRef.current = [];
     planetMeshesRef.current = [];
     orbitMeshesRef.current = [];
+    
+    const createStripedTexture = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 128;
+      canvas.height = 128;
+      const context = canvas.getContext('2d');
+      if (!context) return null;
+
+      const colors = ['#ADD8E6', '#FFFFFF'];
+      const stripeWidth = canvas.width / 16;
+
+      for (let i = 0; i < 16; i++) {
+          context.fillStyle = colors[i % 2];
+          context.fillRect(i * stripeWidth, 0, stripeWidth, canvas.height);
+      }
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(1, 1);
+      return texture;
+    };
     
     const sebakaTexture = createStripedTexture();
 
@@ -422,6 +422,27 @@ const CelestialSymphony = ({
       const planetData = planets.find(p => p.name === mesh.name);
       if (planetData && mesh.material instanceof THREE.MeshStandardMaterial) {
         if (mesh.name === 'Sebaka' && mesh.material.map) {
+            const createStripedTexture = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = 128;
+                canvas.height = 128;
+                const context = canvas.getContext('2d');
+                if (!context) return null;
+
+                const colors = ['#ADD8E6', '#FFFFFF'];
+                const stripeWidth = canvas.width / 16;
+
+                for (let i = 0; i < 16; i++) {
+                    context.fillStyle = colors[i % 2];
+                    context.fillRect(i * stripeWidth, 0, stripeWidth, canvas.height);
+                }
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.wrapS = THREE.RepeatWrapping;
+                texture.wrapT = THREE.RepeatWrapping;
+                texture.repeat.set(1, 1);
+                return texture;
+            };
              const texture = createStripedTexture();
              if(texture) mesh.material.map = texture;
              mesh.material.needsUpdate = true;
