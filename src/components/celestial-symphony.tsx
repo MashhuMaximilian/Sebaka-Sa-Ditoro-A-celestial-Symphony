@@ -241,10 +241,10 @@ const CelestialSymphony = ({
           
         case 'Rutilus':
            material = new THREE.MeshStandardMaterial({
-            map: textureLoader.load('/maps/RutilusTexture.png'),
-            normalMap: textureLoader.load('/maps/RutilusTexture_normal.png'),
-            displacementMap: textureLoader.load('/maps/RutilusTexture_displacement.png'),
-            aoMap: textureLoader.load('/maps/RutilusTexture_ambient.png'),
+            map: textureLoader.load('/maps/RutiliusTexture.png'),
+            normalMap: textureLoader.load('/maps/RutiliusTexture_normal.png'),
+            displacementMap: textureLoader.load('/maps/RutiliusTexture_displacement.png'),
+            aoMap: textureLoader.load('/maps/RutiliusTexture_ambient.png'),
             displacementScale: 0.1,
             roughness: 0.7,
             metalness: 0.2,
