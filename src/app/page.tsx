@@ -2,13 +2,18 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus } from "lucide-react";
+import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown } from "lucide-react";
 
 import type { PlanetData, StarData } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import ColorHarmonizerPanel from "@/components/color-harmonizer-panel";
 import InfoPanel from "@/components/info-panel";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -154,6 +159,8 @@ const initialPlanets: PlanetData[] = [
   },
 ];
 
+type ActiveSebakaPanel = 'time' | 'look' | 'move' | null;
+
 export default function Home() {
   const [planets, setPlanets] = useState<PlanetData[]>(initialPlanets);
   const [speedMultiplier, setSpeedMultiplier] = useState(24); // Default to 24 hours/sec (1 day/sec)
@@ -168,6 +175,7 @@ export default function Home() {
   const [cameraPitch, setCameraPitch] = useState(0);
   const [cameraYaw, setCameraYaw] = useState(0);
   const [isBeaconView, setIsBeaconView] = useState(false);
+  const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel>(null);
 
   const [currentYear, setCurrentYear] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
@@ -246,9 +254,14 @@ export default function Home() {
             setLatitude(0);
             setCameraPitch(0);
             setCameraYaw(0);
+            setActiveSebakaPanel(null);
           }
           return newView;
       })
+  }
+  
+  const handleSebakaPanelToggle = (panel: ActiveSebakaPanel) => {
+    setActiveSebakaPanel(current => current === panel ? null : panel);
   }
 
   const handleGoToTime = () => {
@@ -266,6 +279,133 @@ export default function Home() {
     const totalDays = hours / HOURS_IN_SEBAKA_DAY;
     setCurrentYear(Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS));
     setCurrentDay(Math.floor(totalDays % SEBAKA_YEAR_IN_DAYS) + 1);
+  }
+  
+  const renderSebakaPanelContent = () => {
+    if (!activeSebakaPanel) return null;
+    
+    const panels: Record<ActiveSebakaPanel, React.ReactNode> = {
+        time: (
+            <>
+                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                    <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                        Go to Time
+                    </Label>
+                    <Input
+                        id="year-input"
+                        type="number"
+                        placeholder="Year"
+                        value={targetYear}
+                        onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
+                        className="w-full"
+                    />
+                    <Input
+                        id="day-input"
+                        type="number"
+                        placeholder="Day"
+                        value={targetDay}
+                        onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
+                        className="w-full"
+                        min={1}
+                        max={324}
+                    />
+                    <Button onClick={handleGoToTime}>Go</Button>
+                </div>
+                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                    <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                        Speed (hrs/s)
+                    </Label>
+                    <Input
+                        id="speed-input"
+                        type="number"
+                        value={speedMultiplier}
+                        onChange={handleSpeedChange}
+                        className="w-full"
+                        min={0.1}
+                        step={0.1}
+                    />
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-background/30 hover:text-primary-foreground">
+                                    <History className="h-5 w-5" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Reset Speed to 1 day/sec</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
+            </>
+        ),
+        look: (
+            <>
+                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                    <Label htmlFor="look-angle-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                      Look Up/Down
+                    </Label>
+                    <Slider
+                        id="look-angle-slider"
+                        min={-90}
+                        max={90}
+                        step={1}
+                        value={[cameraPitch]}
+                        onValueChange={handleCameraPitchChange}
+                        className="w-full"
+                    />
+                </div>
+                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                    <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                      Look Left/Right
+                    </Label>
+                    <Slider
+                        id="look-yaw-slider"
+                        min={0}
+                        max={360}
+                        step={1}
+                        value={[cameraYaw]}
+                        onValueChange={handleCameraYawChange}
+                        className="w-full"
+                    />
+                </div>
+            </>
+        ),
+        move: (
+            <>
+                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                    <Label htmlFor="latitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                      Latitude
+                    </Label>
+                    <Slider
+                        id="latitude-slider"
+                        min={-90}
+                        max={90}
+                        step={1}
+                        value={[latitude]}
+                        onValueChange={handleLatitudeChange}
+                        className="w-full"
+                    />
+                </div>
+                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                    <Label htmlFor="longitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                      Longitude
+                    </Label>
+                    <Slider
+                        id="longitude-slider"
+                        min={0}
+                        max={360}
+                        step={1}
+                        value={[longitude]}
+                        onValueChange={handleLongitudeChange}
+                        className="w-full"
+                    />
+                </div>
+            </>
+        )
+    }
+    
+    return <div className="w-full space-y-2">{panels[activeSebakaPanel]}</div>;
   }
 
   return (
@@ -385,136 +525,23 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl p-4 space-y-2">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 space-y-2">
           {viewFromSebaka ? (
-              <div className="flex items-start justify-center gap-2">
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="time" className="border-none">
-                        <AccordionTrigger className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90">Time</AccordionTrigger>
-                        <AccordionContent className="space-y-2 pt-2">
-                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                                <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                    Go to Time
-                                </Label>
-                                <Input
-                                    id="year-input"
-                                    type="number"
-                                    placeholder="Year"
-                                    value={targetYear}
-                                    onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
-                                    className="w-full"
-                                />
-                                <Input
-                                    id="day-input"
-                                    type="number"
-                                    placeholder="Day"
-                                    value={targetDay}
-                                    onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
-                                    className="w-full"
-                                    min={1}
-                                    max={324}
-                                />
-                                <Button onClick={handleGoToTime}>Go</Button>
-                            </div>
-                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                                <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                    Speed (hrs/s)
-                                </Label>
-                                <Input
-                                    id="speed-input"
-                                    type="number"
-                                    value={speedMultiplier}
-                                    onChange={handleSpeedChange}
-                                    className="w-full"
-                                    min={0.1}
-                                    step={0.1}
-                                />
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-background/30 hover:text-primary-foreground">
-                                                <History className="h-5 w-5" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Reset Speed to 1 day/sec</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="look" className="border-none">
-                        <AccordionTrigger className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90">Look</AccordionTrigger>
-                        <AccordionContent className="space-y-2 pt-2">
-                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                                <Label htmlFor="look-angle-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                  Look Up/Down
-                                </Label>
-                                <Slider
-                                    id="look-angle-slider"
-                                    min={-90}
-                                    max={90}
-                                    step={1}
-                                    value={[cameraPitch]}
-                                    onValueChange={handleCameraPitchChange}
-                                    className="w-full"
-                                />
-                            </div>
-                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                                <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                  Look Left/Right
-                                </Label>
-                                <Slider
-                                    id="look-yaw-slider"
-                                    min={0}
-                                    max={360}
-                                    step={1}
-                                    value={[cameraYaw]}
-                                    onValueChange={handleCameraYawChange}
-                                    className="w-full"
-                                />
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="move" className="border-none">
-                        <AccordionTrigger className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90">Move</AccordionTrigger>
-                        <AccordionContent className="space-y-2 pt-2">
-                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                                <Label htmlFor="latitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                  Latitude
-                                </Label>
-                                <Slider
-                                    id="latitude-slider"
-                                    min={-90}
-                                    max={90}
-                                    step={1}
-                                    value={[latitude]}
-                                    onValueChange={handleLatitudeChange}
-                                    className="w-full"
-                                />
-                            </div>
-                            <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                                <Label htmlFor="longitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
-                                  Longitude
-                                </Label>
-                                <Slider
-                                    id="longitude-slider"
-                                    min={0}
-                                    max={360}
-                                    step={1}
-                                    value={[longitude]}
-                                    onValueChange={handleLongitudeChange}
-                                    className="w-full"
-                                />
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+              <div className="flex flex-col-reverse items-center gap-2">
+                  <div className="flex items-center justify-center gap-2 w-full">
+                      {(['time', 'look', 'move'] as const).map((panelId) => (
+                           <Button 
+                              key={panelId}
+                              onClick={() => handleSebakaPanelToggle(panelId)}
+                              variant={activeSebakaPanel === panelId ? "secondary" : "default"}
+                              className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 flex-1 basis-1/3 capitalize"
+                          >
+                              {panelId}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                      ))}
+                  </div>
+                  {renderSebakaPanelContent()}
               </div>
           ) : (
             <>
