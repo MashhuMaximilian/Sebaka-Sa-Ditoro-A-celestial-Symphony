@@ -252,19 +252,6 @@ const CelestialSymphony = ({
         planetMeshesRef.current.push(mesh);
       } else {
         starMeshesRef.current.push(mesh);
-        // Add specific lights for binary stars
-        if (body.name === 'Golden Giver') {
-            const light = new THREE.PointLight(0xFFD700, 3_000_000, 0, 1);
-            mesh.add(light);
-        }
-        if (body.name === 'Twilight') {
-            const light = new THREE.PointLight(0xFF6400, 2_100_000, 0, 1); // 70% of 3M
-            mesh.add(light);
-        }
-        if (body.name === 'Beacon') {
-            const light = new THREE.PointLight(body.color, 10_000_000, 0, 1);
-            mesh.add(light);
-        }
       }
       
       if (body.type === 'Planet' && body.name === "Spectris") {
