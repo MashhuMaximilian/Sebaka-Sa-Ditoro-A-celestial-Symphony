@@ -223,6 +223,8 @@ const CelestialSymphony = ({
               roughnessMap: textureLoader.load(`${mapPath}roughness.jpg`),
               displacementMap: textureLoader.load(`${mapPath}displacement.jpg`),
               displacementScale: 0.1,
+              roughness: 0.8,
+              metalness: 0.1,
           });
       }
       else {
