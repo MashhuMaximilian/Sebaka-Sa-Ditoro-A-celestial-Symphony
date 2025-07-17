@@ -99,13 +99,11 @@ export const createBodyMesh = (
             case 'Spectris':
                  textureParams = {
                     map: textureLoader.load('/maps/SpectrisTexture.png'),
-                    normalMap: textureLoader.load('/maps/SpectrisTexture_normal.png'),
                     displacementMap: textureLoader.load('/maps/SpectrisTexture_displacement.png'),
                     aoMap: textureLoader.load('/maps/SpectrisTexture_ambient.png'),
                     displacementScale: 0.1,
                 };
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-                geometry.computeTangents();
                 break;
             case 'Viridis':
                 textureParams = {

@@ -476,7 +476,7 @@ export default function Home() {
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <DropdownMenuContent className="w-56">
+                <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto">
                     <DropdownMenuLabel>Focus Target</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
