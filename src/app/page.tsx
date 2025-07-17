@@ -364,6 +364,7 @@ export default function Home() {
                         onValueChange={handleCameraPitchChange}
                         className="w-full"
                     />
+                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{cameraPitch.toFixed(0)}°</span>
                 </div>
                 <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
@@ -378,6 +379,7 @@ export default function Home() {
                         onValueChange={handleCameraYawChange}
                         className="w-full"
                     />
+                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{cameraYaw.toFixed(0)}°</span>
                 </div>
             </>
         ),
@@ -396,6 +398,7 @@ export default function Home() {
                         onValueChange={handleLatitudeChange}
                         className="w-full"
                     />
+                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{latitude.toFixed(0)}°</span>
                 </div>
                 <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="longitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
@@ -410,6 +413,7 @@ export default function Home() {
                         onValueChange={handleLongitudeChange}
                         className="w-full"
                     />
+                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{longitude.toFixed(0)}°</span>
                 </div>
             </>
         )
@@ -476,7 +480,7 @@ export default function Home() {
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto">
+                <DropdownMenuContent className="w-56">
                     <DropdownMenuLabel>Focus Target</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
