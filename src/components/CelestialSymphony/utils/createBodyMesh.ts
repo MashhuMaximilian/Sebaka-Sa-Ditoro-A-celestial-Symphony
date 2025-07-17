@@ -56,7 +56,7 @@ export const createBodyMesh = (
 
     if (body.type === 'Star') {
         materialOptions.emissive = body.color;
-        materialOptions.emissiveIntensity = 20;
+        materialOptions.emissiveIntensity = 2;
         material = new THREE.MeshStandardMaterial(materialOptions);
         
         const starMesh = new THREE.Mesh(geometry, material);
