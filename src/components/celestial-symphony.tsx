@@ -45,6 +45,7 @@ const CelestialSymphony = ({
   cameraTarget,
 }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
+  const rendererRef = useRef<THREE.WebGLRenderer>();
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
   const starMeshesRef = useRef<THREE.Mesh[]>([]);
   const allBodiesRef = useRef<THREE.Mesh[]>([]);
@@ -197,6 +198,7 @@ const CelestialSymphony = ({
     renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     currentMount.appendChild(renderer.domElement);
+    rendererRef.current = renderer;
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -375,7 +377,8 @@ const CelestialSymphony = ({
       animationFrameId.current = requestAnimationFrame(animate);
       const camera = cameraRef.current;
       const controls = controlsRef.current;
-      if (!camera || !controls) return;
+      const renderer = rendererRef.current;
+      if (!camera || !controls || !renderer) return;
       
       const deltaTime = clockRef.current.getDelta();
       const hoursPassedThisFrame = deltaTime * speedMultiplierRef.current;
@@ -509,11 +512,13 @@ const CelestialSymphony = ({
     currentMount.addEventListener('touchstart', onClick, { passive: true });
 
     const handleResize = () => {
-      if(cameraRef.current) {
-        cameraRef.current.aspect = currentMount.clientWidth / currentMount.clientHeight;
-        cameraRef.current.updateProjectionMatrix();
+      const renderer = rendererRef.current;
+      const camera = cameraRef.current;
+      if(camera && renderer) {
+        camera.aspect = currentMount.clientWidth / currentMount.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
       }
-      renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
     };
     window.addEventListener("resize", handleResize);
 
@@ -523,9 +528,16 @@ const CelestialSymphony = ({
       window.removeEventListener("resize", handleResize);
       currentMount.removeEventListener('click', onClick);
       currentMount.removeEventListener('touchstart', onClick);
-      if (currentMount && renderer.domElement) currentMount.removeChild(renderer.domElement);
-      renderer.dispose();
-      controls.dispose();
+      
+      const renderer = rendererRef.current;
+      if (renderer) {
+        if (currentMount && renderer.domElement) {
+            currentMount.removeChild(renderer.domElement);
+        }
+        renderer.dispose();
+      }
+      
+      if(controlsRef.current) controlsRef.current.dispose();
     };
   }, []); 
 
