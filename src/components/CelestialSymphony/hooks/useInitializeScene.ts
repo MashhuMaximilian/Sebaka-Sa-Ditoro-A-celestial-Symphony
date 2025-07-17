@@ -49,8 +49,8 @@ export const useInitializeScene = ({ stars, planets, bodyData }: InitializeScene
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
-        currentMount.appendChild(renderer.domElement);
         rendererRef.current = renderer;
+        currentMount.appendChild(renderer.domElement);
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
@@ -64,7 +64,9 @@ export const useInitializeScene = ({ stars, planets, bodyData }: InitializeScene
         const ambientLight = new THREE.AmbientLight(0xffffff, 3.0);
         scene.add(ambientLight);
 
-        // Clear refs
+        allBodiesRef.current.forEach(obj => scene.remove(obj));
+        orbitMeshesRef.current.forEach(obj => scene.remove(obj));
+
         allBodiesRef.current = [];
         planetMeshesRef.current = [];
         orbitMeshesRef.current = [];
@@ -86,15 +88,14 @@ export const useInitializeScene = ({ stars, planets, bodyData }: InitializeScene
         });
 
         const handleResize = () => {
-            if (cameraRef.current && rendererRef.current) {
-                cameraRef.current.aspect = currentMount.clientWidth / currentMount.clientHeight;
+            if (cameraRef.current && rendererRef.current && mountRef.current) {
+                cameraRef.current.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
                 cameraRef.current.updateProjectionMatrix();
-                rendererRef.current.setSize(currentMount.clientWidth, currentMount.clientHeight);
+                rendererRef.current.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
             }
         };
         window.addEventListener("resize", handleResize);
 
-        // Initial position update
         const initialBeaconData = bodyData.find(d => d.name === 'Beacon');
         if (initialBeaconData?.orbitRadius) {
             beaconPositionRef.current.set(initialBeaconData.orbitRadius, 0, 0);
@@ -113,7 +114,11 @@ export const useInitializeScene = ({ stars, planets, bodyData }: InitializeScene
             if (rendererRef.current) {
                 rendererRef.current.dispose();
                 if (mountRef.current && rendererRef.current.domElement) {
-                    mountRef.current.removeChild(rendererRef.current.domElement);
+                    try {
+                        mountRef.current.removeChild(rendererRef.current.domElement);
+                    } catch (e) {
+                        // Ignore error if element is already gone
+                    }
                 }
             }
             scene.clear();

@@ -5,7 +5,10 @@ import type { PlanetData } from '@/types';
 
 export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
     if ((body.type === 'Planet' || body.name === 'Beacon') && body.orbitRadius) {
-        const orbitGeometry = new THREE.TorusGeometry(body.orbitRadius, body.name === 'Beacon' ? 5 : 0.5, 8, 200);
+        const tubeRadius = body.name === 'Beacon' ? 5 : 0.5;
+        const radialSegments = 8;
+        const tubularSegments = 256; 
+        const orbitGeometry = new THREE.TorusGeometry(body.orbitRadius, tubeRadius, radialSegments, tubularSegments);
         const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
         const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
         orbit.rotation.x = Math.PI / 2;
