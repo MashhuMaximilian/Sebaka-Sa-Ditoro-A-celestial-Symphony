@@ -74,13 +74,11 @@ export const createBodyMesh = (
             case 'Gelidis':
                 textureParams = {
                     map: textureLoader.load('/maps/GelidisTexture.png'),
-                    normalMap: textureLoader.load('/maps/GelidisTexture_normal.png'),
                     displacementMap: textureLoader.load('/maps/GelidisTexture_displacement.png'),
                     aoMap: textureLoader.load('/maps/GelidisTexture_ambient.png'),
                     displacementScale: 0.1,
                 };
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-                geometry.computeTangents();
                 break;
             case 'Rutilus':
                  textureParams = {
