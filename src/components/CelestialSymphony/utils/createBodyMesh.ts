@@ -64,8 +64,7 @@ export const createBodyMesh = (
         const planetName = body.name;
         
         let textureParams: THREE.MeshStandardMaterialParameters = {};
-        let needsUv2 = false;
-
+        
         switch (planetName) {
             case 'Aetheris':
                 textureParams = {
@@ -80,7 +79,7 @@ export const createBodyMesh = (
                     displacementScale: 0.1,
                     aoMap: textureLoader.load('/maps/GelidisTexture_ambient.png'),
                 };
-                needsUv2 = true;
+                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
             case 'Rutilus':
                 textureParams = {
@@ -90,7 +89,7 @@ export const createBodyMesh = (
                     aoMap: textureLoader.load('/maps/RutiliusTexture_ambient.png'),
                     displacementScale: 0.1,
                 };
-                needsUv2 = true;
+                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
             case 'Spectris':
                 textureParams = {
@@ -100,17 +99,20 @@ export const createBodyMesh = (
                     aoMap: textureLoader.load('/maps/SpectrisTexture_ambient.png'),
                     displacementScale: 0.1,
                 };
-                needsUv2 = true;
+                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
             case 'Viridis':
                 textureParams = {
                     map: textureLoader.load('/maps/ViridisTexture.png'),
                     aoMap: textureLoader.load('/maps/ViridisTexture_ambient.png'),
+                    normalMap: textureLoader.load('/maps/ViridisTexture_normal.png'),
+                    displacementMap: textureLoader.load('/maps/ViridisTexture_displacement.png'),
+                    displacementScale: 0.1,
                 };
                  if (body.color) {
                     viridisOriginalColorRef.current.set(body.color);
                 }
-                needsUv2 = true;
+                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
             case 'Liminis':
                 textureParams = {
@@ -120,7 +122,7 @@ export const createBodyMesh = (
                     aoMap: textureLoader.load('/maps/LiminisAmbientOcclusionMap.png'),
                     displacementScale: 0.1,
                 };
-                needsUv2 = true;
+                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
             case 'Sebaka':
                 material = sebakaDetailedMaterial;
@@ -134,10 +136,6 @@ export const createBodyMesh = (
 
         if (!material) {
              material = new THREE.MeshStandardMaterial({ ...materialOptions, ...textureParams });
-        }
-        
-        if (needsUv2) {
-            geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
         }
     }
     
