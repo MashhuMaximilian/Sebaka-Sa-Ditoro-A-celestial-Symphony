@@ -56,7 +56,30 @@ export const createBodyMesh = (
 
     if (body.type === 'Star') {
         materialOptions.emissive = body.color;
-        materialOptions.emissiveIntensity = 2;
+        materialOptions.emissiveIntensity = 1; // Lowered to make maps visible
+        
+        if (body.name === 'Golden Giver') {
+            materialOptions.map = textureLoader.load('/maps/goldenGiverTexture.jpg');
+            materialOptions.normalMap = textureLoader.load('/maps/goldenGiver_normal.png');
+            materialOptions.displacementMap = textureLoader.load('/maps/goldenGiver_displacement.png');
+            materialOptions.aoMap = textureLoader.load('/maps/goldenGiver_ambient.png');
+            materialOptions.specularMap = textureLoader.load('/maps/goldenGiver_specular.png');
+            materialOptions.displacementScale = 0.2;
+            geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+            geometry.computeTangents();
+        } else if (body.name === 'Twilight') {
+            materialOptions.map = textureLoader.load('/maps/TwilightTexture.jpg');
+            materialOptions.normalMap = textureLoader.load('/maps/Twilight_normal.png');
+            materialOptions.displacementMap = textureLoader.load('/maps/Twilight_displacement.png');
+            materialOptions.aoMap = textureLoader.load('/maps/Twilight_ambient.png');
+            materialOptions.specularMap = textureLoader.load('/maps/Twilight_specular.png');
+            materialOptions.displacementScale = 0.2;
+            geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+            geometry.computeTangents();
+        } else if (body.name === 'Beacon') {
+             materialOptions.emissiveIntensity = 20;
+        }
+
         material = new THREE.MeshStandardMaterial(materialOptions);
         
         const starMesh = new THREE.Mesh(geometry, material);
@@ -102,6 +125,8 @@ export const createBodyMesh = (
                     displacementMap: textureLoader.load('/maps/SpectrisTexture_displacement.png'),
                     aoMap: textureLoader.load('/maps/SpectrisTexture_ambient.png'),
                     displacementScale: 0.1,
+                    metalness: 0.5,
+                    roughness: 0.5
                 };
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
