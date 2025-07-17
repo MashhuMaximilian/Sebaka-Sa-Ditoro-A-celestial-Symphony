@@ -41,6 +41,7 @@ export const useAnimationLoop = ({
   orbitMeshesRef,
   beaconPositionRef,
   sebakaRadiusRef,
+  isInitialized,
 }: AnimationLoopParams) => {
   const clockRef = useRef(new THREE.Clock());
   const elapsedHoursRef = useRef(0);
@@ -69,7 +70,7 @@ export const useAnimationLoop = ({
   }, [goToTime, bodyData, allBodiesRef, beaconPositionRef, onTimeUpdate]);
 
   useEffect(() => {
-    if (!scene || !camera || !renderer || !controls) return;
+    if (!scene || !camera || !renderer || !controls || !isInitialized) return;
 
     let isCancelled = false;
     
@@ -165,6 +166,7 @@ export const useAnimationLoop = ({
     orbitMeshesRef, 
     beaconPositionRef, 
     sebakaRadiusRef, 
-    onTimeUpdate
+    onTimeUpdate,
+    isInitialized,
   ]);
 };

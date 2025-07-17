@@ -192,6 +192,9 @@ export default function Home() {
   const [targetDay, setTargetDay] = useState(1);
   const [elapsedHours, setElapsedHours] = useState(0);
   const [goToTime, setGoToTime] = useState<number | null>(null);
+  
+  const [isInitialized, setIsInitialized] = useState(false);
+
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -433,6 +436,8 @@ export default function Home() {
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
         cameraTarget={cameraTarget}
+        isInitialized={isInitialized}
+        setIsInitialized={setIsInitialized}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">

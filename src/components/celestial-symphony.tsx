@@ -25,6 +25,8 @@ export interface CelestialSymphonyProps {
   onTimeUpdate: (elapsedHours: number) => void;
   goToTime: number | null;
   cameraTarget: string | null;
+  isInitialized: boolean;
+  setIsInitialized: (isInitialized: boolean) => void;
 }
 
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
@@ -45,7 +47,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     beaconPositionRef,
     sebakaRadiusRef,
     originalCameraPosRef,
-  } = useInitializeScene({ bodyData });
+  } = useInitializeScene({ bodyData, setIsInitialized: props.setIsInitialized });
 
   useBodyClickHandler({
     renderer: rendererRef.current,

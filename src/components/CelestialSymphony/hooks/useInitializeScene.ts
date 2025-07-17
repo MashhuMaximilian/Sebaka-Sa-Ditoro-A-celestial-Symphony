@@ -8,9 +8,10 @@ import type { BodyData } from "./useBodyData";
 
 interface InitializeSceneProps {
     bodyData: BodyData[];
+    setIsInitialized: (isInitialized: boolean) => void;
 }
 
-export const useInitializeScene = ({ bodyData }: InitializeSceneProps) => {
+export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSceneProps) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer>();
     const sceneRef = useRef<THREE.Scene>();
@@ -96,6 +97,8 @@ export const useInitializeScene = ({ bodyData }: InitializeSceneProps) => {
             }
         });
 
+        setIsInitialized(true);
+
         const handleResize = () => {
             if (cameraRef.current && rendererRef.current && mountRef.current) {
                 cameraRef.current.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
@@ -106,18 +109,18 @@ export const useInitializeScene = ({ bodyData }: InitializeSceneProps) => {
         window.addEventListener("resize", handleResize);
 
         return () => {
+            setIsInitialized(false);
             window.removeEventListener("resize", handleResize);
             controls.dispose();
             if (rendererRef.current) {
                 rendererRef.current.dispose();
-                // Check if the DOM element exists before trying to remove it
                 if (mountRef.current && rendererRef.current.domElement.parentNode === mountRef.current) {
                     mountRef.current.removeChild(rendererRef.current.domElement);
                 }
             }
             scene.clear();
         };
-    }, [bodyData]);
+    }, [bodyData, setIsInitialized]);
 
     return {
         mountRef,
