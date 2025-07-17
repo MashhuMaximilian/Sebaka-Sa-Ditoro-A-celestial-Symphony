@@ -60,7 +60,7 @@ export const createBodyMesh = (
         materialOptions.emissive = body.color;
         materialOptions.emissiveIntensity = 2;
         material = new THREE.MeshStandardMaterial(materialOptions);
-    } else { // It's a planet
+    } else { 
         const planetName = body.name;
         
         let textureParams: THREE.MeshStandardMaterialParameters = {};
@@ -72,18 +72,17 @@ export const createBodyMesh = (
                     map: textureLoader.load('/maps/AetherisTexture.png'),
                 };
                 break;
-
             case 'Gelidis':
                 textureParams = {
                     map: textureLoader.load('/maps/GelidisTexture.png'),
                     normalMap: textureLoader.load('/maps/GelidisTexture_normal.png'),
                     displacementMap: textureLoader.load('/maps/GelidisTexture_displacement.png'),
                     displacementScale: 0.1,
+                    aoMap: textureLoader.load('/maps/GelidisTexture_ambient.png'),
                 };
-                // aoMap for Gelidis is named _ambient.png but we won't use it as it might require UV2 which is not specified for it
+                needsUv2 = true;
                 break;
-            
-            case 'Rutilus': // Assumed to be Rutilius from the files
+            case 'Rutilus':
                 textureParams = {
                     map: textureLoader.load('/maps/RutiliusTexture.png'),
                     normalMap: textureLoader.load('/maps/RutiliusTexture_normal.png'),
@@ -93,7 +92,6 @@ export const createBodyMesh = (
                 };
                 needsUv2 = true;
                 break;
-            
             case 'Spectris':
                 textureParams = {
                     map: textureLoader.load('/maps/SpectrisTexture.png'),
@@ -104,18 +102,16 @@ export const createBodyMesh = (
                 };
                 needsUv2 = true;
                 break;
-
             case 'Viridis':
                 textureParams = {
                     map: textureLoader.load('/maps/ViridisTexture.png'),
                     aoMap: textureLoader.load('/maps/ViridisTexture_ambient.png'),
                 };
-                if (body.color) {
+                 if (body.color) {
                     viridisOriginalColorRef.current.set(body.color);
                 }
                 needsUv2 = true;
                 break;
-            
             case 'Liminis':
                 textureParams = {
                     map: textureLoader.load('/maps/LiminisTexture.png'),
@@ -126,12 +122,10 @@ export const createBodyMesh = (
                 };
                 needsUv2 = true;
                 break;
-
             case 'Sebaka':
                 material = sebakaDetailedMaterial;
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
-
             default:
                 materialOptions.color = body.color;
                 material = new THREE.MeshStandardMaterial(materialOptions);
