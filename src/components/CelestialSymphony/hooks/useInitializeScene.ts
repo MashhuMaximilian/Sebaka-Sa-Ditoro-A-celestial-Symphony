@@ -30,7 +30,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
     const sebakaSimpleMaterialRef = useRef<THREE.MeshStandardMaterial>();
 
     useEffect(() => {
-        if (!mountRef.current) return;
+        if (!mountRef.current || !bodyData.length) return;
 
         const currentMount = mountRef.current;
         const scene = new THREE.Scene();
@@ -115,9 +115,10 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         animate();
 
         return () => {
+            setIsInitialized(false);
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener("resize", handleResize);
-            
+
             if (controlsRef.current) {
                 controlsRef.current.dispose();
             }
@@ -129,7 +130,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
                         if (object.material) {
                             if (Array.isArray(object.material)) {
                                 object.material.forEach(material => material.dispose());
-                            } else {
+                            } else if (object.material instanceof THREE.Material) {
                                 object.material.dispose();
                             }
                         }
@@ -139,15 +140,12 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
             }
             
             if (rendererRef.current) {
-                // Forcefully lose the WebGL context
                 rendererRef.current.forceContextLoss();
                 rendererRef.current.dispose();
                 if (mountRef.current && rendererRef.current.domElement.parentNode === mountRef.current) {
                     mountRef.current.removeChild(rendererRef.current.domElement);
                 }
             }
-
-            setIsInitialized(false);
         };
     }, [bodyData, setIsInitialized]);
 
