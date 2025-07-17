@@ -98,7 +98,8 @@ const initialPlanets: PlanetData[] = [
       surface: 'Scorched, volcanic crust with a thin atmosphere.',
       characteristics: 'Eccentricity of 0.1. Intense heat due to proximity to binary stars.',
       appearance: 'Bright, ember-like point of light, primarily visible during twilight.',
-      lore: 'Seen as a fiery, untamed world, its rapid synodic cycle is tracked by astronomers.'
+      lore: 'Seen as a fiery, untamed world, its rapid synodic cycle is tracked by astronomers.',
+      rotationPeriodHours: 960,
   },
   {
       name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitPeriodDays: 324, eccentric: true,
@@ -109,7 +110,8 @@ const initialPlanets: PlanetData[] = [
       surface: 'Earth-like, with oceans, continents, and a breathable atmosphere.',
       characteristics: 'Habitable. Eccentricity of 0.05. A year is 324 days, divided into 12 months of 27 days each.',
       appearance: 'Observer\'s planet.',
-      lore: 'The homeworld. Its calendar is defined by its orbit and Viridis\'s volcanic cycle.'
+      lore: 'The homeworld. Its calendar is defined by its orbit and Viridis\'s volcanic cycle.',
+      rotationPeriodHours: 24,
   },
   {
       name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitPeriodDays: 818, eccentric: true,
@@ -120,7 +122,8 @@ const initialPlanets: PlanetData[] = [
       surface: 'Hazy atmosphere with iridescent icy rings.',
       characteristics: 'Eccentric orbit (e = 0.2) causes brightness variations. Has one moon with a 28-day orbit.',
       appearance: 'A prominent night-sky object with shimmering rings.',
-      lore: 'The position of its setting marks the months. Known as the "Dream-Weaver".'
+      lore: 'The position of its setting marks the months. Known as the "Dream-Weaver".',
+      rotationPeriodHours: 30,
   },
   {
       name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitPeriodDays: 1500, eccentric: true,
@@ -131,7 +134,8 @@ const initialPlanets: PlanetData[] = [
       surface: 'Geologically active with significant volcanic activity.',
       characteristics: 'Eccentricity of 0.1. Features a 27-day volcanic brightness cycle (Bright, Waning, Dim).',
       appearance: 'A night-sky object whose brightness visibly changes over a 27-day period.',
-      lore: 'The "Phase Maker." Its 27-day cycle is the basis for Sebaka\'s 9-day weeks and 27-day months.'
+      lore: 'The "Phase Maker." Its 27-day cycle is the basis for Sebaka\'s 9-day weeks and 27-day months.',
+      rotationPeriodHours: 20,
   },
   {
       name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true,
@@ -142,7 +146,8 @@ const initialPlanets: PlanetData[] = [
       surface: 'Banded atmosphere with a visible internal heat glow.',
       characteristics: 'Highly eccentric orbit (e = 0.5) causes its apparent size and brightness to vary significantly.',
       appearance: 'Dominant night-sky object, varying from a large disk to a smaller point.',
-      lore: 'Its long, eccentric orbit marks generational cycles.'
+      lore: 'Its long, eccentric orbit marks generational cycles.',
+      rotationPeriodHours: 10,
   },
   {
       name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 5163, eccentric: true,
@@ -153,7 +158,8 @@ const initialPlanets: PlanetData[] = [
       surface: 'Vast, frigid atmosphere with swirling storm systems.',
       characteristics: 'Remote and dimly lit by Beacon. Eccentricity of 0.1.',
       appearance: 'Invisible to the naked eye, requires powerful telescopes.',
-      lore: 'Known only through advanced astronomical calculations; a mysterious, remote world.'
+      lore: 'Known only through advanced astronomical calculations; a mysterious, remote world.',
+      rotationPeriodHours: 16,
   },
   {
       name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 18.9 * AU_TO_UNITS, orbitPeriodDays: 26820, eccentric: true,
@@ -164,7 +170,8 @@ const initialPlanets: PlanetData[] = [
       surface: 'Frozen expanse of rock and ice with a thin atmosphere.',
       characteristics: 'Furthest known planet, perpetually in twilight. Eccentricity of 0.2.',
       appearance: 'Invisible to the naked eye, requires powerful telescopes.',
-      lore: 'Represents the edge of the known system, discovered through long-duration observation.'
+      lore: 'Represents the edge of the known system, discovered through long-duration observation.',
+      rotationPeriodHours: 48,
   },
 ];
 

@@ -6,6 +6,7 @@ import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 import type { BodyData } from "./useBodyData";
 import type { CelestialSymphonyProps } from "../celestial-symphony";
+import type { PlanetData } from "@/types";
 
 type AnimationLoopParams = Omit<CelestialSymphonyProps, 'stars' | 'planets'> & {
     bodyData: BodyData[];
@@ -99,14 +100,18 @@ export const useAnimationLoop = ({
       if (twilightMesh && twilightLightRef.current) {
         twilightLightRef.current.position.copy(twilightMesh.position);
       }
+      
+      if (isSebakaRotatingRef.current) {
+        planetMeshesRef.current.forEach(planetMesh => {
+            const planetData = bodyData.find(d => d.name === planetMesh.name) as PlanetData | undefined;
+            if (planetData?.rotationPeriodHours) {
+                const rotationPerHour = (2 * Math.PI) / planetData.rotationPeriodHours;
+                planetMesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
+            }
+        });
+      }
 
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-      if (sebakaMesh) {
-         if (isSebakaRotatingRef.current) {
-            const rotationPerHour = (2 * Math.PI) / HOURS_IN_SEBAKA_DAY;
-            sebakaMesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
-         }
-      }
       
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.name === 'Gelidis_orbit');
       const liminisOrbit = orbitMeshesRef.current.find(o => o.name === 'Liminis_orbit');

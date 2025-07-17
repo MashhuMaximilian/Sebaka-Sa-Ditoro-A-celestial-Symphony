@@ -26,6 +26,7 @@ export interface PlanetData extends CelestialBody {
   rotation: string;
   axialTilt: string;
   moons: string;
+  rotationPeriodHours?: number;
 }
 
 export interface StarData extends CelestialBody {
