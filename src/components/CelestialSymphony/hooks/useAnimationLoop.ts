@@ -117,27 +117,20 @@ export const useAnimationLoop = ({
         
         cameraLocalPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), sebakaMesh.rotation.y);
         camera.position.copy(sebakaMesh.position).add(cameraLocalPosition);
+        
+        camera.lookAt(sebakaMesh.position);
 
-        const cameraUp = cameraLocalPosition.clone().normalize();
-        camera.up.copy(cameraUp);
-        
-        const lookAtTarget = new THREE.Vector3(0, 0, -1);
-        
-        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRad);
-        lookAtTarget.applyQuaternion(pitchQuat);
-        
-        const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawRad);
-        lookAtTarget.applyQuaternion(yawQuat);
+        const lookDirection = new THREE.Vector3();
+        camera.getWorldDirection(lookDirection);
 
-        const orientationQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), camera.up);
-        lookAtTarget.applyQuaternion(orientationQuat);
+        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion), pitchRad);
+        const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion), yawRad);
         
-        const finalTarget = camera.position.clone().add(lookAtTarget);
-        camera.lookAt(finalTarget);
+        const rotationQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
+        camera.quaternion.multiplyQuaternions(rotationQuat, camera.quaternion);
 
-        controls.target.copy(finalTarget);
+        controls.target.copy(camera.position).add(lookDirection);
         controls.update();
-
       } else {
         controls.update();
       }
