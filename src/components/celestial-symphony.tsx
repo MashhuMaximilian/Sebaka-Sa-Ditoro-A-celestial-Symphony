@@ -8,6 +8,7 @@ import { useCameraControl } from "./CelestialSymphony/hooks/useCameraControl";
 import { useInitializeScene } from "./CelestialSymphony/hooks/useInitializeScene";
 import { useUpdateBodyMaterials } from "./CelestialSymphony/hooks/useUpdateBodyMaterials";
 import { useBodyData } from "./CelestialSymphony/hooks/useBodyData";
+import type * as THREE from 'three';
 
 export interface CelestialSymphonyProps {
   stars: StarData[];
@@ -47,6 +48,8 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     beaconPositionRef,
     sebakaRadiusRef,
     originalCameraPosRef,
+    goldenGiverLightRef,
+    twilightLightRef
   } = useInitializeScene({ bodyData, setIsInitialized: props.setIsInitialized });
 
   useBodyClickHandler({
@@ -92,6 +95,8 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     orbitMeshesRef,
     beaconPositionRef,
     sebakaRadiusRef,
+    goldenGiverLightRef: goldenGiverLightRef as React.MutableRefObject<THREE.DirectionalLight | undefined>,
+    twilightLightRef: twilightLightRef as React.MutableRefObject<THREE.DirectionalLight | undefined>,
   });
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;

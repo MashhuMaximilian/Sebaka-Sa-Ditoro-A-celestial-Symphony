@@ -18,6 +18,8 @@ type AnimationLoopParams = Omit<CelestialSymphonyProps, 'stars' | 'planets'> & {
     orbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     sebakaRadiusRef: React.MutableRefObject<number>;
+    goldenGiverLightRef: React.MutableRefObject<THREE.DirectionalLight | undefined>;
+    twilightLightRef: React.MutableRefObject<THREE.DirectionalLight | undefined>;
 };
 
 export const useAnimationLoop = ({
@@ -42,6 +44,8 @@ export const useAnimationLoop = ({
   beaconPositionRef,
   sebakaRadiusRef,
   isInitialized,
+  goldenGiverLightRef,
+  twilightLightRef
 }: AnimationLoopParams) => {
   const clockRef = useRef(new THREE.Clock());
   const elapsedHoursRef = useRef(0);
@@ -86,6 +90,16 @@ export const useAnimationLoop = ({
       onTimeUpdate(elapsedHoursRef.current);
       updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
 
+      const goldenGiverMesh = allBodiesRef.current.find(b => b.name === 'Golden Giver');
+      if (goldenGiverMesh && goldenGiverLightRef.current) {
+        goldenGiverLightRef.current.position.copy(goldenGiverMesh.position);
+      }
+
+      const twilightMesh = allBodiesRef.current.find(b => b.name === 'Twilight');
+      if (twilightMesh && twilightLightRef.current) {
+        twilightLightRef.current.position.copy(twilightMesh.position);
+      }
+
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
       if (sebakaMesh) {
          if (isSebakaRotatingRef.current) {
@@ -118,7 +132,6 @@ export const useAnimationLoop = ({
         cameraLocalPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), sebakaMesh.rotation.y);
         camera.position.copy(sebakaMesh.position).add(cameraLocalPosition);
         
-        // Point camera away from planet center
         const up = cameraLocalPosition.clone().normalize();
         camera.up.copy(up);
         
@@ -167,5 +180,7 @@ export const useAnimationLoop = ({
     sebakaRadiusRef, 
     onTimeUpdate,
     isInitialized,
+    goldenGiverLightRef,
+    twilightLightRef
   ]);
 };

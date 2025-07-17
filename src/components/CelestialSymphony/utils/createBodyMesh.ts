@@ -13,7 +13,7 @@ const createStripedTexture = () => {
 
     context.imageSmoothingEnabled = false;
 
-    const colors = ['#ADD8E6', '#FFFFFF'];
+    const colors = ['#A7C7E7', '#FFFFFF'];
     const stripeWidth = canvas.width / 16;
 
     for (let i = 0; i < 16; i++) {
@@ -59,17 +59,10 @@ export const createBodyMesh = (
         materialOptions.emissiveIntensity = 20;
         material = new THREE.MeshStandardMaterial(materialOptions);
         
-        const pointLight = new THREE.PointLight(body.color, 1500, 0, 2);
-        if(body.name === 'Golden Giver') {
-            pointLight.color.set('#FFFFF0');
-            pointLight.intensity = 2500;
-        } else if (body.name === 'Twilight') {
-            pointLight.intensity = 2500 * 0.7;
-        }
-
         const starMesh = new THREE.Mesh(geometry, material);
-        starMesh.add(pointLight);
         starMesh.name = body.name;
+        starMesh.castShadow = false;
+        starMesh.receiveShadow = false;
         return starMesh;
 
     } else { 
@@ -156,6 +149,8 @@ export const createBodyMesh = (
     
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = body.name;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
 
     if (body.type === 'Planet' && body.name === "Spectris") {
       const ringGeometry = new THREE.RingGeometry(body.size * 1.5, body.size * 3, 64);
@@ -164,6 +159,7 @@ export const createBodyMesh = (
       const ringMaterial = new THREE.ShaderMaterial({ vertexShader, fragmentShader, side: THREE.DoubleSide, transparent: true });
       const rings = new THREE.Mesh(ringGeometry, ringMaterial);
       rings.rotation.x = Math.PI / 2 + 0.2;
+      rings.receiveShadow = true;
       mesh.add(rings);
     }
     

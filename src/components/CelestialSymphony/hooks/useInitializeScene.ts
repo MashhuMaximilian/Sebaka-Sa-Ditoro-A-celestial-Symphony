@@ -28,6 +28,9 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
     
     const sebakaDetailedMaterialRef = useRef<THREE.MeshStandardMaterial>();
     const sebakaSimpleMaterialRef = useRef<THREE.MeshStandardMaterial>();
+    
+    const goldenGiverLightRef = useRef<THREE.DirectionalLight>();
+    const twilightLightRef = useRef<THREE.DirectionalLight>();
 
     useEffect(() => {
         if (!mountRef.current || !bodyData.length) return;
@@ -43,6 +46,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         rendererRef.current = renderer;
         currentMount.appendChild(renderer.domElement);
         
@@ -58,13 +63,29 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         controls.maxDistance = 200000;
         controls.target.set(0, 0, 0);
         controlsRef.current = controls;
-
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambientLight);
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
-        directionalLight.position.set(500, 500, 500);
-        scene.add(directionalLight);
+        const hemiLight = new THREE.HemisphereLight(0xaaaaee, 0x444444, 0.5);
+        scene.add(hemiLight);
+
+        const goldenGiverLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        goldenGiverLight.castShadow = true;
+        goldenGiverLight.shadow.mapSize.width = 2048;
+        goldenGiverLight.shadow.mapSize.height = 2048;
+        goldenGiverLight.shadow.camera.near = 0.5;
+        goldenGiverLight.shadow.camera.far = 50000;
+        goldenGiverLight.shadow.bias = -0.0001;
+        scene.add(goldenGiverLight);
+        goldenGiverLightRef.current = goldenGiverLight;
+        
+        const twilightLight = new THREE.DirectionalLight(0xffccaa, 1.5 * 0.7);
+        twilightLight.castShadow = true;
+        twilightLight.shadow.mapSize.width = 2048;
+        twilightLight.shadow.mapSize.height = 2048;
+        twilightLight.shadow.camera.near = 0.5;
+        twilightLight.shadow.camera.far = 50000;
+        twilightLight.shadow.bias = -0.0001;
+        scene.add(twilightLight);
+        twilightLightRef.current = twilightLight;
 
         // Clear previous objects if any
         allBodiesRef.current.forEach(obj => scene.remove(obj));
@@ -180,5 +201,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         beaconPositionRef,
         sebakaRadiusRef,
         originalCameraPosRef,
+        goldenGiverLightRef,
+        twilightLightRef
     };
 };
