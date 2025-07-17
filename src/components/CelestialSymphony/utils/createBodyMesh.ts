@@ -30,6 +30,36 @@ const createStripedTexture = () => {
     return texture;
 };
 
+const createRingTexture = () => {
+    const canvas = document.createElement("canvas");
+    const width = 256;
+    const height = 64; 
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+  
+    if (!context) return null;
+  
+    const gradient = context.createLinearGradient(0, 0, width, 0);
+    gradient.addColorStop(0, "red");
+    gradient.addColorStop(1 / 6, "orange");
+    gradient.addColorStop(2 / 6, "yellow");
+    gradient.addColorStop(3 / 6, "green");
+    gradient.addColorStop(4 / 6, "blue");
+    gradient.addColorStop(5 / 6, "indigo");
+    gradient.addColorStop(1, "violet");
+  
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+  
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.repeat.set(160, 1);
+    texture.minFilter = THREE.NearestFilter;
+    texture.magFilter = THREE.NearestFilter;
+    return texture;
+  };
+
 export const createMaterials = () => {
     const sebakaSimpleTexture = createStripedTexture();
     const sebakaSimpleMaterial = new THREE.MeshStandardMaterial({ map: sebakaSimpleTexture });
@@ -60,7 +90,7 @@ export const createBodyMesh = (
             emissive: body.color,
         };
 
-        if (body.name === 'Golden Giver') {
+        if (body.name === 'Alpha') {
             Object.assign(starMaterialOptions, {
                 emissiveIntensity: 1.2,
                 map: textureLoader.load('/maps/goldenGiverTexture.jpg'),
@@ -182,15 +212,19 @@ export const createBodyMesh = (
     mesh.receiveShadow = true;
 
     if (body.type === 'Planet' && body.name === "Spectris") {
-      const ringGeometry = new THREE.RingGeometry(body.size * 1.5, body.size * 3, 64);
-      const vertexShader = "varying vec3 vUv; void main() { vUv = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }";
-      const fragmentShader = "varying vec3 vUv; vec3 hsv2rgb(vec3 c) { vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0); vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www); return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y); } void main() { float angle = atan(vUv.y, vUv.x); float hue = (angle + 3.14159) / (2.0 * 3.14159); gl_FragColor = vec4(hsv2rgb(vec3(hue, 0.7, 1.0)), 0.7); }";
-      const ringMaterial = new THREE.ShaderMaterial({ vertexShader, fragmentShader, side: THREE.DoubleSide, transparent: true });
-      const rings = new THREE.Mesh(ringGeometry, ringMaterial);
-      rings.rotation.x = Math.PI / 2 + 0.2;
-      rings.receiveShadow = true;
-      mesh.add(rings);
-    }
+        const ringGeometry = new THREE.RingGeometry(body.size * 1.5, body.size * 3, 64);
+        const ringTexture = createRingTexture();
+        const ringMaterial = new THREE.MeshBasicMaterial({
+            map: ringTexture,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.7,
+        });
+        const rings = new THREE.Mesh(ringGeometry, ringMaterial);
+        rings.rotation.x = Math.PI / 2 + 0.2;
+        rings.receiveShadow = true;
+        mesh.add(rings);
+      }
     
     return mesh;
 };

@@ -90,9 +90,9 @@ const initialStars: StarData[] = [
 
 const initialPlanets: PlanetData[] = [
   {
-      name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitPeriodDays: 169, eccentric: true,
+      name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitPeriodDays: 169, eccentric: true, eccentricity: 0.1,
       type: 'Planet', classification: 'Terrestrial',
-      orbitalRole: 'Innermost planet orbiting Alpha-Twilight binary', orbitalPeriod: '169 days (0.522 Sebakan years)', orbitalDistance: '0.7 AU (periapsis 0.63 AU, apoapsis 0.77 AU)',
+      orbitalRole: 'Innermost planet orbiting Alpha-Twilight binary', orbitalPeriod: '0.522 Sebakan years (169 days)', orbitalDistance: '0.7 AU (periapsis 0.63 AU, apoapsis 0.77 AU)',
       rotation: '40 days', axialTilt: '10°', moons: 'None',
       radius: '0.5 R⊕', mass: '~0.3 M⊕',
       surface: 'Scorched, sulfur-yellow crust with bleeding magma lines, thin atmosphere with volcanic outgassing.',
@@ -102,9 +102,9 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 960,
   },
   {
-      name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitPeriodDays: 324, eccentric: true,
+      name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitPeriodDays: 324, eccentric: true, eccentricity: 0.05,
       type: 'Planet', classification: 'Terrestrial (Homeworld)',
-      orbitalRole: 'Second planet orbiting Alpha-Twilight binary', orbitalPeriod: '324 days (1 Sebakan year)', orbitalDistance: '1.08 AU (periapsis 1.026 AU, apoapsis 1.134 AU)',
+      orbitalRole: 'Second planet orbiting Alpha-Twilight binary', orbitalPeriod: '1 Sebakan year (324 days)', orbitalDistance: '1.08 AU (periapsis 1.026 AU, apoapsis 1.134 AU)',
       rotation: '24 hours', axialTilt: '23.5°', moons: 'None',
       radius: '1 R⊕', mass: '1 M⊕',
       surface: 'Earth-like, with oceans, continents, and a breathable atmosphere.',
@@ -114,9 +114,9 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 24,
   },
   {
-      name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitPeriodDays: 818, eccentric: true,
+      name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitPeriodDays: 818, eccentric: true, eccentricity: 0.2,
       type: 'Planet', classification: 'Terrestrial',
-      orbitalRole: 'Third planet orbiting Alpha-Twilight binary', orbitalPeriod: '818 days (2.525 Sebakan years)', orbitalDistance: '2.0 AU (periapsis 1.6 AU, apoapsis 2.4 AU)',
+      orbitalRole: 'Third planet orbiting Alpha-Twilight binary', orbitalPeriod: '2.525 Sebakan years (818 days)', orbitalDistance: '2.0 AU (periapsis 1.6 AU, apoapsis 2.4 AU)',
       rotation: '30 hours', axialTilt: '15°', moons: '1 (28-day orbital period)',
       radius: '0.8 R⊕', mass: '~0.7 M⊕',
       surface: 'Hazy, greyish-white atmosphere, iridescent icy rings.',
@@ -126,9 +126,9 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 30,
   },
   {
-      name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitPeriodDays: 1500, eccentric: true,
+      name: "Viridis", color: "#9ACD32", size: 8.282, orbitRadius: 3.0 * AU_TO_UNITS, orbitPeriodDays: 1500, eccentric: true, eccentricity: 0.1,
       type: 'Planet', classification: 'Terrestrial',
-      orbitalRole: 'Fourth planet orbiting Alpha-Twilight binary', orbitalPeriod: '1,500 days (4.630 Sebakan years)', orbitalDistance: '3.0 AU (periapsis 2.7 AU, apoapsis 3.3 AU)',
+      orbitalRole: 'Fourth planet orbiting Alpha-Twilight binary', orbitalPeriod: '4.630 Sebakan years (1,500 days)', orbitalDistance: '3.0 AU (periapsis 2.7 AU, apoapsis 3.3 AU)',
       rotation: '20 hours', axialTilt: '20°', moons: 'None',
       radius: '1.3 R⊕', mass: '2.0 M⊕',
       surface: 'Sulfur-yellow crust, bleeding magma lines, thick atmosphere with volcanic plumes.',
@@ -138,9 +138,9 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 20,
   },
   {
-      name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true,
+      name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true, eccentricity: 0.5,
       type: 'Planet', classification: 'Gas Giant',
-      orbitalRole: 'Fifth planet orbiting Alpha-Twilight binary', orbitalPeriod: '4,241 days (13.09 Sebakan years)', orbitalDistance: '6.0 AU (periapsis 3.0 AU, apoapsis 9.0 AU)',
+      orbitalRole: 'Fifth planet orbiting Alpha-Twilight binary', orbitalPeriod: '13.09 Sebakan years (4,241 days)', orbitalDistance: '6.0 AU (periapsis 3.0 AU, apoapsis 9.0 AU)',
       rotation: '10 hours', axialTilt: '25°', moons: 'Multiple (5–10 visible)',
       radius: '15.0 R⊕ (~1.36 RJ)', mass: '~300 M⊕ (~0.94 MJ)',
       surface: 'Banded atmosphere with blue, purple, green hues, internal heat glow.',
@@ -150,9 +150,9 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 10,
   },
   {
-      name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 5163, eccentric: true,
+      name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 5163, eccentric: true, eccentricity: 0.1,
       type: 'Planet', classification: 'Ice Giant',
-      orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '5,163 days (15.94 Sebakan years)', orbitalDistance: '5.7 AU from Beacon (periapsis 5.13 AU, apoapsis 6.27 AU)',
+      orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '15.94 Sebakan years (5,163 days)', orbitalDistance: '5.7 AU from Beacon (periapsis 5.13 AU, apoapsis 6.27 AU)',
       rotation: '16 hours', axialTilt: '28°', moons: '2-3 (small, telescopic only)',
       radius: '4.0 R⊕', mass: '~15 M⊕',
       surface: 'Vast atmosphere with swirling storm systems, faint icy cloud bands.',
@@ -162,9 +162,9 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 16,
   },
   {
-      name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 18.9 * AU_TO_UNITS, orbitPeriodDays: 26820, eccentric: true,
+      name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 18.9 * AU_TO_UNITS, orbitPeriodDays: 26820, eccentric: true, eccentricity: 0.2,
       type: 'Planet', classification: 'Ice Dwarf',
-      orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '26,820 days (82.78 Sebakan years)', orbitalDistance: '18.9 AU from Beacon (periapsis 15.12 AU, apoapsis 22.68 AU)',
+      orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '82.78 Sebakan years (26,820 days)', orbitalDistance: '18.9 AU from Beacon (periapsis 15.12 AU, apoapsis 22.68 AU)',
       rotation: '48 hours', axialTilt: '5°', moons: 'None',
       radius: '0.2 R⊕', mass: '~0.01 M⊕',
       surface: 'Frozen expanse of rock and ice, thin atmosphere.',
@@ -681,5 +681,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

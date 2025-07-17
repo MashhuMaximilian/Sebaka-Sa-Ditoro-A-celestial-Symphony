@@ -23,6 +23,7 @@ export interface PlanetData extends CelestialBody {
   type: 'Planet';
   orbitRadius: number;
   eccentric?: boolean;
+  eccentricity?: number;
   rotation: string;
   axialTilt: string;
   moons: string;

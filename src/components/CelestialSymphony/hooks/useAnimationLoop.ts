@@ -102,7 +102,7 @@ export const useAnimationLoop = ({
       onTimeUpdate(elapsedHoursRef.current);
       updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
 
-      const goldenGiverMesh = allBodiesRef.current.find(b => b.name === 'Golden Giver');
+      const goldenGiverMesh = allBodiesRef.current.find(b => b.name === 'Alpha');
       if (goldenGiverMesh && goldenGiverLightRef.current) {
         goldenGiverLightRef.current.position.copy(goldenGiverMesh.position);
       }

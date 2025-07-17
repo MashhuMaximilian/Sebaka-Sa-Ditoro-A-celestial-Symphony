@@ -35,16 +35,16 @@ export const updateAllBodyPositions = (
       let x, z;
       let angle = currentHours * data.radsPerHour;
 
-      if (data.type === 'Planet' && data.eccentric) {
-          const eccentricity = data.name === 'Spectris' ? 0.2 : data.name === 'Aetheris' ? 0.5 : 0.1;
+      if (data.type === 'Planet' && data.eccentric && data.eccentricity) {
+          const eccentricity = data.eccentricity;
           const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
           x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
           z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
-      } else if (data.type === 'Star' && (data.name === 'Golden Giver' || data.name === 'Twilight')) {
+      } else if (data.type === 'Star' && (data.name === 'Alpha' || data.name === 'Twilight')) {
           const r1 = 0.1 * 150; // AU_TO_UNITS
           const binaryAngle = currentHours * data.radsPerHour;
-          x = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.cos(binaryAngle);
-          z = (data.name === 'Golden Giver' ? -1 : 1) * r1 * Math.sin(binaryAngle);
+          x = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.cos(binaryAngle);
+          z = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.sin(binaryAngle);
       } else {
           const semiMinorAxis = semiMajorAxis;
           x = orbitCenter.x + semiMajorAxis * Math.cos(angle);

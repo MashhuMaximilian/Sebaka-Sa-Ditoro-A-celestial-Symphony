@@ -13,8 +13,8 @@ export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
         orbit.rotation.x = Math.PI / 2;
         orbit.name = `${body.name}_orbit`;
 
-        if (body.type === 'Planet' && body.eccentric) {
-            const eccentricity = body.name === 'Spectris' ? 0.2 : body.name === 'Aetheris' ? 0.5 : 0.1;
+        if (body.type === 'Planet' && body.eccentric && body.eccentricity) {
+            const eccentricity = body.eccentricity;
             const semiMinorAxis = body.orbitRadius * Math.sqrt(1 - eccentricity * eccentricity);
             orbit.scale.y = semiMinorAxis / body.orbitRadius;
         }
