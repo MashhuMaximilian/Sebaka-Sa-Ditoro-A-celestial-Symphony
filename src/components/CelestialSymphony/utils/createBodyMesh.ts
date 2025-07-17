@@ -28,9 +28,9 @@ const createStripedTexture = () => {
 
 export const createMaterials = () => {
     const sebakaSimpleTexture = createStripedTexture();
-    const sebakaSimpleMaterialRef = new THREE.MeshStandardMaterial({ map: sebakaSimpleTexture });
+    const sebakaSimpleMaterial = new THREE.MeshStandardMaterial({ map: sebakaSimpleTexture });
 
-    const sebakaDetailedMaterialRef = new THREE.MeshStandardMaterial({
+    const sebakaDetailedMaterial = new THREE.MeshStandardMaterial({
         map: textureLoader.load('/maps/SebakaTexture.png'),
         specularMap: textureLoader.load('/maps/SebakaSpecularMap.png'),
         normalMap: textureLoader.load('/maps/SebakaNormalMap.png'),
@@ -39,7 +39,7 @@ export const createMaterials = () => {
         displacementScale: 0.1,
     });
 
-    return { sebakaDetailedMaterialRef, sebakaSimpleMaterialRef };
+    return { sebakaDetailedMaterial, sebakaSimpleMaterial };
 }
 
 

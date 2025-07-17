@@ -76,7 +76,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     sebakaDetailedMaterialRef,
     sebakaSimpleMaterialRef,
     viewFromSebaka: props.viewFromSebaka,
-    onTimeUpdate: props.onTimeUpdate,
   });
 
   useAnimationLoop({

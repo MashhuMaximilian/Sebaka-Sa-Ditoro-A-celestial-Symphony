@@ -12,7 +12,6 @@ interface UpdateBodyMaterialsProps {
     sebakaDetailedMaterialRef: React.MutableRefObject<THREE.MeshStandardMaterial | undefined>;
     sebakaSimpleMaterialRef: React.MutableRefObject<THREE.MeshStandardMaterial | undefined>;
     viewFromSebaka: boolean;
-    onTimeUpdate: (elapsedHours: number) => void;
 }
 
 export const useUpdateBodyMaterials = ({
@@ -23,7 +22,6 @@ export const useUpdateBodyMaterials = ({
     sebakaDetailedMaterialRef,
     sebakaSimpleMaterialRef,
     viewFromSebaka,
-    onTimeUpdate,
 }: UpdateBodyMaterialsProps) => {
 
     const elapsedHoursRef = useRef(0);
