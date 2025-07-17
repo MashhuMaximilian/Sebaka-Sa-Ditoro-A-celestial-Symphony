@@ -67,7 +67,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         const hemiLight = new THREE.HemisphereLight(0xaaaaee, 0x444444, 0.5);
         scene.add(hemiLight);
 
-        const goldenGiverLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        const goldenGiverLight = new THREE.DirectionalLight(0xFFFDEE, 1.5);
         goldenGiverLight.castShadow = true;
         goldenGiverLight.shadow.mapSize.width = 2048;
         goldenGiverLight.shadow.mapSize.height = 2048;
@@ -77,7 +77,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         scene.add(goldenGiverLight);
         goldenGiverLightRef.current = goldenGiverLight;
         
-        const twilightLight = new THREE.DirectionalLight(0xffccaa, 1.5 * 0.7);
+        const twilightLight = new THREE.DirectionalLight(0xFF6400, 1.5 * 0.7);
         twilightLight.castShadow = true;
         twilightLight.shadow.mapSize.width = 2048;
         twilightLight.shadow.mapSize.height = 2048;
