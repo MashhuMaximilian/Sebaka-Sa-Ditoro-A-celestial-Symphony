@@ -64,7 +64,7 @@ export const createBodyMesh = (
             materialOptions.displacementMap = textureLoader.load('/maps/goldenGiver_displacement.png');
             materialOptions.aoMap = textureLoader.load('/maps/goldenGiver_ambient.png');
             materialOptions.specularMap = textureLoader.load('/maps/goldenGiver_specular.png');
-            materialOptions.displacementScale = 0.2;
+            materialOptions.displacementScale = 2.0;
             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
             geometry.computeTangents();
         } else if (body.name === 'Twilight') {
