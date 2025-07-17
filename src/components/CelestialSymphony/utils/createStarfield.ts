@@ -24,10 +24,10 @@ export const createStarfield = (scene: THREE.Scene) => {
     positions.push(x, y, z);
 
     const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-    const brightness = THREE.MathUtils.randFloat(0.3, 1.0);
+    const brightness = THREE.MathUtils.randFloat(0.8, 1.5);
     colors.push(color.r * brightness, color.g * brightness, color.b * brightness);
     
-    sizes.push(THREE.MathUtils.randFloat(1, 4));
+    sizes.push(THREE.MathUtils.randFloat(2, 6));
   }
 
   const starsGeometry = new THREE.BufferGeometry();
