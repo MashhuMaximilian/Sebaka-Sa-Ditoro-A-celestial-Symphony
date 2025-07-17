@@ -18,8 +18,8 @@ type AnimationLoopParams = Omit<CelestialSymphonyProps, 'stars' | 'planets'> & {
     orbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     sebakaRadiusRef: React.MutableRefObject<number>;
-    goldenGiverLightRef: React.MutableRefObject<THREE.DirectionalLight | undefined>;
-    twilightLightRef: React.MutableRefObject<THREE.DirectionalLight | undefined>;
+    goldenGiverLightRef: React.MutableRefObject<THREE.PointLight | undefined>;
+    twilightLightRef: React.MutableRefObject<THREE.PointLight | undefined>;
 };
 
 export const useAnimationLoop = ({

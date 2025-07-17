@@ -29,8 +29,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
     const sebakaDetailedMaterialRef = useRef<THREE.MeshStandardMaterial>();
     const sebakaSimpleMaterialRef = useRef<THREE.MeshStandardMaterial>();
     
-    const goldenGiverLightRef = useRef<THREE.DirectionalLight>();
-    const twilightLightRef = useRef<THREE.DirectionalLight>();
+    const goldenGiverLightRef = useRef<THREE.PointLight>();
+    const twilightLightRef = useRef<THREE.PointLight>();
 
     useEffect(() => {
         if (!mountRef.current || !bodyData.length) return;
@@ -67,22 +67,18 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         const hemiLight = new THREE.HemisphereLight(0xaaaaee, 0x444444, 0.5);
         scene.add(hemiLight);
 
-        const goldenGiverLight = new THREE.DirectionalLight(0xFFFDEE, 1.5);
+        const goldenGiverLight = new THREE.PointLight(0xFFFDEE, 1.5, 0);
         goldenGiverLight.castShadow = true;
         goldenGiverLight.shadow.mapSize.width = 2048;
         goldenGiverLight.shadow.mapSize.height = 2048;
-        goldenGiverLight.shadow.camera.near = 0.5;
-        goldenGiverLight.shadow.camera.far = 50000;
         goldenGiverLight.shadow.bias = -0.0001;
         scene.add(goldenGiverLight);
         goldenGiverLightRef.current = goldenGiverLight;
         
-        const twilightLight = new THREE.DirectionalLight(0xFF6400, 1.0);
+        const twilightLight = new THREE.PointLight(0xFF6400, 1.0, 0);
         twilightLight.castShadow = true;
         twilightLight.shadow.mapSize.width = 2048;
         twilightLight.shadow.mapSize.height = 2048;
-        twilightLight.shadow.camera.near = 0.5;
-        twilightLight.shadow.camera.far = 50000;
         twilightLight.shadow.bias = -0.0001;
         scene.add(twilightLight);
         twilightLightRef.current = twilightLight;
