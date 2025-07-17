@@ -81,7 +81,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         scene.add(goldenGiverLight);
         goldenGiverLightRef.current = goldenGiverLight;
         
-        const twilightLight = new THREE.PointLight(0xFF6400, 1.0, 0, 0);
+        const twilightLight = new THREE.PointLight(0xD95B00, 1.0, 0, 0);
         twilightLight.castShadow = true;
         twilightLight.shadow.mapSize.width = 2048;
         twilightLight.shadow.mapSize.height = 2048;
