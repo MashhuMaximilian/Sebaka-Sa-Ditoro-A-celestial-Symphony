@@ -11,6 +11,9 @@ const createStripedTexture = () => {
     const context = canvas.getContext('2d');
     if (!context) return null;
 
+    // Disable anti-aliasing to get sharp edges
+    context.imageSmoothingEnabled = false;
+
     const colors = ['#ADD8E6', '#FFFFFF'];
     const stripeWidth = canvas.width / 16;
 
