@@ -33,7 +33,7 @@ export const createStarfield = (scene: THREE.Scene) => {
   const starsGeometry = new THREE.BufferGeometry();
   starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   starsGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-  starsGeometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+  starsGeometry.setAttribute('customSize', new THREE.Float32BufferAttribute(sizes, 1));
 
   const starsMaterial = new THREE.PointsMaterial({
     size: 1, // Base size, will be overridden by attribute
@@ -45,11 +45,11 @@ export const createStarfield = (scene: THREE.Scene) => {
 
   starsMaterial.onBeforeCompile = (shader) => {
     shader.vertexShader = `
-      attribute float size;
+      attribute float customSize;
       ${shader.vertexShader}
     `.replace(
       `gl_PointSize = size;`,
-      `gl_PointSize = size * ( 300.0 / -mvPosition.z );`
+      `gl_PointSize = customSize * ( 300.0 / -mvPosition.z );`
     );
   };
   
