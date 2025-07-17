@@ -37,7 +37,6 @@ export const createMaterials = () => {
     const sebakaDetailedMaterial = new THREE.MeshStandardMaterial({
         map: textureLoader.load('/maps/SebakaTexture.png'),
         specularMap: textureLoader.load('/maps/SebakaSpecularMap.png'),
-        normalMap: textureLoader.load('/maps/SebakaNormalMap.png'),
         displacementMap: textureLoader.load('/maps/SebakaDisplacementMap.png'),
         aoMap: textureLoader.load('/maps/SebakaAmbientOcclusionMap.png'),
         displacementScale: 0.1,
@@ -56,10 +55,23 @@ export const createBodyMesh = (
     const materialOptions: THREE.MeshStandardMaterialParameters = { roughness: 0.8, metalness: 0.1 };
 
     if (body.type === 'Star') {
-        materialOptions.color = body.color;
         materialOptions.emissive = body.color;
-        materialOptions.emissiveIntensity = 2;
+        materialOptions.emissiveIntensity = 20;
         material = new THREE.MeshStandardMaterial(materialOptions);
+        
+        const pointLight = new THREE.PointLight(body.color, 1500, 0, 2);
+        if(body.name === 'Golden Giver') {
+            pointLight.color.set('#FFFFF0');
+            pointLight.intensity = 2500;
+        } else if (body.name === 'Twilight') {
+            pointLight.intensity = 2500 * 0.7;
+        }
+
+        const starMesh = new THREE.Mesh(geometry, material);
+        starMesh.add(pointLight);
+        starMesh.name = body.name;
+        return starMesh;
+
     } else { 
         const planetName = body.name;
         
@@ -130,7 +142,6 @@ export const createBodyMesh = (
             case 'Sebaka':
                 material = sebakaDetailedMaterial;
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-                geometry.computeTangents();
                 break;
             default:
                 materialOptions.color = body.color;
