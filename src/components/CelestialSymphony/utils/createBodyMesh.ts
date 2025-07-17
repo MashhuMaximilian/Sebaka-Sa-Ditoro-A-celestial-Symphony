@@ -82,7 +82,7 @@ export const createBodyMesh = (
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
             case 'Rutilus':
-                textureParams = {
+                 textureParams = {
                     map: textureLoader.load('/maps/RutiliusTexture.png'),
                     normalMap: textureLoader.load('/maps/RutiliusTexture_normal.png'),
                     displacementMap: textureLoader.load('/maps/RutiliusTexture_displacement.png'),
@@ -92,7 +92,7 @@ export const createBodyMesh = (
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
             case 'Spectris':
-                textureParams = {
+                 textureParams = {
                     map: textureLoader.load('/maps/SpectrisTexture.png'),
                     normalMap: textureLoader.load('/maps/SpectrisTexture_normal.png'),
                     displacementMap: textureLoader.load('/maps/SpectrisTexture_displacement.png'),
@@ -154,3 +154,4 @@ export const createBodyMesh = (
     
     return mesh;
 };
+
