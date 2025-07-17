@@ -1,0 +1,22 @@
+
+import * as THREE from 'three';
+import type { BodyData } from '../hooks/useBodyData';
+import type { PlanetData } from '@/types';
+
+export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
+    if ((body.type === 'Planet' || body.name === 'Beacon') && body.orbitRadius) {
+        const orbitGeometry = new THREE.TorusGeometry(body.orbitRadius, body.name === 'Beacon' ? 5 : 0.5, 8, 200);
+        const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
+        const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
+        orbit.rotation.x = Math.PI / 2;
+
+        if ((body as PlanetData).eccentric) {
+            const eccentricity = body.name === 'Spectris' ? 0.2 : body.name === 'Aetheris' ? 0.5 : 0.1;
+            const semiMinorAxis = body.orbitRadius * Math.sqrt(1 - eccentricity * eccentricity);
+            orbit.scale.y = semiMinorAxis / body.orbitRadius;
+        }
+
+        return orbit;
+    }
+    return null;
+};
