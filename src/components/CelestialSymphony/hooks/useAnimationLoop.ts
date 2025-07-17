@@ -118,7 +118,14 @@ export const useAnimationLoop = ({
         cameraLocalPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), sebakaMesh.rotation.y);
         camera.position.copy(sebakaMesh.position).add(cameraLocalPosition);
         
-        camera.lookAt(sebakaMesh.position);
+        // Point camera away from planet center
+        const up = cameraLocalPosition.clone().normalize();
+        camera.up.copy(up);
+        
+        const tangent = new THREE.Vector3().crossVectors(up, new THREE.Vector3(0, 1, 0)).normalize();
+        const forward = new THREE.Vector3().crossVectors(up, tangent).normalize();
+        
+        camera.lookAt(camera.position.clone().add(forward));
 
         const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRad);
         const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawRad);
