@@ -52,45 +52,53 @@ export const createBodyMesh = (
 ): THREE.Mesh => {
     const geometry = new THREE.SphereGeometry(body.size, 64, 64);
     let material: THREE.Material;
+    
     const materialOptions: THREE.MeshStandardMaterialParameters = { roughness: 0.8, metalness: 0.1 };
 
     if (body.type === 'Star') {
-        materialOptions.emissive = body.color;
-        materialOptions.emissiveIntensity = 1;
-        
+        const starMaterialOptions: THREE.MeshStandardMaterialParameters = {
+            emissive: body.color,
+        };
+
         if (body.name === 'Golden Giver') {
-            materialOptions.emissiveIntensity = 1.2;
-            materialOptions.map = textureLoader.load('/maps/goldenGiverTexture.jpg');
-            materialOptions.normalMap = textureLoader.load('/maps/goldenGiver_normal.png');
-            materialOptions.displacementMap = textureLoader.load('/maps/goldenGiver_displacement.png');
-            materialOptions.aoMap = textureLoader.load('/maps/goldenGiver_ambient.png');
-            materialOptions.specularMap = textureLoader.load('/maps/goldenGiver_specular.png');
-            materialOptions.displacementScale = 0.86;
+            Object.assign(starMaterialOptions, {
+                emissiveIntensity: 1.2,
+                map: textureLoader.load('/maps/goldenGiverTexture.jpg'),
+                normalMap: textureLoader.load('/maps/goldenGiver_normal.png'),
+                displacementMap: textureLoader.load('/maps/goldenGiver_displacement.png'),
+                aoMap: textureLoader.load('/maps/goldenGiver_ambient.png'),
+                specularMap: textureLoader.load('/maps/goldenGiver_specular.png'),
+                displacementScale: 0.6,
+            });
             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
             geometry.computeTangents();
         } else if (body.name === 'Twilight') {
-            materialOptions.emissiveIntensity = 2;
-            materialOptions.map = textureLoader.load('/maps/TwilightTexture.jpg');
-            materialOptions.normalMap = textureLoader.load('/maps/Twilight_normal.png');
-            materialOptions.displacementMap = textureLoader.load('/maps/Twilight_displacement.png');
-            materialOptions.aoMap = textureLoader.load('/maps/Twilight_ambient.png');
-            materialOptions.specularMap = textureLoader.load('/maps/Twilight_specular.png');
-            materialOptions.displacementScale = 0.2;
+            Object.assign(starMaterialOptions, {
+                emissiveIntensity: 2,
+                map: textureLoader.load('/maps/TwilightTexture.jpg'),
+                normalMap: textureLoader.load('/maps/Twilight_normal.png'),
+                displacementMap: textureLoader.load('/maps/Twilight_displacement.png'),
+                aoMap: textureLoader.load('/maps/Twilight_ambient.png'),
+                specularMap: textureLoader.load('/maps/Twilight_specular.png'),
+                displacementScale: 0.2,
+            });
             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
             geometry.computeTangents();
         } else if (body.name === 'Beacon') {
-             materialOptions.emissiveIntensity = 0.98;
-             materialOptions.map = textureLoader.load('/maps/BeaconTexture.png');
-             materialOptions.normalMap = textureLoader.load('/maps/Beacon_normal.png');
-             materialOptions.displacementMap = textureLoader.load('/maps/Beacon_displacement.png');
-             materialOptions.aoMap = textureLoader.load('/maps/Beacon_ambient.png');
-             materialOptions.specularMap = textureLoader.load('/maps/Beacon_specular.png');
-             materialOptions.displacementScale = 2.95;
+             Object.assign(starMaterialOptions, {
+                emissiveIntensity: 10,
+                map: textureLoader.load('/maps/BeaconTexture.png'),
+                normalMap: textureLoader.load('/maps/Beacon_normal.png'),
+                displacementMap: textureLoader.load('/maps/Beacon_displacement.png'),
+                aoMap: textureLoader.load('/maps/Beacon_ambient.png'),
+                specularMap: textureLoader.load('/maps/Beacon_specular.png'),
+                displacementScale: 2.95,
+             });
              geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
              geometry.computeTangents();
         }
 
-        material = new THREE.MeshStandardMaterial(materialOptions);
+        material = new THREE.MeshStandardMaterial(starMaterialOptions);
         
         const starMesh = new THREE.Mesh(geometry, material);
         starMesh.name = body.name;
