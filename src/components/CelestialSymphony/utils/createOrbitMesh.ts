@@ -24,8 +24,9 @@ export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
                 0                    // aRotation
             );
 
-            const points = curve.getPoints(tubularSegments);
-            orbitGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), tubularSegments, tubeRadius, radialSegments, true);
+            const points2D = curve.getPoints(tubularSegments);
+            const points3D = points2D.map(p => new THREE.Vector3(p.x, p.y, 0));
+            orbitGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points3D), tubularSegments, tubeRadius, radialSegments, true);
         } else {
             orbitGeometry = new THREE.TorusGeometry(body.orbitRadius, tubeRadius, radialSegments, tubularSegments);
         }
