@@ -56,7 +56,7 @@ export const createBodyMesh = (
 
     if (body.type === 'Star') {
         materialOptions.emissive = body.color;
-        materialOptions.emissiveIntensity = 1; // Lowered to make maps visible
+        materialOptions.emissiveIntensity = 1;
         
         if (body.name === 'Golden Giver') {
             materialOptions.map = textureLoader.load('/maps/goldenGiverTexture.jpg');
@@ -64,10 +64,11 @@ export const createBodyMesh = (
             materialOptions.displacementMap = textureLoader.load('/maps/goldenGiver_displacement.png');
             materialOptions.aoMap = textureLoader.load('/maps/goldenGiver_ambient.png');
             materialOptions.specularMap = textureLoader.load('/maps/goldenGiver_specular.png');
-            materialOptions.displacementScale = 2.0;
+            materialOptions.displacementScale = 0.6;
             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
             geometry.computeTangents();
         } else if (body.name === 'Twilight') {
+            materialOptions.emissiveIntensity = 2;
             materialOptions.map = textureLoader.load('/maps/TwilightTexture.jpg');
             materialOptions.normalMap = textureLoader.load('/maps/Twilight_normal.png');
             materialOptions.displacementMap = textureLoader.load('/maps/Twilight_displacement.png');
@@ -77,7 +78,15 @@ export const createBodyMesh = (
             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
             geometry.computeTangents();
         } else if (body.name === 'Beacon') {
-             materialOptions.emissiveIntensity = 20;
+             materialOptions.emissiveIntensity = 10;
+             materialOptions.map = textureLoader.load('/maps/BeaconTexture.png');
+             materialOptions.normalMap = textureLoader.load('/maps/Beacon_normal.png');
+             materialOptions.displacementMap = textureLoader.load('/maps/Beacon_displacement.png');
+             materialOptions.aoMap = textureLoader.load('/maps/Beacon_ambient.png');
+             materialOptions.specularMap = textureLoader.load('/maps/Beacon_specular.png');
+             materialOptions.displacementScale = 0.5;
+             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+             geometry.computeTangents();
         }
 
         material = new THREE.MeshStandardMaterial(materialOptions);
