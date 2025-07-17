@@ -16,7 +16,7 @@ export const createStarfield = (scene: THREE.Scene) => {
     new THREE.Float32BufferAttribute(stars, 3)
   );
 
-  const starsMaterial = new THREE.PointsMaterial({ color: 0x888888 });
+  const starsMaterial = new THREE.PointsMaterial({ color: 0xeeeeee, size: 2 });
   const starField = new THREE.Points(starsGeometry, starsMaterial);
   
   scene.add(starField);
