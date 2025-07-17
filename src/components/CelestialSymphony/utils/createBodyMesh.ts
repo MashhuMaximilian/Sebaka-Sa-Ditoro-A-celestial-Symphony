@@ -58,37 +58,84 @@ export const createBodyMesh = (
     let material: THREE.Material;
     const materialOptions: THREE.MeshStandardMaterialParameters = { roughness: 0.8, metalness: 0.1 };
 
-    switch(body.name) {
-      case 'Sebaka':
-        material = sebakaDetailedMaterial;
-        break;
-      case 'Aetheris':
-        material = new THREE.MeshStandardMaterial({ ...materialOptions, map: textureLoader.load('/maps/AetherisTexture.png') });
-        break;
-      case 'Gelidis':
-        material = new THREE.MeshStandardMaterial({ ...materialOptions, map: textureLoader.load('/maps/GelidisTexture.png'), normalMap: textureLoader.load('/maps/GelidisTexture_normal.png'), displacementMap: textureLoader.load('/maps/GelidisTexture_displacement.png'), displacementScale: 0.2 });
-        break;
-      case 'Rutilus':
-         material = new THREE.MeshStandardMaterial({ ...materialOptions, map: textureLoader.load('/maps/RutiliusTexture.png'), normalMap: textureLoader.load('/maps/RutiliusTexture_normal.png'), displacementMap: textureLoader.load('/maps/RutiliusTexture_displacement.png'), aoMap: textureLoader.load('/maps/RutiliusTexture_ambient.png'), displacementScale: 0.1 });
-        break;
-      case 'Spectris':
-        material = new THREE.MeshStandardMaterial({ ...materialOptions, map: textureLoader.load('/maps/SpectrisTexture.png'), normalMap: textureLoader.load('/maps/SpectrisTexture_normal.png'), displacementMap: textureLoader.load('/maps/SpectrisTexture_displacement.png'), aoMap: textureLoader.load('/maps/SpectrisTexture_ambient.png'), displacementScale: 0.05 });
-        break;
-      case 'Viridis':
-        viridisOriginalColorRef.current.set(body.color);
-        material = new THREE.MeshStandardMaterial({ ...materialOptions, map: textureLoader.load('/maps/ViridisTexture.png'), normalMap: textureLoader.load('/maps/ViridisTexture_normal.png'), displacementMap: textureLoader.load('/maps/ViridisTexture_displacement.png'), aoMap: textureLoader.load('/maps/ViridisTexture_ambient.png'), displacementScale: 0.1 });
-        break;
-      case 'Liminis':
-          material = new THREE.MeshStandardMaterial({ ...materialOptions, map: textureLoader.load('/maps/LiminisTexture.png'), specularMap: textureLoader.load('/maps/LiminisSpecularMap.png'), normalMap: textureLoader.load('/maps/LiminisNormalMap.png'), displacementMap: textureLoader.load('/maps/LiminisDisplacementMap.png'), aoMap: textureLoader.load('/maps/LiminisAmbientOcclusionMap.png'), displacementScale: 0.1 });
-          break;
-      default: // Stars
+    if (body.type === 'Star') {
         materialOptions.color = body.color;
-        if (body.type === 'Star') {
-          materialOptions.emissive = body.color;
-          materialOptions.emissiveIntensity = 2;
-        }
+        materialOptions.emissive = body.color;
+        materialOptions.emissiveIntensity = 2;
         material = new THREE.MeshStandardMaterial(materialOptions);
-        break;
+    } else { // It's a planet
+        const planetName = body.name;
+        
+        const texturePaths: { [key: string]: string } = {};
+        let needsUv2 = false;
+
+        switch (planetName) {
+            case 'Aetheris':
+                texturePaths.map = '/maps/AetherisTexture.png';
+                break;
+            case 'Gelidis':
+                texturePaths.map = '/maps/GelidisTexture.png';
+                texturePaths.normalMap = '/maps/GelidisTexture_normal.png';
+                texturePaths.displacementMap = '/maps/GelidisTexture_displacement.png';
+                // Note: The file is _ambient.png but aoMap is the correct property
+                // aoMap requires a second UV set, which is not provided for Gelidis in the instructions.
+                break;
+            case 'Rutilus': // Assuming Rutilius is a typo for Rutilus
+                texturePaths.map = '/maps/RutiliusTexture.png';
+                texturePaths.normalMap = '/maps/RutiliusTexture_normal.png';
+                texturePaths.displacementMap = '/maps/RutiliusTexture_displacement.png';
+                texturePaths.aoMap = '/maps/RutiliusTexture_ambient.png';
+                needsUv2 = true;
+                break;
+            case 'Spectris':
+                texturePaths.map = '/maps/SpectrisTexture.png';
+                texturePaths.normalMap = '/maps/SpectrisTexture_normal.png';
+                texturePaths.displacementMap = '/maps/SpectrisTexture_displacement.png';
+                texturePaths.aoMap = '/maps/SpectrisTexture_ambient.png';
+                needsUv2 = true;
+                break;
+            case 'Viridis':
+                texturePaths.map = '/maps/ViridisTexture.png';
+                texturePaths.aoMap = '/maps/ViridisTexture_ambient.png';
+                needsUv2 = true;
+                if (body.color) {
+                    viridisOriginalColorRef.current.set(body.color);
+                }
+                break;
+            case 'Sebaka':
+                material = sebakaDetailedMaterial;
+                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+                break;
+            case 'Liminis':
+                texturePaths.map = '/maps/LiminisTexture.png';
+                texturePaths.normalMap = '/maps/LiminisNormalMap.png';
+                texturePaths.displacementMap = '/maps/LiminisDisplacementMap.png';
+                texturePaths.aoMap = '/maps/LiminisAmbientOcclusionMap.png';
+                needsUv2 = true;
+                break;
+            default:
+                // Fallback for any other planets
+                materialOptions.color = body.color;
+                material = new THREE.MeshStandardMaterial(materialOptions);
+                break;
+        }
+
+        if (!material) { // If not a special case like Sebaka
+            const loadedTextures: THREE.MeshStandardMaterialParameters = {};
+            for (const key in texturePaths) {
+                if (Object.prototype.hasOwnProperty.call(texturePaths, key)) {
+                    (loadedTextures as any)[key] = textureLoader.load(texturePaths[key]);
+                }
+            }
+            if (loadedTextures.displacementMap) {
+                loadedTextures.displacementScale = 0.1;
+            }
+            material = new THREE.MeshStandardMaterial({ ...materialOptions, ...loadedTextures });
+        }
+        
+        if (needsUv2) {
+            geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+        }
     }
     
     const mesh = new THREE.Mesh(geometry, material);
