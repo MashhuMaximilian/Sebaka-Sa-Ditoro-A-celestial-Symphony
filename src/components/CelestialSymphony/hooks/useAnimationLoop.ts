@@ -126,7 +126,9 @@ export const useAnimationLoop = ({
         const rotationQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
         camera.quaternion.multiply(rotationQuat);
 
-        controls.target.copy(camera.position).add(new THREE.Vector3().setFromQuaternion(camera.quaternion));
+        const forwardVector = new THREE.Vector3();
+        camera.getWorldDirection(forwardVector);
+        controls.target.copy(camera.position).add(forwardVector);
         controls.update();
       } else {
         controls.update();
