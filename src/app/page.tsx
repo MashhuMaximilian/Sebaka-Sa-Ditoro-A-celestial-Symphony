@@ -183,6 +183,7 @@ export default function Home() {
   const [latitude, setLatitude] = useState(0);
   const [cameraPitch, setCameraPitch] = useState(0);
   const [cameraYaw, setCameraYaw] = useState(0);
+  const [cameraFov, setCameraFov] = useState(75);
   const [cameraTarget, setCameraTarget] = useState<string | null>(null);
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
 
@@ -232,6 +233,10 @@ export default function Home() {
     setCameraYaw(value[0]);
   }
 
+  const handleCameraFovChange = (value: number[]) => {
+    setCameraFov(value[0]);
+  }
+
   const resetSpeed = () => {
     setSpeedMultiplier(24);
   };
@@ -264,6 +269,7 @@ export default function Home() {
             setLatitude(0);
             setCameraPitch(0);
             setCameraYaw(0);
+            setCameraFov(75);
             setActiveSebakaPanel(null);
           }
           return newView;
@@ -381,6 +387,21 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{cameraYaw.toFixed(0)}°</span>
                 </div>
+                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                    <Label htmlFor="fov-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                      Field of View
+                    </Label>
+                    <Slider
+                        id="fov-slider"
+                        min={10}
+                        max={140}
+                        step={1}
+                        value={[cameraFov]}
+                        onValueChange={handleCameraFovChange}
+                        className="w-full"
+                    />
+                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{cameraFov.toFixed(0)}°</span>
+                </div>
             </>
         ),
         move: (
@@ -435,6 +456,7 @@ export default function Home() {
         latitude={latitude}
         cameraPitch={cameraPitch}
         cameraYaw={cameraYaw}
+        cameraFov={cameraFov}
         resetViewToggle={resetViewToggle}
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
@@ -480,7 +502,7 @@ export default function Home() {
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <DropdownMenuContent className="w-56">
+                <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto">
                     <DropdownMenuLabel>Focus Target</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>

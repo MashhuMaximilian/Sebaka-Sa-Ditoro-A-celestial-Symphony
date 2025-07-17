@@ -21,6 +21,7 @@ export interface CelestialSymphonyProps {
   latitude: number;
   cameraPitch: number;
   cameraYaw: number;
+  cameraFov: number;
   resetViewToggle: boolean;
   isViridisAnimationActive: boolean;
   onTimeUpdate: (elapsedHours: number) => void;
@@ -65,6 +66,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     controls: controlsRef.current,
     cameraTarget: props.cameraTarget,
     viewFromSebaka: props.viewFromSebaka,
+    cameraFov: props.cameraFov,
     resetViewToggle: props.resetViewToggle,
     allBodiesRef,
     bodyData,

@@ -9,6 +9,7 @@ interface CameraControlProps {
     controls: OrbitControls | undefined;
     cameraTarget: string | null;
     viewFromSebaka: boolean;
+    cameraFov: number;
     resetViewToggle: boolean;
     allBodiesRef: React.MutableRefObject<THREE.Mesh[]>;
     bodyData: BodyData[];
@@ -22,6 +23,7 @@ export const useCameraControl = ({
     controls,
     cameraTarget,
     viewFromSebaka,
+    cameraFov,
     resetViewToggle,
     allBodiesRef,
     bodyData,
@@ -85,7 +87,7 @@ export const useCameraControl = ({
       }, [cameraTarget, bodyData, viewFromSebaka, allBodiesRef, beaconPositionRef, camera, controls]);
 
     useEffect(() => {
-        if (!controls || !camera) return;
+        if (!camera || !controls) return;
         
         orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
         
@@ -108,4 +110,11 @@ export const useCameraControl = ({
         }
         controls.update();
     }, [cameraTarget, resetViewToggle, viewFromSebaka, camera, controls, originalCameraPosRef]);
+
+    useEffect(() => {
+        if (camera && camera.fov !== cameraFov) {
+            camera.fov = cameraFov;
+            camera.updateProjectionMatrix();
+        }
+    }, [camera, cameraFov]);
 };
