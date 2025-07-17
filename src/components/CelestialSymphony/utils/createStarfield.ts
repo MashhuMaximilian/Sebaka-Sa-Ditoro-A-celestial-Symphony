@@ -15,6 +15,18 @@ export const createStarfield = (scene: THREE.Scene) => {
     new THREE.Color(0xa0a0ff), // blue
     new THREE.Color(0xa0ffa0), // green
     new THREE.Color(0xffd0a0), // orange
+    new THREE.Color(0xFFFFFF),
+    new THREE.Color(0xFFFFFE),
+    new THREE.Color(0xFEFFFF),
+    new THREE.Color(0xFFFEFF),
+    new THREE.Color(0xFDFDFD),
+    new THREE.Color(0xFCFCFC),
+    new THREE.Color(0xFAFAFA),
+    new THREE.Color(0xF8F8F8),
+    new THREE.Color(0xF6F6F6),
+    new THREE.Color(0xF4F4F4),
+    new THREE.Color(0xF2F2F2),
+    new THREE.Color(0xF0F0F0),
   ];
 
   for (let i = 0; i < starCount; i++) {
@@ -24,10 +36,10 @@ export const createStarfield = (scene: THREE.Scene) => {
     positions.push(x, y, z);
 
     const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-    const brightness = THREE.MathUtils.randFloat(0.8, 1.5);
+    const brightness = THREE.MathUtils.randFloat(0.8, 5.5);
     colors.push(color.r * brightness, color.g * brightness, color.b * brightness);
     
-    sizes.push(THREE.MathUtils.randFloat(2, 6));
+    sizes.push(THREE.MathUtils.randFloat(1, 16));
   }
 
   const starsGeometry = new THREE.BufferGeometry();
