@@ -1,6 +1,5 @@
 
 import * as THREE from 'three';
-import type { PlanetData } from '@/types';
 import type { BodyData } from '../hooks/useBodyData';
 
 export const updateAllBodyPositions = (
@@ -36,7 +35,7 @@ export const updateAllBodyPositions = (
       let x, z;
       let angle = currentHours * data.radsPerHour;
 
-      if ((data as PlanetData).eccentric) {
+      if (data.type === 'Planet' && data.eccentric) {
           const eccentricity = data.name === 'Spectris' ? 0.2 : data.name === 'Aetheris' ? 0.5 : 0.1;
           const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
           x = orbitCenter.x + semiMajorAxis * Math.cos(angle);

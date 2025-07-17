@@ -109,53 +109,43 @@ export const createBodyMesh = (
     } else { 
         const planetName = body.name;
         
-        let textureParams: THREE.MeshStandardMaterialParameters = {};
+        const textureParams: THREE.MeshStandardMaterialParameters = {};
         
         switch (planetName) {
             case 'Aetheris':
-                textureParams = {
-                    map: textureLoader.load('/maps/AetherisTexture.png'),
-                };
+                textureParams.map = textureLoader.load('/maps/AetherisTexture.png');
                 break;
             case 'Gelidis':
-                textureParams = {
-                    map: textureLoader.load('/maps/GelidisTexture.png'),
-                    displacementMap: textureLoader.load('/maps/GelidisTexture_displacement.png'),
-                    aoMap: textureLoader.load('/maps/GelidisTexture_ambient.png'),
-                    displacementScale: 0.1,
-                };
+                textureParams.map = textureLoader.load('/maps/GelidisTexture.png');
+                textureParams.displacementMap = textureLoader.load('/maps/GelidisTexture_displacement.png');
+                textureParams.aoMap = textureLoader.load('/maps/GelidisTexture_ambient.png');
+                textureParams.displacementScale = 0.1;
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
             case 'Rutilus':
-                 textureParams = {
-                    map: textureLoader.load('/maps/RutiliusTexture.png'),
-                    normalMap: textureLoader.load('/maps/RutiliusTexture_normal.png'),
-                    displacementMap: textureLoader.load('/maps/RutiliusTexture_displacement.png'),
-                    aoMap: textureLoader.load('/maps/RutiliusTexture_ambient.png'),
-                    displacementScale: 0.1,
-                };
+                textureParams.map = textureLoader.load('/maps/RutiliusTexture.png');
+                textureParams.normalMap = textureLoader.load('/maps/RutiliusTexture_normal.png');
+                textureParams.displacementMap = textureLoader.load('/maps/RutiliusTexture_displacement.png');
+                textureParams.aoMap = textureLoader.load('/maps/RutiliusTexture_ambient.png');
+                textureParams.displacementScale = 0.1;
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 geometry.computeTangents();
                 break;
             case 'Spectris':
-                 textureParams = {
-                    map: textureLoader.load('/maps/SpectrisTexture.png'),
-                    displacementMap: textureLoader.load('/maps/SpectrisTexture_displacement.png'),
-                    aoMap: textureLoader.load('/maps/SpectrisTexture_ambient.png'),
-                    displacementScale: 0.1,
-                    metalness: 0.5,
-                    roughness: 0.5
-                };
+                textureParams.map = textureLoader.load('/maps/SpectrisTexture.png');
+                textureParams.displacementMap = textureLoader.load('/maps/SpectrisTexture_displacement.png');
+                textureParams.aoMap = textureLoader.load('/maps/SpectrisTexture_ambient.png');
+                textureParams.displacementScale = 0.1;
+                textureParams.metalness = 0.5;
+                textureParams.roughness = 0.5;
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 break;
             case 'Viridis':
-                textureParams = {
-                    map: textureLoader.load('/maps/ViridisTexture.png'),
-                    aoMap: textureLoader.load('/maps/ViridisTexture_ambient.png'),
-                    normalMap: textureLoader.load('/maps/ViridisTexture_normal.png'),
-                    displacementMap: textureLoader.load('/maps/ViridisTexture_displacement.png'),
-                    displacementScale: 0.1,
-                };
+                textureParams.map = textureLoader.load('/maps/ViridisTexture.png');
+                textureParams.aoMap = textureLoader.load('/maps/ViridisTexture_ambient.png');
+                textureParams.normalMap = textureLoader.load('/maps/ViridisTexture_normal.png');
+                textureParams.displacementMap = textureLoader.load('/maps/ViridisTexture_displacement.png');
+                textureParams.displacementScale = 0.1;
                  if (body.color) {
                     viridisOriginalColorRef.current.set(body.color);
                 }
@@ -163,13 +153,11 @@ export const createBodyMesh = (
                 geometry.computeTangents();
                 break;
             case 'Liminis':
-                textureParams = {
-                    map: textureLoader.load('/maps/LiminisTexture.png'),
-                    normalMap: textureLoader.load('/maps/LiminisNormalMap.png'),
-                    displacementMap: textureLoader.load('/maps/LiminisDisplacementMap.png'),
-                    aoMap: textureLoader.load('/maps/LiminisAmbientOcclusionMap.png'),
-                    displacementScale: 0.1,
-                };
+                textureParams.map = textureLoader.load('/maps/LiminisTexture.png');
+                textureParams.normalMap = textureLoader.load('/maps/LiminisNormalMap.png');
+                textureParams.displacementMap = textureLoader.load('/maps/LiminisDisplacementMap.png');
+                textureParams.aoMap = textureLoader.load('/maps/LiminisAmbientOcclusionMap.png');
+                textureParams.displacementScale = 0.1;
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 geometry.computeTangents();
                 break;
@@ -183,12 +171,12 @@ export const createBodyMesh = (
                 break;
         }
 
-        if (!material) {
-             material = new THREE.MeshStandardMaterial({ ...materialOptions, ...textureParams });
+        if (planetName !== 'Sebaka') {
+            material = new THREE.MeshStandardMaterial({ ...materialOptions, ...textureParams });
         }
     }
     
-    const mesh = new THREE.Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, material!);
     mesh.name = body.name;
     mesh.castShadow = true;
     mesh.receiveShadow = true;

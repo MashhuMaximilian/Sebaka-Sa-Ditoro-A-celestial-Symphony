@@ -5,10 +5,20 @@ import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js
 import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 import type { BodyData } from "./useBodyData";
-import type { CelestialSymphonyProps } from "../celestial-symphony";
 import type { PlanetData } from "@/types";
 
-type AnimationLoopParams = Omit<CelestialSymphonyProps, 'stars' | 'planets'> & {
+// Define props directly to avoid circular dependency
+interface AnimationLoopParams {
+    speedMultiplier?: number;
+    viewFromSebaka: boolean;
+    isSebakaRotating: boolean;
+    longitude: number;
+    latitude: number;
+    cameraPitch: number;
+    cameraYaw: number;
+    isViridisAnimationActive: boolean;
+    onTimeUpdate: (elapsedHours: number) => void;
+    goToTime: number | null;
     bodyData: BodyData[];
     scene: THREE.Scene | undefined;
     camera: THREE.PerspectiveCamera | undefined;
@@ -19,6 +29,7 @@ type AnimationLoopParams = Omit<CelestialSymphonyProps, 'stars' | 'planets'> & {
     orbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     sebakaRadiusRef: React.MutableRefObject<number>;
+    isInitialized: boolean;
     goldenGiverLightRef: React.MutableRefObject<THREE.PointLight | undefined>;
     twilightLightRef: React.MutableRefObject<THREE.PointLight | undefined>;
 };

@@ -1,7 +1,6 @@
 
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
-import type { PlanetData } from '@/types';
 
 export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
     if ((body.type === 'Planet' || body.name === 'Beacon') && body.orbitRadius) {
@@ -14,7 +13,7 @@ export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
         orbit.rotation.x = Math.PI / 2;
         orbit.name = `${body.name}_orbit`;
 
-        if ((body as PlanetData).eccentric) {
+        if (body.type === 'Planet' && body.eccentric) {
             const eccentricity = body.name === 'Spectris' ? 0.2 : body.name === 'Aetheris' ? 0.5 : 0.1;
             const semiMinorAxis = body.orbitRadius * Math.sqrt(1 - eccentricity * eccentricity);
             orbit.scale.y = semiMinorAxis / body.orbitRadius;

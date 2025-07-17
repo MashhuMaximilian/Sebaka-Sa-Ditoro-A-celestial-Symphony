@@ -39,6 +39,12 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         const scene = new THREE.Scene();
         sceneRef.current = scene;
 
+        const loader = new THREE.CubeTextureLoader();
+        loader.setPath('/maps/');
+        const textureCube = loader.load(['eZNlMo.jpg', 'eZNlMo.jpg', 'eZNlMo.jpg', 'eZNlMo.jpg', 'eZNlMo.jpg', 'eZNlMo.jpg']);
+        scene.background = textureCube;
+
+
         const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.001, 200000);
         camera.position.copy(originalCameraPosRef.current);
         cameraRef.current = camera;
