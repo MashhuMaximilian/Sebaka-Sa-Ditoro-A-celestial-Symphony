@@ -120,16 +120,13 @@ export const useAnimationLoop = ({
         
         camera.lookAt(sebakaMesh.position);
 
-        const lookDirection = new THREE.Vector3();
-        camera.getWorldDirection(lookDirection);
-
-        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion), pitchRad);
-        const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion), yawRad);
+        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRad);
+        const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawRad);
         
         const rotationQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
-        camera.quaternion.multiplyQuaternions(rotationQuat, camera.quaternion);
+        camera.quaternion.multiply(rotationQuat);
 
-        controls.target.copy(camera.position).add(lookDirection);
+        controls.target.copy(camera.position).add(new THREE.Vector3().setFromQuaternion(camera.quaternion));
         controls.update();
       } else {
         controls.update();
