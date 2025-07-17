@@ -45,7 +45,7 @@ const CelestialSymphony = ({
   cameraTarget,
 }: CelestialSymphonyProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer>();
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const planetMeshesRef = useRef<THREE.Mesh[]>([]);
   const starMeshesRef = useRef<THREE.Mesh[]>([]);
   const allBodiesRef = useRef<THREE.Mesh[]>([]);
@@ -523,21 +523,25 @@ const CelestialSymphony = ({
     window.addEventListener("resize", handleResize);
 
     return () => {
-      if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
       clockRef.current.stop();
       window.removeEventListener("resize", handleResize);
       currentMount.removeEventListener('click', onClick);
       currentMount.removeEventListener('touchstart', onClick);
       
-      const renderer = rendererRef.current;
-      if (renderer) {
-        if (currentMount && renderer.domElement) {
-            currentMount.removeChild(renderer.domElement);
-        }
-        renderer.dispose();
+      if (controlsRef.current) {
+        controlsRef.current.dispose();
       }
-      
-      if(controlsRef.current) controlsRef.current.dispose();
+
+      if (rendererRef.current) {
+        if (currentMount && rendererRef.current.domElement) {
+          currentMount.removeChild(rendererRef.current.domElement);
+        }
+        rendererRef.current.dispose();
+        rendererRef.current = null;
+      }
     };
   }, []); 
 
@@ -601,5 +605,7 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
+
+    
 
     
