@@ -33,7 +33,7 @@ export const updateAllBodyPositions = (
 
       const semiMajorAxis = data.orbitRadius || 0;
       let x, z;
-      let angle = currentHours * data.radsPerHour;
+      const angle = currentHours * data.radsPerHour;
 
       if (data.type === 'Planet' && data.eccentric && data.eccentricity) {
           const eccentricity = data.eccentricity;
@@ -46,9 +46,9 @@ export const updateAllBodyPositions = (
           x = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.cos(binaryAngle);
           z = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.sin(binaryAngle);
       } else {
-          const semiMinorAxis = semiMajorAxis;
+          // Default to circular orbit if not eccentric
           x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
-          z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
+          z = orbitCenter.z + semiMajorAxis * Math.sin(angle);
       }
 
       const y = orbitCenter.y;

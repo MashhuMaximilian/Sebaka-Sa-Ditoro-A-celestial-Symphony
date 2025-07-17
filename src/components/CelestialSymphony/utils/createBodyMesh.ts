@@ -33,30 +33,31 @@ const createStripedTexture = () => {
 const createRingTexture = () => {
     const canvas = document.createElement("canvas");
     const width = 256;
-    const height = 64; 
+    const height = 1; // A 1px tall texture is sufficient and efficient for a gradient
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d");
   
     if (!context) return null;
   
+    // Create a smooth, colorful gradient
     const gradient = context.createLinearGradient(0, 0, width, 0);
-    gradient.addColorStop(0, "red");
-    gradient.addColorStop(1 / 6, "orange");
-    gradient.addColorStop(2 / 6, "yellow");
-    gradient.addColorStop(3 / 6, "green");
-    gradient.addColorStop(4 / 6, "blue");
-    gradient.addColorStop(5 / 6, "indigo");
-    gradient.addColorStop(1, "violet");
+    gradient.addColorStop(0, "rgba(255, 0, 0, 0.7)");
+    gradient.addColorStop(1 / 6, "rgba(255, 165, 0, 0.7)");
+    gradient.addColorStop(2 / 6, "rgba(255, 255, 0, 0.7)");
+    gradient.addColorStop(3 / 6, "rgba(0, 255, 0, 0.7)");
+    gradient.addColorStop(4 / 6, "rgba(0, 0, 255, 0.7)");
+    gradient.addColorStop(5 / 6, "rgba(75, 0, 130, 0.7)");
+    gradient.addColorStop(1, "rgba(238, 130, 238, 0.7)");
   
     context.fillStyle = gradient;
     context.fillRect(0, 0, width, height);
   
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
-    texture.repeat.set(160, 1);
-    texture.minFilter = THREE.NearestFilter;
-    texture.magFilter = THREE.NearestFilter;
+    // High tiling factor for a detailed, non-stretched look
+    texture.repeat.set(16, 1); 
+    // Default filtering (LinearFilter) will create a smooth look
     return texture;
   };
 
