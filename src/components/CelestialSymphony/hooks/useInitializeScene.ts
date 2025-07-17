@@ -108,17 +108,46 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         };
         window.addEventListener("resize", handleResize);
 
+        let animationFrameId: number;
+        const animate = () => {
+            animationFrameId = requestAnimationFrame(animate);
+        }
+        animate();
+
         return () => {
-            setIsInitialized(false);
+            cancelAnimationFrame(animationFrameId);
             window.removeEventListener("resize", handleResize);
-            controls.dispose();
+            
+            if (controlsRef.current) {
+                controlsRef.current.dispose();
+            }
+
+            if (sceneRef.current) {
+                sceneRef.current.traverse(object => {
+                    if (object instanceof THREE.Mesh) {
+                        if (object.geometry) object.geometry.dispose();
+                        if (object.material) {
+                            if (Array.isArray(object.material)) {
+                                object.material.forEach(material => material.dispose());
+                            } else {
+                                object.material.dispose();
+                            }
+                        }
+                    }
+                });
+                sceneRef.current.clear();
+            }
+            
             if (rendererRef.current) {
+                // Forcefully lose the WebGL context
+                rendererRef.current.forceContextLoss();
                 rendererRef.current.dispose();
                 if (mountRef.current && rendererRef.current.domElement.parentNode === mountRef.current) {
                     mountRef.current.removeChild(rendererRef.current.domElement);
                 }
             }
-            scene.clear();
+
+            setIsInitialized(false);
         };
     }, [bodyData, setIsInitialized]);
 
