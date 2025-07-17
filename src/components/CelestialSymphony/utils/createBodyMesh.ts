@@ -32,34 +32,31 @@ const createStripedTexture = () => {
 
 const createRingTexture = () => {
     const canvas = document.createElement("canvas");
-    const width = 512;
-    const height = 1;
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = 256;
+    canvas.height = 1;
     const context = canvas.getContext("2d");
-  
     if (!context) return null;
-  
-    const gradient = context.createLinearGradient(0, 0, width, 0);
+
+    const gradient = context.createLinearGradient(0, 0, canvas.width, 0);
 
     // Iridescent color palette
-    gradient.addColorStop(0, "rgba(220, 220, 255, 0.7)");   // Pale Lavender
-    gradient.addColorStop(0.15, "rgba(200, 230, 255, 0.6)"); // Light Sky Blue
-    gradient.addColorStop(0.3, "rgba(255, 210, 230, 0.7)");  // Soft Pink
-    gradient.addColorStop(0.45, "rgba(210, 255, 220, 0.6)"); // Hint of Mint Green
-    gradient.addColorStop(0.6, "rgba(240, 230, 200, 0.7)");  // Faint Gold
-    gradient.addColorStop(0.75, "rgba(200, 220, 255, 0.6)"); // Pale Blue
-    gradient.addColorStop(1, "rgba(220, 220, 255, 0.7)");   // Pale Lavender (to loop smoothly)
+    gradient.addColorStop(0, "rgba(220, 220, 255, 0.7)");
+    gradient.addColorStop(0.15, "rgba(200, 230, 255, 0.6)");
+    gradient.addColorStop(0.3, "rgba(255, 210, 230, 0.7)");
+    gradient.addColorStop(0.45, "rgba(210, 255, 220, 0.6)");
+    gradient.addColorStop(0.6, "rgba(240, 230, 200, 0.7)");
+    gradient.addColorStop(0.75, "rgba(200, 220, 255, 0.6)");
+    gradient.addColorStop(1, "rgba(220, 220, 255, 0.7)");
 
     context.fillStyle = gradient;
-    context.fillRect(0, 0, width, height);
-  
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(8, 1);
+    texture.repeat.set(4, 1); // Repeat the texture 4 times around the ring
     return texture;
-  };
+};
 
 export const createMaterials = () => {
     const sebakaSimpleTexture = createStripedTexture();
@@ -215,8 +212,19 @@ export const createBodyMesh = (
     if (body.type === 'Planet' && body.name === "Spectris") {
         const ringInnerRadius = body.size * 1.5;
         const ringOuterRadius = body.size * 2.5;
-        const ringGeometry = new THREE.TorusGeometry( (ringInnerRadius + ringOuterRadius) / 2, (ringOuterRadius - ringInnerRadius) / 2, 8, 64);
+        const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 64);
+        
         const ringTexture = createRingTexture();
+
+        // This remaps the UV coordinates to wrap around the ring
+        const uvs = ringGeometry.attributes.uv.array as Float32Array;
+        const positions = ringGeometry.attributes.position.array as Float32Array;
+        for (let i = 0; i < uvs.length; i += 2) {
+            const x = positions[i * 3 / 2];
+            const y = positions[i * 3 / 2 + 1];
+            uvs[i] = Math.atan2(y, x) / (2 * Math.PI) + 0.5;
+        }
+        
         const ringMaterial = new THREE.MeshBasicMaterial({
             map: ringTexture,
             side: THREE.DoubleSide,
@@ -224,16 +232,11 @@ export const createBodyMesh = (
             opacity: 0.8,
         });
 
-        const uvs = ringGeometry.attributes.uv.array;
-        for (let i = 0; i < uvs.length; i += 2) {
-            uvs[i] = uvs[i] * 4;
-        }
-
         const rings = new THREE.Mesh(ringGeometry, ringMaterial);
-        rings.rotation.x = Math.PI / 2 + 0.2;
+        rings.rotation.x = Math.PI / 2 + 0.2; // Tilt the rings
         rings.receiveShadow = true;
         mesh.add(rings);
-      }
+    }
     
     return mesh;
 };
