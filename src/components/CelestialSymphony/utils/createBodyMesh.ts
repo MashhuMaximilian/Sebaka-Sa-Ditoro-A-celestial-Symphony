@@ -76,10 +76,11 @@ export const createBodyMesh = (
                     map: textureLoader.load('/maps/GelidisTexture.png'),
                     normalMap: textureLoader.load('/maps/GelidisTexture_normal.png'),
                     displacementMap: textureLoader.load('/maps/GelidisTexture_displacement.png'),
-                    displacementScale: 0.1,
                     aoMap: textureLoader.load('/maps/GelidisTexture_ambient.png'),
+                    displacementScale: 0.1,
                 };
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+                geometry.computeTangents();
                 break;
             case 'Rutilus':
                  textureParams = {
@@ -90,6 +91,7 @@ export const createBodyMesh = (
                     displacementScale: 0.1,
                 };
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+                geometry.computeTangents();
                 break;
             case 'Spectris':
                  textureParams = {
@@ -100,6 +102,7 @@ export const createBodyMesh = (
                     displacementScale: 0.1,
                 };
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+                geometry.computeTangents();
                 break;
             case 'Viridis':
                 textureParams = {
@@ -113,6 +116,7 @@ export const createBodyMesh = (
                     viridisOriginalColorRef.current.set(body.color);
                 }
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+                geometry.computeTangents();
                 break;
             case 'Liminis':
                 textureParams = {
@@ -123,10 +127,12 @@ export const createBodyMesh = (
                     displacementScale: 0.1,
                 };
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+                geometry.computeTangents();
                 break;
             case 'Sebaka':
                 material = sebakaDetailedMaterial;
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+                geometry.computeTangents();
                 break;
             default:
                 materialOptions.color = body.color;
@@ -154,4 +160,3 @@ export const createBodyMesh = (
     
     return mesh;
 };
-

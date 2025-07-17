@@ -59,8 +59,12 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         controls.target.set(0, 0, 0);
         controlsRef.current = controls;
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 3.0);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
+        directionalLight.position.set(500, 500, 500);
+        scene.add(directionalLight);
 
         // Clear previous objects if any
         allBodiesRef.current.forEach(obj => scene.remove(obj));
@@ -129,8 +133,20 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
                         if (object.geometry) object.geometry.dispose();
                         if (object.material) {
                             if (Array.isArray(object.material)) {
-                                object.material.forEach(material => material.dispose());
+                                object.material.forEach(material => {
+                                    Object.values(material).forEach(prop => {
+                                        if (prop instanceof THREE.Texture) {
+                                            prop.dispose();
+                                        }
+                                    });
+                                    material.dispose()
+                                });
                             } else if (object.material instanceof THREE.Material) {
+                                Object.values(object.material).forEach(prop => {
+                                    if (prop instanceof THREE.Texture) {
+                                        prop.dispose();
+                                    }
+                                });
                                 object.material.dispose();
                             }
                         }
