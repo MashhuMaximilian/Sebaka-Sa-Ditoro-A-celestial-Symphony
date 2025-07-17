@@ -5,6 +5,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createBodyMesh, createMaterials } from "../utils/createBodyMesh";
 import { createOrbitMesh } from "../utils/createOrbitMesh";
 import type { BodyData } from "./useBodyData";
+import { createStarfield } from "../utils/createStarfield";
 
 interface InitializeSceneProps {
     bodyData: BodyData[];
@@ -39,11 +40,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         const scene = new THREE.Scene();
         sceneRef.current = scene;
 
-        const loader = new THREE.CubeTextureLoader();
-        loader.setPath('/maps/');
-        const textureCube = loader.load(['eZNlMo.jpg', 'eZNlMo.jpg', 'eZNlMo.jpg', 'eZNlMo.jpg', 'eZNlMo.jpg', 'eZNlMo.jpg']);
-        scene.background = textureCube;
-
+        scene.background = new THREE.Color(0x000000);
+        createStarfield(scene);
 
         const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.001, 200000);
         camera.position.copy(originalCameraPosRef.current);
