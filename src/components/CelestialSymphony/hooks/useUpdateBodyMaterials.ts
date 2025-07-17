@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { PlanetData } from "@/types";
+import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 
 interface UpdateBodyMaterialsProps {
     planets: PlanetData[];
@@ -11,6 +12,7 @@ interface UpdateBodyMaterialsProps {
     sebakaDetailedMaterialRef: React.MutableRefObject<THREE.MeshStandardMaterial | undefined>;
     sebakaSimpleMaterialRef: React.MutableRefObject<THREE.MeshStandardMaterial | undefined>;
     viewFromSebaka: boolean;
+    onTimeUpdate: (elapsedHours: number) => void;
 }
 
 export const useUpdateBodyMaterials = ({
@@ -21,10 +23,12 @@ export const useUpdateBodyMaterials = ({
     sebakaDetailedMaterialRef,
     sebakaSimpleMaterialRef,
     viewFromSebaka,
+    onTimeUpdate,
 }: UpdateBodyMaterialsProps) => {
 
     const elapsedHoursRef = useRef(0);
     const animationFrameId = useRef<number>();
+    const clockRef = useRef(new THREE.Clock());
 
     useEffect(() => {
         planetMeshesRef.current.forEach((mesh) => {
@@ -48,19 +52,28 @@ export const useUpdateBodyMaterials = ({
         const viridisMesh = planetMeshesRef.current.find(p => p.name === 'Viridis');
         if (!viridisMesh || !(viridisMesh.material instanceof THREE.MeshStandardMaterial)) return;
 
+        let isCancelled = false;
+
         const animateViridis = () => {
+            if (isCancelled) return;
             animationFrameId.current = requestAnimationFrame(animateViridis);
-            const elapsedDays = elapsedHoursRef.current / 24;
-            
+            const deltaTime = clockRef.current.getDelta();
+            elapsedHoursRef.current += deltaTime * 24; // Assuming 1 day/sec for this animation's timing
+            const elapsedDays = elapsedHoursRef.current / HOURS_IN_SEBAKA_DAY;
+
             if (isViridisAnimationActive) {
                 const cycleDurationDays = 27;
                 const currentDayInCycle = elapsedDays % cycleDurationDays;
                 const phaseDuration = 9;
                 let brightnessFactor = 1.0;
-                if (currentDayInCycle < phaseDuration) {
+
+                // Waning phase
+                if (currentDayInCycle >= 0 && currentDayInCycle < phaseDuration) {
                     brightnessFactor = 1.0 - (currentDayInCycle / phaseDuration) * 0.9;
-                } else if (currentDayInCycle < phaseDuration * 2) {
+                // Dim phase
+                } else if (currentDayInCycle >= phaseDuration && currentDayInCycle < phaseDuration * 2) {
                     brightnessFactor = 0.1;
+                // Waxing phase
                 } else {
                     brightnessFactor = 0.1 + ((currentDayInCycle - phaseDuration * 2) / phaseDuration) * 0.9;
                 }
@@ -91,6 +104,7 @@ export const useUpdateBodyMaterials = ({
         animateViridis();
 
         return () => {
+            isCancelled = true;
             if (animationFrameId.current) {
                 cancelAnimationFrame(animationFrameId.current);
             }
@@ -100,7 +114,10 @@ export const useUpdateBodyMaterials = ({
     useEffect(() => {
         const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
         if (sebakaMesh && sebakaDetailedMaterialRef.current && sebakaSimpleMaterialRef.current) {
-            sebakaMesh.material = viewFromSebaka ? sebakaSimpleMaterialRef.current : sebakaDetailedMaterialRef.current;
+            const newMaterial = viewFromSebaka ? sebakaSimpleMaterialRef.current : sebakaDetailedMaterialRef.current;
+            if (sebakaMesh.material !== newMaterial) {
+                sebakaMesh.material = newMaterial;
+            }
         }
     }, [viewFromSebaka, planetMeshesRef, sebakaDetailedMaterialRef, sebakaSimpleMaterialRef]);
 };

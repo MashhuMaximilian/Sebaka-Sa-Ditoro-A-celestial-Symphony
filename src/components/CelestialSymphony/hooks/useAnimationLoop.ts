@@ -5,7 +5,7 @@ import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js
 import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 import type { BodyData } from "./useBodyData";
-import type { CelestialSymphonyProps } from "../CelestialSymphony";
+import type { CelestialSymphonyProps } from "../celestial-symphony";
 
 type AnimationLoopParams = Omit<CelestialSymphonyProps, 'stars' | 'planets'> & {
     bodyData: BodyData[];
@@ -61,7 +61,9 @@ export const useAnimationLoop = ({
   useEffect(() => {
     if (goToTime !== null) {
       elapsedHoursRef.current = goToTime;
-      updateAllBodyPositions(goToTime, bodyData, allBodiesRef.current, beaconPositionRef.current);
+      if (allBodiesRef.current.length > 0) {
+        updateAllBodyPositions(goToTime, bodyData, allBodiesRef.current, beaconPositionRef.current);
+      }
       onTimeUpdate(goToTime);
     }
   }, [goToTime, bodyData, allBodiesRef, beaconPositionRef, onTimeUpdate]);
@@ -69,7 +71,11 @@ export const useAnimationLoop = ({
   useEffect(() => {
     if (!scene || !camera || !renderer || !controls) return;
 
+    let isCancelled = false;
+    
     const animate = () => {
+      if (isCancelled) return;
+      
       animationFrameId.current = requestAnimationFrame(animate);
       
       const deltaTime = clockRef.current.getDelta();
@@ -87,8 +93,8 @@ export const useAnimationLoop = ({
          }
       }
       
-      const gelidisOrbit = orbitMeshesRef.current.find(o => (o.geometry as THREE.TorusGeometry).parameters.radius === bodyData.find(p=>p.name === 'Gelidis')?.orbitRadius);
-      const liminisOrbit = orbitMeshesRef.current.find(o => (o.geometry as THREE.TorusGeometry).parameters.radius === bodyData.find(p=>p.name === 'Liminis')?.orbitRadius);
+      const gelidisOrbit = orbitMeshesRef.current.find(o => o.name === 'Gelidis_orbit');
+      const liminisOrbit = orbitMeshesRef.current.find(o => o.name === 'Liminis_orbit');
       if(gelidisOrbit) gelidisOrbit.position.copy(beaconPositionRef.current);
       if(liminisOrbit) liminisOrbit.position.copy(beaconPositionRef.current);
 
@@ -142,6 +148,7 @@ export const useAnimationLoop = ({
     animate();
 
     return () => {
+      isCancelled = true;
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }

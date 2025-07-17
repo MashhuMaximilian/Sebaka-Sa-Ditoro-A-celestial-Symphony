@@ -4,16 +4,13 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createBodyMesh, createMaterials } from "../utils/createBodyMesh";
 import { createOrbitMesh } from "../utils/createOrbitMesh";
-import type { PlanetData, StarData } from "@/types";
 import type { BodyData } from "./useBodyData";
 
 interface InitializeSceneProps {
-    stars: StarData[];
-    planets: PlanetData[];
     bodyData: BodyData[];
 }
 
-export const useInitializeScene = ({ stars, planets, bodyData }: InitializeSceneProps) => {
+export const useInitializeScene = ({ bodyData }: InitializeSceneProps) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer>();
     const sceneRef = useRef<THREE.Scene>();
@@ -34,10 +31,6 @@ export const useInitializeScene = ({ stars, planets, bodyData }: InitializeScene
     useEffect(() => {
         if (!mountRef.current) return;
 
-        const { sebakaDetailedMaterial, sebakaSimpleMaterial } = createMaterials();
-        sebakaDetailedMaterialRef.current = sebakaDetailedMaterial;
-        sebakaSimpleMaterialRef.current = sebakaSimpleMaterial;
-
         const currentMount = mountRef.current;
         const scene = new THREE.Scene();
         sceneRef.current = scene;
@@ -45,13 +38,17 @@ export const useInitializeScene = ({ stars, planets, bodyData }: InitializeScene
         const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.001, 200000);
         camera.position.copy(originalCameraPosRef.current);
         cameraRef.current = camera;
-
+        
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
         renderer.setSize(currentMount.clientWidth, currentMount.clientHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         rendererRef.current = renderer;
         currentMount.appendChild(renderer.domElement);
-
+        
+        const { sebakaDetailedMaterial, sebakaSimpleMaterial } = createMaterials();
+        sebakaDetailedMaterialRef.current = sebakaDetailedMaterial;
+        sebakaSimpleMaterialRef.current = sebakaSimpleMaterial;
+        
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
@@ -64,9 +61,9 @@ export const useInitializeScene = ({ stars, planets, bodyData }: InitializeScene
         const ambientLight = new THREE.AmbientLight(0xffffff, 3.0);
         scene.add(ambientLight);
 
+        // Clear previous objects if any
         allBodiesRef.current.forEach(obj => scene.remove(obj));
         orbitMeshesRef.current.forEach(obj => scene.remove(obj));
-
         allBodiesRef.current = [];
         planetMeshesRef.current = [];
         orbitMeshesRef.current = [];
@@ -87,6 +84,18 @@ export const useInitializeScene = ({ stars, planets, bodyData }: InitializeScene
             }
         });
 
+        const initialBeaconData = bodyData.find(d => d.name === 'Beacon');
+        if (initialBeaconData?.orbitRadius) {
+            beaconPositionRef.current.set(initialBeaconData.orbitRadius, 0, 0);
+        }
+        
+        allBodiesRef.current.forEach(mesh => {
+            const data = bodyData.find(d => d.name === mesh.name);
+            if (data?.orbitRadius) {
+                mesh.position.set(data.orbitRadius, 0, 0);
+            }
+        });
+
         const handleResize = () => {
             if (cameraRef.current && rendererRef.current && mountRef.current) {
                 cameraRef.current.aspect = mountRef.current.clientWidth / mountRef.current.clientHeight;
@@ -96,29 +105,14 @@ export const useInitializeScene = ({ stars, planets, bodyData }: InitializeScene
         };
         window.addEventListener("resize", handleResize);
 
-        const initialBeaconData = bodyData.find(d => d.name === 'Beacon');
-        if (initialBeaconData?.orbitRadius) {
-            beaconPositionRef.current.set(initialBeaconData.orbitRadius, 0, 0);
-        }
-        allBodiesRef.current.forEach(mesh => {
-            const data = bodyData.find(d => d.name === mesh.name);
-            if(data?.orbitRadius) {
-                mesh.position.set(data.orbitRadius, 0, 0);
-            }
-        })
-
-
         return () => {
             window.removeEventListener("resize", handleResize);
-            controlsRef.current?.dispose();
+            controls.dispose();
             if (rendererRef.current) {
                 rendererRef.current.dispose();
-                if (mountRef.current && rendererRef.current.domElement) {
-                    try {
-                        mountRef.current.removeChild(rendererRef.current.domElement);
-                    } catch (e) {
-                        // Ignore error if element is already gone
-                    }
+                // Check if the DOM element exists before trying to remove it
+                if (mountRef.current && rendererRef.current.domElement.parentNode === mountRef.current) {
+                    mountRef.current.removeChild(rendererRef.current.domElement);
                 }
             }
             scene.clear();

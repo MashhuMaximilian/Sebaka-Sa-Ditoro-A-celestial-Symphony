@@ -45,7 +45,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     beaconPositionRef,
     sebakaRadiusRef,
     originalCameraPosRef,
-  } = useInitializeScene({ stars: props.stars, planets: props.planets, bodyData });
+  } = useInitializeScene({ bodyData });
 
   useBodyClickHandler({
     renderer: rendererRef.current,
@@ -76,6 +76,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     sebakaDetailedMaterialRef,
     sebakaSimpleMaterialRef,
     viewFromSebaka: props.viewFromSebaka,
+    onTimeUpdate: props.onTimeUpdate,
   });
 
   useAnimationLoop({
