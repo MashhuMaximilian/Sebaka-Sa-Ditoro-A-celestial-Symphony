@@ -6,8 +6,8 @@ const textureLoader = new THREE.TextureLoader();
 
 const createStripedTexture = () => {
     const canvas = document.createElement('canvas');
-    canvas.width = 128;
-    canvas.height = 128;
+    canvas.width = 256;
+    canvas.height = 256;
     const context = canvas.getContext('2d');
     if (!context) return null;
 
@@ -23,6 +23,9 @@ const createStripedTexture = () => {
     }
     
     const texture = new THREE.CanvasTexture(canvas);
+    // Use NearestFilter to prevent blurring and create sharp edges
+    texture.minFilter = THREE.NearestFilter;
+    texture.magFilter = THREE.NearestFilter;
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(1, 1);
