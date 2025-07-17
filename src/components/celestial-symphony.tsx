@@ -65,6 +65,9 @@ const CelestialSymphony = ({
   const viridisOriginalColor = useRef(new THREE.Color("#9ACD32"));
   const beaconPositionRef = useRef(new THREE.Vector3());
   
+  const sebakaDetailedMaterialRef = useRef<THREE.MeshStandardMaterial>();
+  const sebakaSimpleMaterialRef = useRef<THREE.MeshStandardMaterial>();
+  
   const elapsedHoursRef = useRef(0);
   const sebakaRadiusRef = useRef(0);
   const playerInputsRef = useRef({ longitude, latitude, pitch: cameraPitch, yaw: cameraYaw });
@@ -207,7 +210,18 @@ const CelestialSymphony = ({
       return texture;
     };
     
-    const sebakaTexture = createStripedTexture();
+    const sebakaSimpleTexture = createStripedTexture();
+    sebakaSimpleMaterialRef.current = new THREE.MeshStandardMaterial({ map: sebakaSimpleTexture });
+
+    sebakaDetailedMaterialRef.current = new THREE.MeshStandardMaterial({
+        map: textureLoader.load('/maps/SebakaTexture.png'),
+        specularMap: textureLoader.load('/maps/SebakaSpecularMap.png'),
+        normalMap: textureLoader.load('/maps/SebakaNormalMap.png'),
+        displacementMap: textureLoader.load('/maps/SebakaDisplacementMap.png'),
+        aoMap: textureLoader.load('/maps/SebakaAmbientOcclusionMap.png'),
+        displacementScale: 0.1,
+    });
+
 
     bodyData.forEach(body => {
       const geometry = new THREE.SphereGeometry(body.size, 64, 64);
@@ -216,7 +230,7 @@ const CelestialSymphony = ({
 
       switch(body.name) {
         case 'Sebaka':
-          material = new THREE.MeshStandardMaterial({ map: sebakaTexture });
+          material = sebakaDetailedMaterialRef.current; // Default to detailed
           sebakaRadiusRef.current = body.size;
           break;
         case 'Aetheris':
@@ -265,7 +279,15 @@ const CelestialSymphony = ({
           });
           break;
         case 'Liminis':
-            material = new THREE.MeshStandardMaterial({ ...materialOptions, color: body.color, emissive: body.color, emissiveIntensity: 0.2 });
+            material = new THREE.MeshStandardMaterial({ 
+              ...materialOptions, 
+              map: textureLoader.load('/maps/LiminisTexture.png'),
+              specularMap: textureLoader.load('/maps/LiminisSpecularMap.png'),
+              normalMap: textureLoader.load('/maps/LiminisNormalMap.png'),
+              displacementMap: textureLoader.load('/maps/LiminisDisplacementMap.png'),
+              aoMap: textureLoader.load('/maps/LiminisAmbientOcclusionMap.png'),
+              displacementScale: 0.1,
+            });
             break;
         default: // Stars
           materialOptions.color = body.color;
@@ -332,7 +354,7 @@ const CelestialSymphony = ({
       if (sebakaMesh) {
          if (isSebakaRotatingRef.current) {
             const rotationPerHour = (2 * Math.PI) / HOURS_IN_SEBAKA_DAY;
-            sebakaMesh.rotation.y = elapsedHoursRef.current * rotationPerHour;
+            sebakaMesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
          }
       }
       
@@ -378,6 +400,8 @@ const CelestialSymphony = ({
       }
       
       if (viewFromSebakaRef.current && sebakaMesh) {
+        sebakaMesh.material = sebakaSimpleMaterialRef.current!;
+
         const lat = playerInputsRef.current.latitude;
         const lon = playerInputsRef.current.longitude;
         const pitch = playerInputsRef.current.pitch;
@@ -419,7 +443,7 @@ const CelestialSymphony = ({
         controls.update();
 
       } else {
-        if (sebakaMesh) sebakaMesh.visible = true;
+        if(sebakaMesh) sebakaMesh.material = sebakaDetailedMaterialRef.current!;
 
         let targetPosition = new THREE.Vector3(0, 0, 0);
         let desiredCameraPosition: THREE.Vector3 | null = null;
@@ -499,12 +523,12 @@ const CelestialSymphony = ({
     planetMeshesRef.current.forEach((mesh) => {
       const planetData = planets.find(p => p.name === mesh.name);
       if (planetData && mesh.material instanceof THREE.MeshStandardMaterial) {
-        if (mesh.name === 'Sebaka' && mesh.material.map) {
-            // Sebaka is procedural, no color change needed
+        if (mesh.name === 'Sebaka') {
+            // Sebaka material is handled dynamically
              return;
         }
         
-        // This handles color changes from the harmonizer panel
+        // This handles color changes from the harmonizer panel for planets without texture maps
         if (!mesh.material.map) {
              mesh.material.color.set(planetData.color);
         }
@@ -555,5 +579,3 @@ const CelestialSymphony = ({
 };
 
 export default CelestialSymphony;
-
-    
