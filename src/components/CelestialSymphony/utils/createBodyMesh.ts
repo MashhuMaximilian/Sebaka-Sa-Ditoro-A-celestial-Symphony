@@ -32,32 +32,31 @@ const createStripedTexture = () => {
 
 const createRingTexture = () => {
     const canvas = document.createElement("canvas");
-    const width = 256;
-    const height = 1; // A 1px tall texture is sufficient and efficient for a gradient
+    const width = 512; // Higher resolution for a smoother gradient
+    const height = 1;
     canvas.width = width;
     canvas.height = height;
     const context = canvas.getContext("2d");
   
     if (!context) return null;
   
-    // Create a smooth, colorful gradient
     const gradient = context.createLinearGradient(0, 0, width, 0);
-    gradient.addColorStop(0, "rgba(255, 0, 0, 0.7)");
-    gradient.addColorStop(1 / 6, "rgba(255, 165, 0, 0.7)");
-    gradient.addColorStop(2 / 6, "rgba(255, 255, 0, 0.7)");
-    gradient.addColorStop(3 / 6, "rgba(0, 255, 0, 0.7)");
-    gradient.addColorStop(4 / 6, "rgba(0, 0, 255, 0.7)");
-    gradient.addColorStop(5 / 6, "rgba(75, 0, 130, 0.7)");
-    gradient.addColorStop(1, "rgba(238, 130, 238, 0.7)");
-  
+
+    // Iridescent color palette
+    gradient.addColorStop(0, "rgba(220, 220, 255, 0.7)");   // Pale Lavender
+    gradient.addColorStop(0.15, "rgba(200, 230, 255, 0.6)"); // Light Sky Blue
+    gradient.addColorStop(0.3, "rgba(255, 210, 230, 0.7)");  // Soft Pink
+    gradient.addColorStop(0.45, "rgba(210, 255, 220, 0.6)"); // Hint of Mint Green
+    gradient.addColorStop(0.6, "rgba(240, 230, 200, 0.7)");  // Faint Gold
+    gradient.addColorStop(0.75, "rgba(200, 220, 255, 0.6)"); // Pale Blue
+    gradient.addColorStop(1, "rgba(220, 220, 255, 0.7)");   // Pale Lavender (to loop smoothly)
+
     context.fillStyle = gradient;
     context.fillRect(0, 0, width, height);
   
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
-    // High tiling factor for a detailed, non-stretched look
-    texture.repeat.set(16, 1); 
-    // Default filtering (LinearFilter) will create a smooth look
+    texture.repeat.set(8, 1); // Less repetition for a softer effect
     return texture;
   };
 
