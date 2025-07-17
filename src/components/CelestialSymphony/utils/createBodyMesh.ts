@@ -59,12 +59,13 @@ export const createBodyMesh = (
         materialOptions.emissiveIntensity = 1;
         
         if (body.name === 'Golden Giver') {
+            materialOptions.emissiveIntensity = 1.2;
             materialOptions.map = textureLoader.load('/maps/goldenGiverTexture.jpg');
             materialOptions.normalMap = textureLoader.load('/maps/goldenGiver_normal.png');
             materialOptions.displacementMap = textureLoader.load('/maps/goldenGiver_displacement.png');
             materialOptions.aoMap = textureLoader.load('/maps/goldenGiver_ambient.png');
             materialOptions.specularMap = textureLoader.load('/maps/goldenGiver_specular.png');
-            materialOptions.displacementScale = 0.6;
+            materialOptions.displacementScale = 0.86;
             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
             geometry.computeTangents();
         } else if (body.name === 'Twilight') {
@@ -78,13 +79,13 @@ export const createBodyMesh = (
             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
             geometry.computeTangents();
         } else if (body.name === 'Beacon') {
-             materialOptions.emissiveIntensity = 10;
+             materialOptions.emissiveIntensity = 0.98;
              materialOptions.map = textureLoader.load('/maps/BeaconTexture.png');
              materialOptions.normalMap = textureLoader.load('/maps/Beacon_normal.png');
              materialOptions.displacementMap = textureLoader.load('/maps/Beacon_displacement.png');
              materialOptions.aoMap = textureLoader.load('/maps/Beacon_ambient.png');
              materialOptions.specularMap = textureLoader.load('/maps/Beacon_specular.png');
-             materialOptions.displacementScale = 0.5;
+             materialOptions.displacementScale = 2.95;
              geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
              geometry.computeTangents();
         }
