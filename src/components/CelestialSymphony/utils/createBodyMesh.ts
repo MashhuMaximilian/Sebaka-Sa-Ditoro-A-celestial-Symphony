@@ -32,7 +32,7 @@ const createStripedTexture = () => {
 
 const createRingTexture = () => {
     const canvas = document.createElement("canvas");
-    const width = 512; // Higher resolution for a smoother gradient
+    const width = 512;
     const height = 1;
     canvas.width = width;
     canvas.height = height;
@@ -56,7 +56,8 @@ const createRingTexture = () => {
   
     const texture = new THREE.CanvasTexture(canvas);
     texture.wrapS = THREE.RepeatWrapping;
-    texture.repeat.set(8, 1); // Less repetition for a softer effect
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(8, 1);
     return texture;
   };
 
@@ -212,14 +213,22 @@ export const createBodyMesh = (
     mesh.receiveShadow = true;
 
     if (body.type === 'Planet' && body.name === "Spectris") {
-        const ringGeometry = new THREE.RingGeometry(body.size * 1.5, body.size * 3, 64);
+        const ringInnerRadius = body.size * 1.5;
+        const ringOuterRadius = body.size * 2.5;
+        const ringGeometry = new THREE.TorusGeometry( (ringInnerRadius + ringOuterRadius) / 2, (ringOuterRadius - ringInnerRadius) / 2, 8, 64);
         const ringTexture = createRingTexture();
         const ringMaterial = new THREE.MeshBasicMaterial({
             map: ringTexture,
             side: THREE.DoubleSide,
             transparent: true,
-            opacity: 0.7,
+            opacity: 0.8,
         });
+
+        const uvs = ringGeometry.attributes.uv.array;
+        for (let i = 0; i < uvs.length; i += 2) {
+            uvs[i] = uvs[i] * 4;
+        }
+
         const rings = new THREE.Mesh(ringGeometry, ringMaterial);
         rings.rotation.x = Math.PI / 2 + 0.2;
         rings.receiveShadow = true;

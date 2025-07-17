@@ -35,10 +35,12 @@ export const updateAllBodyPositions = (
       let x, z;
       const angle = currentHours * data.radsPerHour;
 
-      if (data.type === 'Planet' && data.eccentric && data.eccentricity) {
+      if (data.eccentric && data.eccentricity) {
           const eccentricity = data.eccentricity;
           const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
-          x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
+          const focus = Math.sqrt(semiMajorAxis**2 - semiMinorAxis**2);
+          
+          x = orbitCenter.x + focus + semiMajorAxis * Math.cos(angle);
           z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
       } else if (data.type === 'Star' && (data.name === 'Alpha' || data.name === 'Twilight')) {
           const r1 = 0.1 * 150; // AU_TO_UNITS
@@ -46,7 +48,6 @@ export const updateAllBodyPositions = (
           x = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.cos(binaryAngle);
           z = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.sin(binaryAngle);
       } else {
-          // Default to circular orbit if not eccentric
           x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
           z = orbitCenter.z + semiMajorAxis * Math.sin(angle);
       }
