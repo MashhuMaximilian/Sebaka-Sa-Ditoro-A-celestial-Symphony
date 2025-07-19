@@ -36,6 +36,8 @@ export const planetShader = {
     uniform sampler2D displacementMap;
     uniform float displacementScale;
 
+    in vec4 tangent;
+
     void main() {
       vUv = uv;
       vNormal = normalize( normalMatrix * normal );
