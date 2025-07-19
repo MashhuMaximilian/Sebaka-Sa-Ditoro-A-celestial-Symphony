@@ -40,9 +40,9 @@ export const planetShader = {
       vUv = uv;
       vNormal = normalize( normalMatrix * normal );
 
-      vec3 tangent = normalize( normalMatrix * tangent.xyz );
-      vec3 bitangent = cross( vNormal, tangent );
-      vTBN = mat3( tangent, bitangent, vNormal );
+      vec3 T = normalize( normalMatrix * tangent.xyz );
+      vec3 B = cross( vNormal, T );
+      vTBN = mat3( T, B, vNormal );
       
       // Apply displacement mapping
       vec3 displacedPosition = position;
@@ -92,7 +92,7 @@ export const planetShader = {
       }
       
       // Get normal from normal map
-      vec3 normal = vNormal;
+      vec3 normal = normalize(vNormal);
       if (texture2D(normalMap, vUv).r > 0.0) { // Check if normal map exists
           vec3 mapN = texture2D(normalMap, vUv).xyz * 2.0 - 1.0;
           mapN.xy *= normalScale;
