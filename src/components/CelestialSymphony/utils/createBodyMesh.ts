@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { MaterialProperties } from '@/types';
+import { ThinFilmFresnelMap } from './ThinFilmFresnelMap';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -29,7 +30,7 @@ export const createBodyMesh = (
     let material: THREE.Material;
     
     const bodyProps = materialProperties[body.name];
-    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: 10 };
+    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: bodyProps?.shininess || 10 };
 
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
@@ -64,22 +65,14 @@ export const createBodyMesh = (
                 displacementScale: bodyProps?.displacementScale,
              });
         }
-
+        
         material = new THREE.MeshPhongMaterial(starMaterialOptions);
-        
-        const starMesh = new THREE.Mesh(geometry, material);
-        starMesh.name = body.name;
-        starMesh.castShadow = false;
-        starMesh.receiveShadow = false;
-        
-        if(starMaterialOptions.normalMap) geometry.computeTangents();
-
-        return starMesh;
+        if(starMaterialOptions.normalMap || starMaterialOptions.aoMap) geometry.computeTangents();
 
     } else { 
         const planetName = body.name;
         const textureParams: THREE.MeshPhongMaterialParameters = {
-            shininess: 10
+            shininess: bodyProps.shininess
         };
         
         switch (planetName) {
@@ -165,8 +158,7 @@ export const createBodyMesh = (
         if (planetName !== 'Sebaka') {
             material = new THREE.MeshPhongMaterial({ ...materialOptions, ...textureParams });
         }
-
-        if(textureParams.normalMap) {
+        if (textureParams.normalMap || textureParams.aoMap) {
             geometry.computeTangents();
         }
     }
@@ -181,6 +173,14 @@ export const createBodyMesh = (
         const ringOuterRadius = body.size * 2.5;
         const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 256, 1);
         
+        const iridescenceMap = new ThinFilmFresnelMap(
+            550,  // film thickness (nm)
+            1.33, // film IOR
+            1.0,  // substrate IOR
+            512   // lookup resolution
+        );
+        iridescenceMap.texture.needsUpdate = true;
+        
         const ringMaterial = new THREE.ShaderMaterial({
             transparent: true,
             side: THREE.DoubleSide,
@@ -189,61 +189,46 @@ export const createBodyMesh = (
             uniforms: {
                 time: { value: 0 },
                 viewVector: { value: new THREE.Vector3() },
-                ringCount: { value: 100.0 }
+                ringCount: { value: 80.0 }, // number of bands
+                iridescenceMap: { value: iridescenceMap.texture }
             },
             vertexShader: `
-              varying vec3 vNormal;
-              varying vec3 vViewDir;
-              varying vec2 vUv;
-              void main() {
-                vUv = uv;
-                vNormal = normalize(normalMatrix * normal);
-                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-                vViewDir = -mvPosition.xyz;
-                gl_Position = projectionMatrix * mvPosition;
-              }
+                varying vec3 vNormal, vViewDir;
+                varying vec2 vUv;
+                void main(){
+                    vUv = uv;
+                    vNormal = normalize(normalMatrix * normal);
+                    vec4 mv = modelViewMatrix * vec4(position,1.);
+                    vViewDir = -mv.xyz;
+                    gl_Position = projectionMatrix * mv;
+                }
             `,
             fragmentShader: `
-                uniform float time;
-                uniform float ringCount;
-                varying vec3 vNormal;
-                varying vec3 vViewDir;
-                varying vec2 vUv;
+                uniform float time, ringCount;
+                uniform sampler2D iridescenceMap;
+                varying vec3 vNormal, vViewDir, vUv;
 
-                float fresnel(vec3 normal, vec3 viewDir) {
-                    return pow(1.0 - max(dot(normalize(normal), normalize(viewDir)), 0.0), 3.0);
-                }
+                float rand(float x){ return fract(sin(x*91.17)*43758.545); }
 
-                float rand(float x) {
-                    return fract(sin(x * 91.17) * 43758.5453123);
-                }
+                void main(){
+                    float dist = length(vUv - 0.5) * 2.0;
 
-                vec3 spectralColor(float hue) {
-                    // Custom spectral theme: icy tones only
-                    hue = mod(hue, 1.0);
-                    float h = hue * 4.0;
-                    if (h < 1.0) return mix(vec3(0.5,0.7,1.0), vec3(0.7,0.9,1.0), h);
-                    else if (h < 2.0) return mix(vec3(0.7,0.9,1.0), vec3(0.9,1.0,0.9), h - 1.0);
-                    else if (h < 3.0) return mix(vec3(0.9,1.0,0.9), vec3(0.7,0.8,1.0), h - 2.0);
-                    else return mix(vec3(0.7,0.8,1.0), vec3(0.5,0.7,1.0), h - 3.0);
-                }
+                    float idx = floor(dist*ringCount);
+                    float seed = rand(idx);
+                    float width = 0.005 + 0.03 * rand(idx*1.37);
+                    float line = fract(dist*ringCount);
+                    float mask = smoothstep(0.5-width, 0.5, 1.-abs(line-0.5));
 
-                void main() {
-                    // Ring segmentation
-                    float ringIndex = floor(vUv.x * ringCount);
-                    float ringSeed = rand(ringIndex);
-                    float ringHue = mod(ringSeed + time * 0.05, 1.0);
-                    float ringAlpha = smoothstep(0.2, 1.0, fract(ringSeed * 5.0)) * 0.8;
+                    vec3 N = normalize(vNormal);
+                    vec3 V = normalize(vViewDir);
+                    float NdotV = max(dot(N, V), 0.);
+                    
+                    vec3 filmCol = texture2D(iridescenceMap, vec2(NdotV, 0.)).rgb;
+                    filmCol *= filmCol;
 
-                    // Ring thickness
-                    float ringLine = fract(vUv.x * ringCount);
-                    float ringWidth = 0.03 + 0.1 * rand(ringIndex * 2.37);
-                    float mask = smoothstep(0.5 - ringWidth, 0.5, 1.0 - abs(ringLine - 0.5));
+                    float fres = pow(1.-NdotV, 3.);
 
-                    float fres = fresnel(vNormal, vViewDir);
-                    vec3 color = spectralColor(ringHue);
-
-                    gl_FragColor = vec4(color, ringAlpha * mask * fres);
+                    gl_FragColor = vec4(filmCol, mask * fres * 0.6);
                 }
             `
         });
