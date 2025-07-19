@@ -45,7 +45,6 @@ export const createGridTexture = (size = 1024, lines = 24) => {
 
 export const createBodyMesh = (
     body: BodyData,
-    viridisOriginalColorRef: React.MutableRefObject<THREE.Color>,
     materialProperties: MaterialProperties,
     viewFromSebaka: boolean,
     sebakaGridTexture: THREE.CanvasTexture | null,
@@ -60,20 +59,15 @@ export const createBodyMesh = (
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
             emissive: body.color,
             emissiveIntensity: bodyProps?.emissiveIntensity === 0 ? 0 : bodyProps?.emissiveIntensity || 1,
-            shininess: bodyProps.shininess || 10,
+            shininess: 10,
         };
 
         if (body.name === 'Alpha') {
             Object.assign(starMaterialOptions, { map: textureLoader.load('/maps/goldenGiverTexture.jpg') });
-            if (bodyProps.displacementScale > 0) starMaterialOptions.displacementMap = textureLoader.load('/maps/goldenGiver_displacement.png');
         } else if (body.name === 'Twilight') {
             Object.assign(starMaterialOptions, { map: textureLoader.load('/maps/TwilightTexture.jpg') });
-            if (bodyProps.normalScale > 0) starMaterialOptions.normalMap = textureLoader.load('/maps/Twilight_normal.png');
-            if (bodyProps.displacementScale > 0) starMaterialOptions.displacementMap = textureLoader.load('/maps/Twilight_displacement.png');
         } else if (body.name === 'Beacon') {
              Object.assign(starMaterialOptions, { map: textureLoader.load('/maps/BeaconTexture.png') });
-             if (bodyProps.normalScale > 0) starMaterialOptions.normalMap = textureLoader.load('/maps/Beacon_normal.png');
-             if (bodyProps.displacementScale > 0) starMaterialOptions.displacementMap = textureLoader.load('/maps/Beacon_displacement.png');
         }
         material = new THREE.MeshPhongMaterial(starMaterialOptions);
 
@@ -102,15 +96,10 @@ export const createBodyMesh = (
                 break;
             case 'Sebaka': 
                 textureUrl = '/maps/SebakaTexture.png';
+                uniforms.normalMap.value = textureLoader.load('/maps/Sebaka_normal.png');
+                uniforms.displacementMap.value = textureLoader.load('/maps/Sebaka_displacement.png');
                 break;
         }
-
-        material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
-            vertexShader: planetShader.vertexShader,
-            fragmentShader: planetShader.fragmentShader,
-            transparent: body.name === 'Spectris', // For rings
-        });
 
         if(textureUrl) uniforms.planetTexture.value = textureLoader.load(textureUrl);
 
@@ -122,12 +111,14 @@ export const createBodyMesh = (
         if (bodyProps) {
             uniforms.normalScale.value.set(bodyProps.normalScale, bodyProps.normalScale);
             uniforms.displacementScale.value = bodyProps.displacementScale;
-
-            if (body.name === 'Sebaka') { 
-                uniforms.normalMap.value = textureLoader.load('/maps/Sebaka_normal.png');
-                uniforms.displacementMap.value = textureLoader.load('/maps/Sebaka_displacement.png');
-            }
         }
+
+        material = new THREE.ShaderMaterial({
+            uniforms: uniforms,
+            vertexShader: planetShader.vertexShader,
+            fragmentShader: planetShader.fragmentShader,
+            transparent: body.name === 'Spectris', // For rings
+        });
     }
     
     const mesh = new THREE.Mesh(geometry, material!);

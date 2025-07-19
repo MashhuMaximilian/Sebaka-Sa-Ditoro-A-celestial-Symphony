@@ -6,8 +6,8 @@ import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 
 interface UpdateBodyMaterialsProps {
     planets: PlanetData[];
+    allBodiesRef: React.MutableRefObject<THREE.Mesh[]>;
     planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
-    viridisOriginalColorRef: React.MutableRefObject<THREE.Color>;
     isViridisAnimationActive: boolean;
     viewFromSebaka: boolean;
     materialProperties: MaterialProperties;
@@ -15,8 +15,8 @@ interface UpdateBodyMaterialsProps {
 
 export const useUpdateBodyMaterials = ({
     planets,
+    allBodiesRef,
     planetMeshesRef,
-    viridisOriginalColorRef,
     isViridisAnimationActive,
     viewFromSebaka,
     materialProperties,
@@ -34,26 +34,26 @@ export const useUpdateBodyMaterials = ({
         });
     }, [planets, planetMeshesRef]);
 
-     useEffect(() => {
-        planetMeshesRef.current.forEach((mesh) => {
+    useEffect(() => {
+        allBodiesRef.current.forEach((mesh) => {
             const props = materialProperties[mesh.name];
-            if (props && mesh.material instanceof THREE.ShaderMaterial) {
-                const uniforms = (mesh.material as THREE.ShaderMaterial).uniforms;
-
-                if (props.normalScale !== undefined && uniforms.normalScale.value.x !== props.normalScale) {
+            if (!props) return;
+            
+            if (mesh.material instanceof THREE.ShaderMaterial) {
+                const uniforms = mesh.material.uniforms;
+                if (uniforms.normalScale && props.normalScale !== undefined && uniforms.normalScale.value.x !== props.normalScale) {
                     uniforms.normalScale.value.set(props.normalScale, props.normalScale);
                 }
-
-                if (props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
+                if (uniforms.displacementScale && props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
                     uniforms.displacementScale.value = props.displacementScale;
                 }
-                
-                if (mesh.name.includes('Star') && props.emissiveIntensity !== undefined && uniforms.emissiveIntensity.value !== props.emissiveIntensity) {
-                    uniforms.emissiveIntensity.value = props.emissiveIntensity;
-                }
+            } else if (mesh.material instanceof THREE.MeshPhongMaterial) {
+                 if (props.emissiveIntensity !== undefined && mesh.material.emissiveIntensity !== props.emissiveIntensity) {
+                    mesh.material.emissiveIntensity = props.emissiveIntensity;
+                 }
             }
         });
-    }, [materialProperties, planetMeshesRef]);
+    }, [materialProperties, allBodiesRef, planetMeshesRef]);
 
 
     useEffect(() => {
@@ -97,6 +97,11 @@ export const useUpdateBodyMaterials = ({
             }
         };
 
+        if (isViridisAnimationActive) {
+            clockRef.current.start();
+        } else {
+            clockRef.current.stop();
+        }
         animateViridis();
 
         return () => {

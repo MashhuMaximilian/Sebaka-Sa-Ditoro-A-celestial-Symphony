@@ -44,12 +44,9 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     allBodiesRef,
     planetMeshesRef,
     orbitMeshesRef,
-    viridisOriginalColorRef,
     beaconPositionRef,
     sebakaRadiusRef,
     originalCameraPosRef,
-    goldenGiverLightRef,
-    twilightLightRef
   } = useInitializeScene({ 
     bodyData, 
     setIsInitialized: props.setIsInitialized,
@@ -81,8 +78,8 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
 
   useUpdateBodyMaterials({
     planets: props.planets,
+    allBodiesRef,
     planetMeshesRef,
-    viridisOriginalColorRef,
     isViridisAnimationActive: props.isViridisAnimationActive,
     viewFromSebaka: props.viewFromSebaka,
     materialProperties: props.materialProperties,
@@ -100,8 +97,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     orbitMeshesRef,
     beaconPositionRef,
     sebakaRadiusRef,
-    goldenGiverLightRef: goldenGiverLightRef as React.MutableRefObject<THREE.DirectionalLight | undefined>,
-    twilightLightRef: twilightLightRef as React.MutableRefObject<THREE.DirectionalLight | undefined>,
+    isInitialized: props.isInitialized,
   });
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;

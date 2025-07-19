@@ -40,11 +40,13 @@ export const planetShader = {
 
     void main() {
       vUv = uv;
-      vNormal = normalize( normalMatrix * normal );
-
-      vec3 T = normalize( normalMatrix * tangent.xyz );
-      vec3 B = cross( vNormal, T );
-      vTBN = mat3( T, B, vNormal );
+      
+      // Calculate TBN matrix in world space
+      vec3 T = normalize( mat3(modelMatrix) * tangent.xyz );
+      vec3 N = normalize( mat3(modelMatrix) * normal );
+      vec3 B = cross( N, T );
+      vTBN = mat3( T, B, N );
+      vNormal = N; // Pass world-space normal to fragment shader
       
       // Apply displacement mapping
       vec3 displacedPosition = position;
@@ -52,9 +54,10 @@ export const planetShader = {
         displacedPosition += normal * texture2D(displacementMap, uv).r * displacementScale;
       }
 
+      // Calculate world position
       vWorldPosition = (modelMatrix * vec4(displacedPosition, 1.0)).xyz;
       
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(displacedPosition, 1.0);
+      gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPosition, 1.0);
     }
   `,
   

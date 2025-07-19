@@ -30,8 +30,6 @@ interface AnimationLoopParams {
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     sebakaRadiusRef: React.MutableRefObject<number>;
     isInitialized: boolean;
-    goldenGiverLightRef: React.MutableRefObject<THREE.DirectionalLight | undefined>;
-    twilightLightRef: React.MutableRefObject<THREE.DirectionalLight | undefined>;
 };
 
 export const useAnimationLoop = ({
@@ -42,7 +40,6 @@ export const useAnimationLoop = ({
   latitude,
   cameraPitch,
   cameraYaw,
-  isViridisAnimationActive,
   onTimeUpdate,
   goToTime,
   bodyData,
@@ -62,13 +59,11 @@ export const useAnimationLoop = ({
   const animationFrameId = useRef<number>();
 
   const speedMultiplierRef = useRef(speedMultiplier);
-  const isViridisAnimationActiveRef = useRef(isViridisAnimationActive);
   const viewFromSebakaRef = useRef(viewFromSebaka);
   const isSebakaRotatingRef = useRef(isSebakaRotating);
   const playerInputsRef = useRef({ longitude, latitude, pitch: cameraPitch, yaw: cameraYaw });
 
   useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
-  useEffect(() => { isViridisAnimationActiveRef.current = isViridisAnimationActive; }, [isViridisAnimationActive]);
   useEffect(() => { viewFromSebakaRef.current = viewFromSebaka; }, [viewFromSebaka]);
   useEffect(() => { isSebakaRotatingRef.current = isSebakaRotating; }, [isSebakaRotating]);
   useEffect(() => { playerInputsRef.current = { longitude, latitude, pitch: cameraPitch, yaw: cameraYaw }; }, [longitude, latitude, cameraPitch, cameraYaw]);

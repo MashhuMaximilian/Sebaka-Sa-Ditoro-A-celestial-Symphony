@@ -30,10 +30,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
     const beaconPositionRef = useRef(new THREE.Vector3());
     const sebakaRadiusRef = useRef(0);
     const originalCameraPosRef = useRef(new THREE.Vector3(0, 400, 800));
-    const viridisOriginalColorRef = useRef(new THREE.Color("#9ACD32"));
-        
-    const goldenGiverLightRef = useRef<THREE.DirectionalLight>();
-    const twilightLightRef = useRef<THREE.DirectionalLight>();
 
     useEffect(() => {
         setSebakaGridTexture(createGridTexture());
@@ -81,7 +77,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         orbitMeshesRef.current = [];
         
         bodyData.forEach(body => {
-            const mesh = createBodyMesh(body, viridisOriginalColorRef, materialProperties, viewFromSebaka, sebakaGridTexture);
+            const mesh = createBodyMesh(body, materialProperties, viewFromSebaka, sebakaGridTexture);
             if (body.name === 'Sebaka') {
                 sebakaRadiusRef.current = body.size;
             }
@@ -181,11 +177,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         allBodiesRef,
         planetMeshesRef,
         orbitMeshesRef,
-        viridisOriginalColorRef,
         beaconPositionRef,
         sebakaRadiusRef,
         originalCameraPosRef,
-        goldenGiverLightRef,
-        twilightLightRef
     };
 };
