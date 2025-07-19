@@ -30,8 +30,8 @@ interface AnimationLoopParams {
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     sebakaRadiusRef: React.MutableRefObject<number>;
     isInitialized: boolean;
-    goldenGiverLightRef: React.MutableRefObject<THREE.PointLight | undefined>;
-    twilightLightRef: React.MutableRefObject<THREE.PointLight | undefined>;
+    goldenGiverLightRef: React.MutableRefObject<THREE.DirectionalLight | undefined>;
+    twilightLightRef: React.MutableRefObject<THREE.DirectionalLight | undefined>;
 };
 
 export const useAnimationLoop = ({

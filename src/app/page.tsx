@@ -513,7 +513,7 @@ export default function Home() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <DropdownMenuTrigger asChild>
-                                 <Button variant="outline" size="icon" className="bg-transparent backdrop-blur-sm">
+                                 <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm">
                                     <Focus className="h-5 w-5" />
                                     <span className="sr-only">Focus Camera</span>
                                 </Button>
@@ -556,7 +556,7 @@ export default function Home() {
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" className="bg-transparent backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
+                         <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
                             <Orbit className="h-5 w-5" />
                             <span className="sr-only">Toggle Viridis Animation</span>
                         </Button>
@@ -567,7 +567,7 @@ export default function Home() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="bg-transparent backdrop-blur-sm" onClick={toggleSebakaView}>
+                        <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm" onClick={toggleSebakaView}>
                             <PersonStanding className="h-5 w-5" />
                             <span className="sr-only">Toggle View from Sebaka</span>
                         </Button>
@@ -584,7 +584,7 @@ export default function Home() {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="icon" className="bg-transparent backdrop-blur-sm">
+                                    <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm">
                                         <Settings className="h-5 w-5" />
                                         <span className="sr-only">Settings</span>
                                     </Button>

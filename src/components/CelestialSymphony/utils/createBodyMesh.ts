@@ -34,7 +34,7 @@ export const createBodyMesh = (
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
             emissive: body.color,
-            emissiveIntensity: bodyProps?.emissiveIntensity || 1,
+            emissiveIntensity: bodyProps?.emissiveIntensity === 0 ? 0 : bodyProps?.emissiveIntensity || 1,
             ...materialOptions,
         };
 
@@ -42,7 +42,7 @@ export const createBodyMesh = (
             Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/goldenGiverTexture.jpg'),
             });
-             if (bodyProps?.specularMap) {
+            if (bodyProps?.specularMap) {
                 starMaterialOptions.specularMap = textureLoader.load('/maps/goldenGiver_specular.png');
             }
             if (bodyProps?.displacementScale > 0) {

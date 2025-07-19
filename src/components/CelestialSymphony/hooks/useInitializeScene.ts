@@ -32,8 +32,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
     const sebakaDetailedMaterialRef = useRef<THREE.MeshPhongMaterial>();
     const sebakaSimpleMaterialRef = useRef<THREE.MeshPhongMaterial>();
     
-    const goldenGiverLightRef = useRef<THREE.PointLight>();
-    const twilightLightRef = useRef<THREE.PointLight>();
+    const goldenGiverLightRef = useRef<THREE.DirectionalLight>();
+    const twilightLightRef = useRef<THREE.DirectionalLight>();
 
     useEffect(() => {
         if (!mountRef.current || !bodyData.length) return;
@@ -70,10 +70,10 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         controls.target.set(0, 0, 0);
         controlsRef.current = controls;
         
-        const hemiLight = new THREE.HemisphereLight(0xaaaaee, 0x444444, 0.5);
-        scene.add(hemiLight);
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.2); // soft ambient light
+        scene.add(ambientLight);
 
-        const goldenGiverLight = new THREE.PointLight(0xFFFDEE, 2.0, 0, 0);
+        const goldenGiverLight = new THREE.DirectionalLight(0xfff8e7, 2.0);
         goldenGiverLight.castShadow = true;
         goldenGiverLight.shadow.mapSize.width = 2048;
         goldenGiverLight.shadow.mapSize.height = 2048;
@@ -81,7 +81,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         scene.add(goldenGiverLight);
         goldenGiverLightRef.current = goldenGiverLight;
         
-        const twilightLight = new THREE.PointLight(0xD95B00, 1.0, 0, 0);
+        const twilightLight = new THREE.DirectionalLight(0xffb366, 1.0);
         twilightLight.castShadow = true;
         twilightLight.shadow.mapSize.width = 2048;
         twilightLight.shadow.mapSize.height = 2048;

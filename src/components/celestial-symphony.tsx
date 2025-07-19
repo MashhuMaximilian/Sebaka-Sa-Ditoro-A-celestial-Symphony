@@ -103,8 +103,8 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     orbitMeshesRef,
     beaconPositionRef,
     sebakaRadiusRef,
-    goldenGiverLightRef: goldenGiverLightRef as React.MutableRefObject<THREE.PointLight | undefined>,
-    twilightLightRef: twilightLightRef as React.MutableRefObject<THREE.PointLight | undefined>,
+    goldenGiverLightRef: goldenGiverLightRef as React.MutableRefObject<THREE.DirectionalLight | undefined>,
+    twilightLightRef: twilightLightRef as React.MutableRefObject<THREE.DirectionalLight | undefined>,
   });
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
