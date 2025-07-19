@@ -58,7 +58,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
                   <Slider
                     id={`${data.name}-normal`}
                     min={0}
-                    max={5}
+                    max={15}
                     step={0.01}
                     value={[bodyProps.normalScale]}
                     onValueChange={(value) => handleSliderChange(data.name, 'normalScale', value)}
@@ -72,7 +72,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
                     <Slider
                       id={`${data.name}-displacement`}
                       min={0}
-                      max={5}
+                      max={15}
                       step={0.01}
                       value={[bodyProps.displacementScale]}
                       onValueChange={(value) => handleSliderChange(data.name, 'displacementScale', value)}

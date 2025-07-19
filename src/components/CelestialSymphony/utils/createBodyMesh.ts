@@ -85,7 +85,10 @@ export const createBodyMesh = (
 
     } else { 
         const planetName = body.name;
-        const textureParams: THREE.MeshPhongMaterialParameters = {};
+        const textureParams: THREE.MeshPhongMaterialParameters = {
+            shininess: bodyProps.shininess,
+            aoMapIntensity: bodyProps.aoMapIntensity
+        };
         
         switch (planetName) {
             case 'Aetheris':
@@ -109,7 +112,6 @@ export const createBodyMesh = (
                 }
                 if (bodyProps?.aoMapIntensity > 0) {
                     textureParams.aoMap = textureLoader.load('/maps/GelidisTexture_ambient.png');
-                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
                 }
                 break;
             case 'Rutilus':
@@ -124,7 +126,6 @@ export const createBodyMesh = (
                 }
                 if (bodyProps?.aoMapIntensity > 0) {
                     textureParams.aoMap = textureLoader.load('/maps/RutiliusTexture_ambient.png');
-                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
                 }
                 break;
             case 'Spectris':
@@ -140,7 +141,6 @@ export const createBodyMesh = (
                 }
                 if (bodyProps?.aoMapIntensity > 0) {
                     textureParams.aoMap = textureLoader.load('/maps/SpectrisTexture_ambient.png');
-                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
                 }
                 break;
             case 'Viridis':
@@ -156,7 +156,6 @@ export const createBodyMesh = (
                 }
                 if (bodyProps?.aoMapIntensity > 0) {
                     textureParams.aoMap = textureLoader.load('/maps/ViridisTexture_ambient.png');
-                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
                 }
                 if (body.color) {
                     viridisOriginalColorRef.current.set(body.color);
@@ -175,7 +174,6 @@ export const createBodyMesh = (
                 }
                 if (bodyProps?.aoMapIntensity > 0) {
                     textureParams.aoMap = textureLoader.load('/maps/LiminisAmbientOcclusionMap.png');
-                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
                 }
                 break;
             case 'Sebaka':
