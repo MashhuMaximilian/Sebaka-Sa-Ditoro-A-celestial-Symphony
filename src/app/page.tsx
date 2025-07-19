@@ -164,16 +164,16 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, shininess: 30, emissiveIntensity: 1.2, aoMapIntensity: 1 },
-  Twilight: { normalScale: 1, displacementScale: 0.2, shininess: 30, emissiveIntensity: 1, aoMapIntensity: 1 },
-  Beacon: { normalScale: 1, displacementScale: 2.95, shininess: 30, emissiveIntensity: 10, aoMapIntensity: 1 },
-  Rutilus: { normalScale: 1, displacementScale: 0.1, shininess: 10, aoMapIntensity: 1 },
-  Sebaka: { normalScale: 0.1, displacementScale: 0.1, shininess: 5, aoMapIntensity: 1 },
-  Spectris: { normalScale: 0.1, displacementScale: 0.05, shininess: 10, aoMapIntensity: 1 },
-  Viridis: { normalScale: 2, displacementScale: 0.1, shininess: 10, aoMapIntensity: 1 },
-  Aetheris: { normalScale: 0.15, displacementScale: 0, shininess: 10, aoMapIntensity: 1 },
-  Gelidis: { normalScale: 0.03, displacementScale: 0.001, shininess: 10, aoMapIntensity: 1 },
-  Liminis: { normalScale: 1, displacementScale: 0.1, shininess: 20, aoMapIntensity: 1 },
+  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 1.2 },
+  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1 },
+  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10 },
+  Rutilus: { normalScale: 1, displacementScale: 0.1 },
+  Sebaka: { normalScale: 0.1, displacementScale: 0.1 },
+  Spectris: { normalScale: 0.1, displacementScale: 0.05 },
+  Viridis: { normalScale: 2, displacementScale: 0.1 },
+  Aetheris: { normalScale: 0.15, displacementScale: 0 },
+  Gelidis: { normalScale: 0.03, displacementScale: 0.001 },
+  Liminis: { normalScale: 1, displacementScale: 0.1 },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
@@ -479,7 +479,7 @@ export default function Home() {
       />
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
-        <SheetContent side="left" className="w-[65vw] max-w-2xl bg-card/80 backdrop-blur-lg p-0" withoutOverlay>
+        <SheetContent side="left" className="w-[65vw] max-w-2xl p-0 backdrop-blur-lg" withoutOverlay>
             <SheetHeader className="sr-only">
               <SheetTitle>Celestial Body Information</SheetTitle>
               <SheetDescription>
@@ -513,7 +513,7 @@ export default function Home() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <DropdownMenuTrigger asChild>
-                                 <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm">
+                                 <Button variant="outline" size="icon" className="bg-transparent backdrop-blur-sm">
                                     <Focus className="h-5 w-5" />
                                     <span className="sr-only">Focus Camera</span>
                                 </Button>
@@ -524,7 +524,7 @@ export default function Home() {
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto bg-card/75 backdrop-blur-sm">
+                <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto backdrop-blur-sm">
                     <DropdownMenuLabel>Focus Target</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
@@ -556,7 +556,7 @@ export default function Home() {
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
+                         <Button variant="outline" size="icon" className="bg-transparent backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
                             <Orbit className="h-5 w-5" />
                             <span className="sr-only">Toggle Viridis Animation</span>
                         </Button>
@@ -567,7 +567,7 @@ export default function Home() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={toggleSebakaView}>
+                        <Button variant="outline" size="icon" className="bg-transparent backdrop-blur-sm" onClick={toggleSebakaView}>
                             <PersonStanding className="h-5 w-5" />
                             <span className="sr-only">Toggle View from Sebaka</span>
                         </Button>
@@ -584,7 +584,7 @@ export default function Home() {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm">
+                                    <Button variant="outline" size="icon" className="bg-transparent backdrop-blur-sm">
                                         <Settings className="h-5 w-5" />
                                         <span className="sr-only">Settings</span>
                                     </Button>
@@ -595,7 +595,7 @@ export default function Home() {
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
-                    <DropdownMenuContent className="w-56 bg-card/75 backdrop-blur-sm">
+                    <DropdownMenuContent className="w-56 backdrop-blur-sm">
                         <DropdownMenuLabel>Settings</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onSelect={handleResetView}>
@@ -616,7 +616,7 @@ export default function Home() {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <SheetContent className="bg-card/80 backdrop-blur-lg" withoutOverlay>
+                <SheetContent className="backdrop-blur-lg" withoutOverlay>
                     <SheetHeader>
                     <SheetTitle>Color Harmonizer</SheetTitle>
                     <SheetDescription>
@@ -638,7 +638,7 @@ export default function Home() {
                               key={panelId}
                               onClick={() => handleSebakaPanelToggle(panelId)}
                               variant={activeSebakaPanel === panelId ? "secondary" : "default"}
-                              className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 flex-1 basis-1/3 capitalize"
+                              className="bg-transparent backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 flex-1 basis-1/3 capitalize"
                           >
                               {panelId}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -649,7 +649,7 @@ export default function Home() {
               </div>
           ) : (
             <>
-              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-background/20 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                       Go to Time
                   </Label>
@@ -673,7 +673,7 @@ export default function Home() {
                   />
                   <Button onClick={handleGoToTime}>Go</Button>
               </div>
-              <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-background/20 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                       Speed (hrs/s)
                   </Label>

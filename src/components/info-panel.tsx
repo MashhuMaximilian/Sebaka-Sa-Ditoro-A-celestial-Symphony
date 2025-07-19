@@ -80,34 +80,6 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
                     <span className="text-xs font-mono w-12 text-center">{bodyProps.displacementScale.toFixed(2)}</span>
                 </div>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor={`${data.name}-ao`}>Ambient Occlusion</Label>
-                 <div className="flex items-center gap-2">
-                    <Slider
-                      id={`${data.name}-ao`}
-                      min={0}
-                      max={2}
-                      step={0.01}
-                      value={[bodyProps.aoMapIntensity]}
-                      onValueChange={(value) => handleSliderChange(data.name, 'aoMapIntensity', value)}
-                    />
-                    <span className="text-xs font-mono w-12 text-center">{bodyProps.aoMapIntensity.toFixed(2)}</span>
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor={`${data.name}-shininess`}>Shininess</Label>
-                 <div className="flex items-center gap-2">
-                    <Slider
-                      id={`${data.name}-shininess`}
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={[bodyProps.shininess]}
-                      onValueChange={(value) => handleSliderChange(data.name, 'shininess', value)}
-                    />
-                    <span className="text-xs font-mono w-12 text-center">{bodyProps.shininess.toFixed(0)}</span>
-                </div>
-              </div>
                {data.type === 'Star' && (
                 <div className="grid gap-2">
                   <Label htmlFor={`${data.name}-emissive`}>Emissive Intensity</Label>

@@ -29,7 +29,7 @@ export const createBodyMesh = (
     let material: THREE.Material;
     
     const bodyProps = materialProperties[body.name];
-    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: bodyProps?.shininess || 10 };
+    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: 10 };
 
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
@@ -43,9 +43,7 @@ export const createBodyMesh = (
                 map: textureLoader.load('/maps/goldenGiverTexture.jpg'),
                 specularMap: textureLoader.load('/maps/goldenGiver_specular.png'),
                 displacementMap: bodyProps?.displacementScale > 0 ? textureLoader.load('/maps/goldenGiver_displacement.png') : undefined,
-                aoMap: bodyProps?.aoMapIntensity > 0 ? textureLoader.load('/maps/goldenGiver_ambient.png') : undefined,
                 displacementScale: bodyProps?.displacementScale,
-                aoMapIntensity: bodyProps?.aoMapIntensity,
             });
         } else if (body.name === 'Twilight') {
             Object.assign(starMaterialOptions, {
@@ -53,10 +51,8 @@ export const createBodyMesh = (
                 specularMap: textureLoader.load('/maps/Twilight_specular.png'),
                 normalMap: bodyProps?.normalScale > 0 ? textureLoader.load('/maps/Twilight_normal.png') : undefined,
                 displacementMap: bodyProps?.displacementScale > 0 ? textureLoader.load('/maps/Twilight_displacement.png') : undefined,
-                aoMap: bodyProps?.aoMapIntensity > 0 ? textureLoader.load('/maps/Twilight_ambient.png') : undefined,
                 normalScale: new THREE.Vector2(bodyProps?.normalScale, bodyProps?.normalScale),
                 displacementScale: bodyProps?.displacementScale,
-                aoMapIntensity: bodyProps?.aoMapIntensity,
             });
         } else if (body.name === 'Beacon') {
              Object.assign(starMaterialOptions, {
@@ -64,10 +60,8 @@ export const createBodyMesh = (
                 specularMap: textureLoader.load('/maps/Beacon_specular.png'),
                 normalMap: bodyProps?.normalScale > 0 ? textureLoader.load('/maps/Beacon_normal.png') : undefined,
                 displacementMap: bodyProps?.displacementScale > 0 ? textureLoader.load('/maps/Beacon_displacement.png') : undefined,
-                aoMap: bodyProps?.aoMapIntensity > 0 ? textureLoader.load('/maps/Beacon_ambient.png') : undefined,
                 normalScale: new THREE.Vector2(bodyProps?.normalScale, bodyProps?.normalScale),
                 displacementScale: bodyProps?.displacementScale,
-                aoMapIntensity: bodyProps?.aoMapIntensity,
              });
         }
 
@@ -79,15 +73,13 @@ export const createBodyMesh = (
         starMesh.receiveShadow = false;
         
         if(starMaterialOptions.normalMap) geometry.computeTangents();
-        if(starMaterialOptions.aoMap) geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
 
         return starMesh;
 
     } else { 
         const planetName = body.name;
         const textureParams: THREE.MeshPhongMaterialParameters = {
-            shininess: bodyProps.shininess,
-            aoMapIntensity: bodyProps.aoMapIntensity
+            shininess: 10
         };
         
         switch (planetName) {
@@ -110,9 +102,6 @@ export const createBodyMesh = (
                     textureParams.displacementMap = textureLoader.load('/maps/GelidisTexture_displacement.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
                 }
-                if (bodyProps?.aoMapIntensity > 0) {
-                    textureParams.aoMap = textureLoader.load('/maps/GelidisTexture_ambient.png');
-                }
                 break;
             case 'Rutilus':
                 textureParams.map = textureLoader.load('/maps/RutiliusTexture.png');
@@ -123,9 +112,6 @@ export const createBodyMesh = (
                 if (bodyProps?.displacementScale > 0) {
                     textureParams.displacementMap = textureLoader.load('/maps/RutiliusTexture_displacement.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
-                }
-                if (bodyProps?.aoMapIntensity > 0) {
-                    textureParams.aoMap = textureLoader.load('/maps/RutiliusTexture_ambient.png');
                 }
                 break;
             case 'Spectris':
@@ -139,9 +125,6 @@ export const createBodyMesh = (
                     textureParams.displacementMap = textureLoader.load('/maps/SpectrisTexture_displacement.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
                 }
-                if (bodyProps?.aoMapIntensity > 0) {
-                    textureParams.aoMap = textureLoader.load('/maps/SpectrisTexture_ambient.png');
-                }
                 break;
             case 'Viridis':
                 textureParams.map = textureLoader.load('/maps/ViridisTexture.png');
@@ -153,9 +136,6 @@ export const createBodyMesh = (
                 if (bodyProps?.displacementScale > 0) {
                     textureParams.displacementMap = textureLoader.load('/maps/ViridisTexture_displacement.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
-                }
-                if (bodyProps?.aoMapIntensity > 0) {
-                    textureParams.aoMap = textureLoader.load('/maps/ViridisTexture_ambient.png');
                 }
                 if (body.color) {
                     viridisOriginalColorRef.current.set(body.color);
@@ -172,9 +152,6 @@ export const createBodyMesh = (
                     textureParams.displacementMap = textureLoader.load('/maps/LiminisDisplacementMap.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
                 }
-                if (bodyProps?.aoMapIntensity > 0) {
-                    textureParams.aoMap = textureLoader.load('/maps/LiminisAmbientOcclusionMap.png');
-                }
                 break;
             case 'Sebaka':
                 material = sebakaDetailedMaterial;
@@ -189,10 +166,7 @@ export const createBodyMesh = (
             material = new THREE.MeshPhongMaterial({ ...materialOptions, ...textureParams });
         }
 
-        if (textureParams.aoMap || (planetName === 'Sebaka' && bodyProps?.aoMapIntensity > 0)) {
-            geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-        }
-        if(textureParams.normalMap || (planetName === 'Sebaka' && bodyProps?.normalScale > 0)) {
+        if(textureParams.normalMap) {
             geometry.computeTangents();
         }
     }

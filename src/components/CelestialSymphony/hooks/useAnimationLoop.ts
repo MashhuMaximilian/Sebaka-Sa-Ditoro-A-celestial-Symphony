@@ -136,7 +136,9 @@ export const useAnimationLoop = ({
                   const ringMaterial = child.material;
                   const time = performance.now() * 0.001;
                   ringMaterial.uniforms.time.value = time;
-                  ringMaterial.uniforms.viewVector.value.copy(camera!.position).sub(child.getWorldPosition(new THREE.Vector3())).normalize();
+                  if (camera) {
+                    ringMaterial.uniforms.viewVector.value.copy(camera.position).sub(child.getWorldPosition(new THREE.Vector3())).normalize();
+                  }
               }
           });
       }
