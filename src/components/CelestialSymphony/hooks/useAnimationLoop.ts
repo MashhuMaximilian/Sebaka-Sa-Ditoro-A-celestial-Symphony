@@ -102,13 +102,15 @@ export const useAnimationLoop = ({
 
       const goldenGiverMesh = allBodiesRef.current.find(b => b.name === 'Alpha');
       const twilightMesh = allBodiesRef.current.find(b => b.name === 'Twilight');
+      const beaconMesh = allBodiesRef.current.find(b => b.name === 'Beacon');
       
       // Update shader uniforms for all planets
-      if (goldenGiverMesh && twilightMesh) {
+      if (goldenGiverMesh && twilightMesh && beaconMesh) {
           planetMeshesRef.current.forEach(planetMesh => {
               if (planetMesh.material instanceof THREE.ShaderMaterial) {
                   planetMesh.material.uniforms.alphaStarPos.value.copy(goldenGiverMesh.position);
                   planetMesh.material.uniforms.twilightStarPos.value.copy(twilightMesh.position);
+                  planetMesh.material.uniforms.beaconStarPos.value.copy(beaconMesh.position);
               }
           });
       }
