@@ -30,34 +30,6 @@ const createStripedTexture = () => {
     return texture;
 };
 
-const createRingTexture = () => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 1;
-    const context = canvas.getContext("2d");
-    if (!context) return null;
-
-    const gradient = context.createLinearGradient(0, 0, canvas.width, 0);
-
-    // Iridescent color palette
-    gradient.addColorStop(0, "rgba(220, 220, 255, 0.7)");
-    gradient.addColorStop(0.15, "rgba(200, 230, 255, 0.6)");
-    gradient.addColorStop(0.3, "rgba(255, 210, 230, 0.7)");
-    gradient.addColorStop(0.45, "rgba(210, 255, 220, 0.6)");
-    gradient.addColorStop(0.6, "rgba(240, 230, 200, 0.7)");
-    gradient.addColorStop(0.75, "rgba(200, 220, 255, 0.6)");
-    gradient.addColorStop(1, "rgba(220, 220, 255, 0.7)");
-
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(4, 1); // Repeat the texture 4 times around the ring
-    return texture;
-};
-
 export const createMaterials = () => {
     const sebakaSimpleTexture = createStripedTexture();
     const sebakaSimpleMaterial = new THREE.MeshStandardMaterial({ map: sebakaSimpleTexture });
@@ -214,7 +186,7 @@ export const createBodyMesh = (
         const ringOuterRadius = body.size * 2.5;
         const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 64);
         
-        const ringTexture = createRingTexture();
+        const ringTexture = textureLoader.load('/maps/iridescentring.png');
 
         // This remaps the UV coordinates to wrap around the ring
         const uvs = ringGeometry.attributes.uv.array as Float32Array;
