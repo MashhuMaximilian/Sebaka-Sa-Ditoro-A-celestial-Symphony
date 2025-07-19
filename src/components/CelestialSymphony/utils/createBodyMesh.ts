@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { MaterialProperties } from '@/types';
@@ -190,10 +191,10 @@ export const createBodyMesh = (
             material = new THREE.MeshPhongMaterial({ ...materialOptions, ...textureParams });
         }
 
-        if (textureParams.aoMap || (planetName === 'Sebaka')) {
+        if (textureParams.aoMap || (planetName === 'Sebaka' && bodyProps?.aoMapIntensity > 0)) {
             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
         }
-        if(textureParams.normalMap || (planetName === 'Sebaka')) {
+        if(textureParams.normalMap || (planetName === 'Sebaka' && bodyProps?.normalScale > 0)) {
             geometry.computeTangents();
         }
     }

@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -43,25 +44,25 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 270 70% 5%; /* Deep space purple */
+    --background: 224 71.4% 4.1%;
     --foreground: 210 20% 98%;
-    --card: 275 50% 10%;
+    --card: 224 71.4% 4.1%;
     --card-foreground: 210 20% 98%;
-    --popover: 270 70% 5%;
+    --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
-    --primary: 275 80% 60%; /* Electric indigo */
-    --primary-foreground: 210 20% 98%;
-    --secondary: 275 50% 20%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 220.9 39.3% 11%;
+    --secondary: 215 27.9% 16.9%;
     --secondary-foreground: 210 20% 98%;
-    --muted: 275 50% 20%;
+    --muted: 215 27.9% 16.9%;
     --muted-foreground: 217.2 9.1% 65.1%;
-    --accent: 275 70% 40%; /* Lighter purple accent */
+    --accent: 215 27.9% 16.9%;
     --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
-    --border: 275 50% 30%;
-    --input: 275 50% 25%;
-    --ring: 275 80% 70%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 216 12.2% 83.9%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
