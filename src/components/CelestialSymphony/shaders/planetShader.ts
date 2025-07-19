@@ -26,7 +26,8 @@ export const planetShader = {
     
     void main() {
       vUv = uv;
-      vNormal = normalize(normalMatrix * normal);
+      // Calculate the normal in world space, not view space
+      vNormal = normalize( mat3(modelMatrix) * normal );
       vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
       
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
