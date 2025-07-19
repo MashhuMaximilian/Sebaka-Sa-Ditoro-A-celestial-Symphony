@@ -90,13 +90,13 @@ export const createBodyMesh = (
                 textureParams.map = textureLoader.load('/maps/AetherisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/AetherisTexture_specular.png');
                 textureParams.normalMap = textureLoader.load('/maps/AetherisTexture_normal.png');
-                textureParams.normalScale = new THREE.Vector2(0.1, 0.1);
+                textureParams.normalScale = new THREE.Vector2(0.15, 0.15);
                 break;
             case 'Gelidis':
                 textureParams.map = textureLoader.load('/maps/GelidisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/GelidisTexture_specular.png');
                 textureParams.normalMap = textureLoader.load('/maps/GelidisTexture_normal.png');
-                textureParams.normalScale = new THREE.Vector2(0.1, 0.1);
+                textureParams.normalScale = new THREE.Vector2(0.4, 0.4);
                 textureParams.displacementMap = textureLoader.load('/maps/GelidisTexture_displacement.png');
                 textureParams.aoMap = textureLoader.load('/maps/GelidisTexture_ambient.png');
                 textureParams.displacementScale = 0.1;
@@ -119,7 +119,7 @@ export const createBodyMesh = (
                 textureParams.normalScale = new THREE.Vector2(0.1, 0.1);
                 textureParams.displacementMap = textureLoader.load('/maps/SpectrisTexture_displacement.png');
                 textureParams.aoMap = textureLoader.load('/maps/SpectrisTexture_ambient.png');
-                textureParams.displacementScale = 0.1;
+                textureParams.displacementScale = 0.05;
                 geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
                 geometry.computeTangents();
                 break;
@@ -196,21 +196,25 @@ export const createBodyMesh = (
               varying vec3 vViewDir;
     
               float fresnel(vec3 normal, vec3 viewDir) {
-                return pow(1.0 - dot(normal, normalize(viewDir)), 3.0);
+                return pow(1.0 - max(dot(normalize(normal), normalize(viewDir)), 0.0), 3.0);
+              }
+    
+              vec3 iridescentColor(float fresnelFactor) {
+                float hue = mod(time * 0.05 + fresnelFactor * 0.9, 1.0);
+                return vec3(
+                  0.5 + 0.5 * cos(6.2831 * (hue + 0.0)),
+                  0.5 + 0.5 * cos(6.2831 * (hue + 0.33)),
+                  0.5 + 0.5 * cos(6.2831 * (hue + 0.66))
+                );
               }
     
               void main() {
                 float f = fresnel(vNormal, vViewDir);
     
-                // Iridescent hue shift
-                float hue = mod(time * 0.1 + f * 0.8, 1.0);
-                vec3 iridescentColor = vec3(
-                  0.5 + 0.5 * cos(6.2831 * (hue + vec3(0.0, 0.33, 0.66)))
-                );
+                vec3 color = iridescentColor(f);
+                float alpha = f * 0.6;
     
-                // Soft shimmer
-                float alpha = f * 0.8;
-                gl_FragColor = vec4(iridescentColor, alpha);
+                gl_FragColor = vec4(color, alpha);
               }
             `,
             blending: THREE.AdditiveBlending,
