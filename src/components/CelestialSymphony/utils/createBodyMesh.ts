@@ -7,7 +7,7 @@ import { planetShader } from '../shaders/planetShader';
 const textureLoader = new THREE.TextureLoader();
 
 // Helper to create a grid texture
-export const createGridTexture = (size = 512, lines = 12) => {
+export const createGridTexture = (size = 1024, lines = 24) => {
     if (typeof document === 'undefined') return null;
     const canvas = document.createElement('canvas');
     canvas.width = size;
@@ -17,8 +17,8 @@ export const createGridTexture = (size = 512, lines = 12) => {
 
     context.fillStyle = 'rgba(0,0,0,0)';
     context.fillRect(0, 0, size, size);
-    context.strokeStyle = 'rgba(255, 0, 0, 0.5)';
-    context.lineWidth = 2;
+    context.strokeStyle = 'rgba(255, 0, 0, 0.7)';
+    context.lineWidth = 1;
     
     // Meridians (Longitude)
     for (let i = 0; i <= lines * 2; i++) {
@@ -80,10 +80,7 @@ export const createBodyMesh = (
     } else { // It's a planet
         const uniforms = THREE.UniformsUtils.clone(planetShader.uniforms);
         let textureUrl = '';
-        let normalMapUrl: string | null = null;
-        let displacementMapUrl: string | null = null;
-
-
+        
         switch (body.name) {
             case 'Aetheris': 
                 textureUrl = '/maps/AetherisTexture.png';
@@ -122,13 +119,14 @@ export const createBodyMesh = (
             uniforms.useGrid.value = viewFromSebaka;
         }
         
-        // Pass initial slider values to shader
         if (bodyProps) {
             uniforms.normalScale.value.set(bodyProps.normalScale, bodyProps.normalScale);
             uniforms.displacementScale.value = bodyProps.displacementScale;
 
-            // Load maps if they exist
-            // Example: if (body.name === 'Sebaka') { uniforms.normalMap.value = textureLoader.load(...); }
+            if (body.name === 'Sebaka') { 
+                uniforms.normalMap.value = textureLoader.load('/maps/Sebaka_normal.png');
+                uniforms.displacementMap.value = textureLoader.load('/maps/Sebaka_displacement.png');
+            }
         }
     }
     

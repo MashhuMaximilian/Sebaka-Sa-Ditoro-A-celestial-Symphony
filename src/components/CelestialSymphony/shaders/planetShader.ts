@@ -48,7 +48,7 @@ export const planetShader = {
       
       // Apply displacement mapping
       vec3 displacedPosition = position;
-      if (displacementScale > 0.0) {
+      if (displacementScale > 0.0 && texture2D(displacementMap, uv).r > 0.0) {
         displacedPosition += normal * texture2D(displacementMap, uv).r * displacementScale;
       }
 
@@ -90,7 +90,7 @@ export const planetShader = {
 
       if (useGrid) {
         vec4 gridColor = texture2D(gridTexture, vUv);
-        baseColor = mix(baseColor, gridColor.rgb, gridColor.a * 0.5); // Blend grid over texture
+        baseColor = mix(baseColor, gridColor.rgb, gridColor.a); // Blend grid over texture
       }
       
       // Get normal from normal map

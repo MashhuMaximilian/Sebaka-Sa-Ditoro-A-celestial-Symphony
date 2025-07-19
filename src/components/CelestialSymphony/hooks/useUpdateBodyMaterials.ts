@@ -48,8 +48,9 @@ export const useUpdateBodyMaterials = ({
                     uniforms.displacementScale.value = props.displacementScale;
                 }
                 
-                // Note: emissiveIntensity is handled for stars in createBodyMesh
-                // but could be controlled here if planets were to become emissive.
+                if (mesh.name.includes('Star') && props.emissiveIntensity !== undefined && uniforms.emissiveIntensity.value !== props.emissiveIntensity) {
+                    uniforms.emissiveIntensity.value = props.emissiveIntensity;
+                }
             }
         });
     }, [materialProperties, planetMeshesRef]);
