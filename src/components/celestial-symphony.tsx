@@ -44,8 +44,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     allBodiesRef,
     planetMeshesRef,
     orbitMeshesRef,
-    sebakaDetailedMaterialRef,
-    sebakaSimpleMaterialRef,
     viridisOriginalColorRef,
     beaconPositionRef,
     sebakaRadiusRef,
@@ -55,7 +53,8 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
   } = useInitializeScene({ 
     bodyData, 
     setIsInitialized: props.setIsInitialized,
-    materialProperties: props.materialProperties 
+    materialProperties: props.materialProperties,
+    viewFromSebaka: props.viewFromSebaka,
   });
 
   useBodyClickHandler({
@@ -85,8 +84,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     planetMeshesRef,
     viridisOriginalColorRef,
     isViridisAnimationActive: props.isViridisAnimationActive,
-    sebakaDetailedMaterialRef,
-    sebakaSimpleMaterialRef,
     viewFromSebaka: props.viewFromSebaka,
     materialProperties: props.materialProperties,
   });

@@ -42,5 +42,7 @@ export interface MaterialProperties {
     emissiveIntensity?: number;
     specularMap?: boolean;
     aoMap?: boolean;
+    aoMapIntensity?: number;
+    shininess?: number;
   };
 }

@@ -1,8 +1,8 @@
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { createBodyMesh, createMaterials } from "../utils/createBodyMesh";
+import { createBodyMesh, createGridTexture } from "../utils/createBodyMesh";
 import { createOrbitMesh } from "../utils/createOrbitMesh";
 import type { BodyData } from "./useBodyData";
 import { createStarfield } from "../utils/createStarfield";
@@ -20,6 +20,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
     const sceneRef = useRef<THREE.Scene>();
     const cameraRef = useRef<THREE.PerspectiveCamera>();
     const controlsRef = useRef<OrbitControls>();
+    const [sebakaGridTexture, setSebakaGridTexture] = useState<THREE.CanvasTexture | null>(null);
+
 
     const allBodiesRef = useRef<THREE.Mesh[]>([]);
     const planetMeshesRef = useRef<THREE.Mesh[]>([]);
@@ -28,15 +30,16 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
     const sebakaRadiusRef = useRef(0);
     const originalCameraPosRef = useRef(new THREE.Vector3(0, 400, 800));
     const viridisOriginalColorRef = useRef(new THREE.Color("#9ACD32"));
-    
-    const sebakaDetailedMaterialRef = useRef<THREE.MeshPhongMaterial>();
-    const sebakaSimpleMaterialRef = useRef<THREE.MeshPhongMaterial>();
-    
+        
     const goldenGiverLightRef = useRef<THREE.DirectionalLight>();
     const twilightLightRef = useRef<THREE.DirectionalLight>();
 
     useEffect(() => {
-        if (!mountRef.current || !bodyData.length) return;
+        setSebakaGridTexture(createGridTexture());
+    }, []);
+
+    useEffect(() => {
+        if (!mountRef.current || !bodyData.length || !sebakaGridTexture) return;
 
         const currentMount = mountRef.current;
         const scene = new THREE.Scene();
@@ -57,10 +60,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         rendererRef.current = renderer;
         currentMount.appendChild(renderer.domElement);
         
-        const { sebakaDetailedMaterial, sebakaSimpleMaterial } = createMaterials();
-        sebakaDetailedMaterialRef.current = sebakaDetailedMaterial;
-        sebakaSimpleMaterialRef.current = sebakaSimpleMaterial;
-        
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
         controls.dampingFactor = 0.05;
@@ -70,22 +69,32 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         controls.target.set(0, 0, 0);
         controlsRef.current = controls;
         
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.2); // soft ambient light
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.02); // very dim
         scene.add(ambientLight);
 
-        const goldenGiverLight = new THREE.DirectionalLight(0xfff8e7, 2.0);
+        const goldenGiverLight = new THREE.DirectionalLight(0xfff8e7, 1.8);
         goldenGiverLight.castShadow = true;
         goldenGiverLight.shadow.mapSize.width = 2048;
         goldenGiverLight.shadow.mapSize.height = 2048;
-        goldenGiverLight.shadow.bias = -0.0001;
+        goldenGiverLight.shadow.camera.near = 0.5;
+        goldenGiverLight.shadow.camera.far = 500;
+        goldenGiverLight.shadow.camera.left = -50;
+        goldenGiverLight.shadow.camera.right = 50;
+        goldenGiverLight.shadow.camera.top = 50;
+        goldenGiverLight.shadow.camera.bottom = -50;
         scene.add(goldenGiverLight);
         goldenGiverLightRef.current = goldenGiverLight;
         
-        const twilightLight = new THREE.DirectionalLight(0xffb366, 1.0);
+        const twilightLight = new THREE.DirectionalLight(0xfff0d4, 1.0);
         twilightLight.castShadow = true;
-        twilightLight.shadow.mapSize.width = 2048;
-        twilightLight.shadow.mapSize.height = 2048;
-        twilightLight.shadow.bias = -0.0001;
+        twilightLight.shadow.mapSize.width = 1024;
+        twilightLight.shadow.mapSize.height = 1024;
+        twilightLight.shadow.camera.near = 0.5;
+        twilightLight.shadow.camera.far = 500;
+        twilightLight.shadow.camera.left = -40;
+        twilightLight.shadow.camera.right = 40;
+        twilightLight.shadow.camera.top = 40;
+        twilightLight.shadow.camera.bottom = -40;
         scene.add(twilightLight);
         twilightLightRef.current = twilightLight;
 
@@ -97,7 +106,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         orbitMeshesRef.current = [];
         
         bodyData.forEach(body => {
-            const mesh = createBodyMesh(body, sebakaDetailedMaterialRef.current!, viridisOriginalColorRef, materialProperties);
+            const mesh = createBodyMesh(body, viridisOriginalColorRef, materialProperties, viewFromSebaka, sebakaGridTexture);
             if (body.name === 'Sebaka') {
                 sebakaRadiusRef.current = body.size;
             }
@@ -186,7 +195,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
                 }
             }
         };
-    }, [bodyData, setIsInitialized, materialProperties]);
+    }, [bodyData, setIsInitialized, materialProperties, sebakaGridTexture]);
 
     return {
         mountRef,
@@ -197,8 +206,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         allBodiesRef,
         planetMeshesRef,
         orbitMeshesRef,
-        sebakaDetailedMaterialRef,
-        sebakaSimpleMaterialRef,
         viridisOriginalColorRef,
         beaconPositionRef,
         sebakaRadiusRef,

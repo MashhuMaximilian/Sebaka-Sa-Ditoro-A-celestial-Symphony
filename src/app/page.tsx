@@ -164,8 +164,8 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 1.2 },
-  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1 },
+  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0 },
+  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2 },
   Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10 },
   Rutilus: { normalScale: 1, displacementScale: 0.1 },
   Sebaka: { normalScale: 0.1, displacementScale: 0.1 },
@@ -315,7 +315,7 @@ export default function Home() {
         time: (
             <>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                    <Label className="text-sm font-medium text-foreground min-w-20 text-center">
                         Go to Time
                     </Label>
                     <Input
@@ -339,7 +339,7 @@ export default function Home() {
                     <Button onClick={handleGoToTime}>Go</Button>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                    <Label htmlFor="speed-input" className="text-sm font-medium text-foreground min-w-20 text-center">
                         Speed (hrs/s)
                     </Label>
                     <Input
@@ -354,7 +354,7 @@ export default function Home() {
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-accent hover:text-primary-foreground">
+                                <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-foreground hover:bg-accent hover:text-accent-foreground">
                                     <History className="h-5 w-5" />
                                 </Button>
                             </TooltipTrigger>
@@ -369,7 +369,7 @@ export default function Home() {
         look: (
             <>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="look-angle-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                    <Label htmlFor="look-angle-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Look Up/Down
                     </Label>
                     <Slider
@@ -381,10 +381,10 @@ export default function Home() {
                         onValueChange={handleCameraPitchChange}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{cameraPitch.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{cameraPitch.toFixed(0)}°</span>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                    <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Look Left/Right
                     </Label>
                     <Slider
@@ -396,10 +396,10 @@ export default function Home() {
                         onValueChange={handleCameraYawChange}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{cameraYaw.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{cameraYaw.toFixed(0)}°</span>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="fov-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                    <Label htmlFor="fov-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Field of View
                     </Label>
                     <Slider
@@ -411,14 +411,14 @@ export default function Home() {
                         onValueChange={handleCameraFovChange}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{cameraFov.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{cameraFov.toFixed(0)}°</span>
                 </div>
             </>
         ),
         move: (
             <>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="latitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                    <Label htmlFor="latitude-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Latitude
                     </Label>
                     <Slider
@@ -430,10 +430,10 @@ export default function Home() {
                         onValueChange={handleLatitudeChange}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{latitude.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{latitude.toFixed(0)}°</span>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="longitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                    <Label htmlFor="longitude-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Longitude
                     </Label>
                     <Slider
@@ -445,7 +445,7 @@ export default function Home() {
                         onValueChange={handleLongitudeChange}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{longitude.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{longitude.toFixed(0)}°</span>
                 </div>
             </>
         )
@@ -489,7 +489,7 @@ export default function Home() {
             {selectedBody && (
                 <InfoPanel 
                   data={selectedBody} 
-                  properties={materialProperties}
+                  properties={properties}
                   onPropertiesChange={setMaterialProperties}
                   onReset={() => setMaterialProperties(initialMaterialProperties)}
                 />
@@ -499,7 +499,7 @@ export default function Home() {
 
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
-          <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary-foreground/90 tracking-tighter">
+          <h1 className="font-headline text-3xl md:text-5xl font-bold text-foreground tracking-tighter">
             Celestial Symphony
           </h1>
           <p className="text-sm md:text-base text-muted-foreground max-w-md mt-1">
@@ -638,7 +638,7 @@ export default function Home() {
                               key={panelId}
                               onClick={() => handleSebakaPanelToggle(panelId)}
                               variant={activeSebakaPanel === panelId ? "secondary" : "default"}
-                              className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 flex-1 basis-1/3 capitalize"
+                              className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg text-foreground flex-1 basis-1/3 capitalize"
                           >
                               {panelId}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -650,7 +650,7 @@ export default function Home() {
           ) : (
             <>
               <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                  <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  <Label className="text-sm font-medium text-foreground min-w-20 text-center">
                       Go to Time
                   </Label>
                   <Input
@@ -674,7 +674,7 @@ export default function Home() {
                   <Button onClick={handleGoToTime}>Go</Button>
               </div>
               <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                  <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
+                  <Label htmlFor="speed-input" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Speed (hrs/s)
                   </Label>
                   <Input
@@ -689,7 +689,7 @@ export default function Home() {
                    <TooltipProvider>
                       <Tooltip>
                           <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-accent hover:text-primary-foreground">
+                              <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-foreground hover:bg-accent hover:text-accent-foreground">
                                   <History className="h-5 w-5" />
                               </Button>
                           </TooltipTrigger>

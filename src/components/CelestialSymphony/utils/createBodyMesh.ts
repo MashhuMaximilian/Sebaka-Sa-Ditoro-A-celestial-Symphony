@@ -5,31 +5,52 @@ import { MaterialProperties } from '@/types';
 
 const textureLoader = new THREE.TextureLoader();
 
-export const createMaterials = () => {
-    const sebakaDetailedMaterial = new THREE.MeshPhongMaterial({
-        map: textureLoader.load('/maps/SebakaTexture.png'),
-        specularMap: textureLoader.load('/maps/SebakaSpecularMap.png'),
-        normalMap: textureLoader.load('/maps/SebakaNormalMap.png'),
-        displacementMap: textureLoader.load('/maps/SebakaDisplacementMap.png'),
-        aoMap: textureLoader.load('/maps/SebakaAmbientOcclusionMap.png'),
-    });
-    
-    const sebakaSimpleMaterial = new THREE.MeshPhongMaterial({ color: '#0096C8' });
+// Helper to create a grid texture
+export const createGridTexture = (size = 512, lines = 12) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const context = canvas.getContext('2d');
+    if (!context) return null;
 
-    return { sebakaDetailedMaterial, sebakaSimpleMaterial };
-}
+    context.fillStyle = 'rgba(0,0,0,0)';
+    context.fillRect(0, 0, size, size);
+    context.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+    context.lineWidth = 2;
+    
+    // Meridians (Longitude)
+    for (let i = 0; i <= lines * 2; i++) {
+        const x = (i / (lines * 2)) * size;
+        context.beginPath();
+        context.moveTo(x, 0);
+        context.lineTo(x, size);
+        context.stroke();
+    }
+    
+    // Parallels (Latitude)
+    for (let i = 0; i <= lines; i++) {
+        const y = (i / lines) * size;
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(size, y);
+        context.stroke();
+    }
+
+    return new THREE.CanvasTexture(canvas);
+};
 
 export const createBodyMesh = (
     body: BodyData,
-    sebakaDetailedMaterial: THREE.MeshPhongMaterial,
     viridisOriginalColorRef: React.MutableRefObject<THREE.Color>,
     materialProperties: MaterialProperties,
+    viewFromSebaka: boolean,
+    sebakaGridTexture: THREE.CanvasTexture | null,
 ): THREE.Mesh => {
     const geometry = new THREE.SphereGeometry(body.size, 64, 64);
     let material: THREE.Material;
     
     const bodyProps = materialProperties[body.name];
-    const materialOptions: THREE.MeshPhongMaterialParameters = {};
+    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: 10 };
 
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
@@ -45,7 +66,7 @@ export const createBodyMesh = (
             if (bodyProps?.specularMap) {
                 starMaterialOptions.specularMap = textureLoader.load('/maps/goldenGiver_specular.png');
             }
-            if (bodyProps?.displacementScale > 0) {
+            if (bodyProps.displacementScale > 0) {
                  starMaterialOptions.displacementMap = textureLoader.load('/maps/goldenGiver_displacement.png');
                  starMaterialOptions.displacementScale = bodyProps.displacementScale;
             }
@@ -56,11 +77,11 @@ export const createBodyMesh = (
             if (bodyProps?.specularMap) {
                 starMaterialOptions.specularMap = textureLoader.load('/maps/Twilight_specular.png');
             }
-            if (bodyProps?.normalScale > 0) {
+            if (bodyProps.normalScale > 0) {
                 starMaterialOptions.normalMap = textureLoader.load('/maps/Twilight_normal.png');
                 starMaterialOptions.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
             }
-            if (bodyProps?.displacementScale > 0) {
+            if (bodyProps.displacementScale > 0) {
                 starMaterialOptions.displacementMap = textureLoader.load('/maps/Twilight_displacement.png');
                 starMaterialOptions.displacementScale = bodyProps.displacementScale;
             }
@@ -71,11 +92,11 @@ export const createBodyMesh = (
             if (bodyProps?.specularMap) {
                 starMaterialOptions.specularMap = textureLoader.load('/maps/Beacon_specular.png');
             }
-             if (bodyProps?.normalScale > 0) {
+             if (bodyProps.normalScale > 0) {
                 starMaterialOptions.normalMap = textureLoader.load('/maps/Beacon_normal.png');
                 starMaterialOptions.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
              }
-             if (bodyProps?.displacementScale > 0) {
+             if (bodyProps.displacementScale > 0) {
                 starMaterialOptions.displacementMap = textureLoader.load('/maps/Beacon_displacement.png');
                 starMaterialOptions.displacementScale = bodyProps.displacementScale;
              }
@@ -93,7 +114,7 @@ export const createBodyMesh = (
                 if (bodyProps?.specularMap) {
                     textureParams.specularMap = textureLoader.load('/maps/AetherisTexture_specular.png');
                 }
-                if (bodyProps?.normalScale > 0) {
+                if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/AetherisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
                 }
@@ -103,22 +124,22 @@ export const createBodyMesh = (
                 if (bodyProps?.specularMap) {
                     textureParams.specularMap = textureLoader.load('/maps/GelidisTexture_specular.png');
                 }
-                if (bodyProps?.normalScale > 0) {
+                if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/GelidisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
                 }
-                if (bodyProps?.displacementScale > 0) {
+                if (bodyProps.displacementScale > 0) {
                     textureParams.displacementMap = textureLoader.load('/maps/GelidisTexture_displacement.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
                 }
                 break;
             case 'Rutilus':
                 textureParams.map = textureLoader.load('/maps/RutiliusTexture.png');
-                if (bodyProps?.normalScale > 0) {
+                if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/RutiliusTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
                 }
-                if (bodyProps?.displacementScale > 0) {
+                if (bodyProps.displacementScale > 0) {
                     textureParams.displacementMap = textureLoader.load('/maps/RutiliusTexture_displacement.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
                 }
@@ -128,11 +149,11 @@ export const createBodyMesh = (
                  if (bodyProps?.specularMap) {
                     textureParams.specularMap = textureLoader.load('/maps/SpectrisTexture_specular.png');
                 }
-                if (bodyProps?.normalScale > 0) {
+                if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/SpectrisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
                 }
-                if (bodyProps?.displacementScale > 0) {
+                if (bodyProps.displacementScale > 0) {
                     textureParams.displacementMap = textureLoader.load('/maps/SpectrisTexture_displacement.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
                 }
@@ -142,11 +163,11 @@ export const createBodyMesh = (
                  if (bodyProps?.specularMap) {
                     textureParams.specularMap = textureLoader.load('/maps/ViridisTexture_specular.png');
                 }
-                 if (bodyProps?.normalScale > 0) {
+                 if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/ViridisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
                 }
-                if (bodyProps?.displacementScale > 0) {
+                if (bodyProps.displacementScale > 0) {
                     textureParams.displacementMap = textureLoader.load('/maps/ViridisTexture_displacement.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
                 }
@@ -159,17 +180,36 @@ export const createBodyMesh = (
                  if (bodyProps?.specularMap) {
                     textureParams.specularMap = textureLoader.load('/maps/LiminisSpecularMap.png');
                 }
-                if (bodyProps?.normalScale > 0) {
+                if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/LiminisNormalMap.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
                 }
-                if (bodyProps?.displacementScale > 0) {
+                if (bodyProps.displacementScale > 0) {
                     textureParams.displacementMap = textureLoader.load('/maps/LiminisDisplacementMap.png');
                     textureParams.displacementScale = bodyProps.displacementScale;
                 }
                 break;
             case 'Sebaka':
-                material = sebakaDetailedMaterial;
+                const sebakaDetailedMaterial = new THREE.MeshPhongMaterial({
+                    map: textureLoader.load('/maps/SebakaTexture.png'),
+                    specularMap: textureLoader.load('/maps/SebakaSpecularMap.png'),
+                });
+                if (bodyProps.normalScale > 0) {
+                    sebakaDetailedMaterial.normalMap = textureLoader.load('/maps/SebakaNormalMap.png');
+                    sebakaDetailedMaterial.normalScale.set(bodyProps.normalScale, bodyProps.normalScale);
+                }
+                if (bodyProps.displacementScale > 0) {
+                    sebakaDetailedMaterial.displacementMap = textureLoader.load('/maps/SebakaDisplacementMap.png');
+                    sebakaDetailedMaterial.displacementScale = bodyProps.displacementScale;
+                }
+                
+                const sebakaSimpleMaterial = new THREE.MeshPhongMaterial({
+                    color: '#0096C8',
+                    map: sebakaGridTexture,
+                    transparent: true,
+                });
+                
+                material = viewFromSebaka ? sebakaSimpleMaterial : sebakaDetailedMaterial;
                 break;
             default:
                 materialOptions.color = body.color;
@@ -191,8 +231,17 @@ export const createBodyMesh = (
     mesh.receiveShadow = true;
 
     if (body.type === 'Planet' && body.name === "Spectris") {
-        const ringCount = Math.floor(Math.random() * 70) + 80; // Random between 80-150
-        const iridescentColors = [0xaaaaaa, 0xbbbbbb, 0xcccccc, 0xdddddd, 0xeeeeee, 0xffffff];
+        const ringCount = Math.floor(Math.random() * 70) + 80;
+        const iridescentColors = [
+            0x4dd0e1, // Cyan
+            0x81c784, // Green
+            0xb39ddb, // Lavender
+            0xef9a9a, // Red
+            0xffcc80, // Orange
+            0xffee58, // Yellow
+            0x90caf9, // Blue
+            0xf48fb1  // Pink
+        ];
 
         for (let i = 0; i < ringCount; i++) {
             const innerRadius = body.size * (1.5 + i * 0.02 + Math.random() * 0.01);

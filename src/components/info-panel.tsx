@@ -48,7 +48,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
        <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="item-1">
           <AccordionTrigger>
-             <h3 className="text-lg font-bold text-primary">Material Settings</h3>
+             <h3 className="text-lg font-bold text-primary-foreground">Material Settings</h3>
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4 pt-2">
@@ -107,11 +107,11 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
   }
 
   return (
-    <ScrollArea className="h-full w-full p-6">
+    <ScrollArea className="h-full w-full p-6 bg-card/80 backdrop-blur-lg">
       <div className="space-y-6 text-sm">
-        <h2 className="text-2xl font-bold text-primary">{data.name}</h2>
+        <h2 className="text-2xl font-bold text-primary-foreground">{data.name}</h2>
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-primary">Overview</h3>
+          <h3 className="text-lg font-bold text-primary-foreground">Overview</h3>
           <dl className="space-y-2">
             <DataDisplay label="Type" value={data.type} />
             <DataDisplay label="Classification" value={data.classification} />
@@ -124,7 +124,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
         <Separator />
 
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-primary">Physical Characteristics</h3>
+          <h3 className="text-lg font-bold text-primary-foreground">Physical Characteristics</h3>
           <dl className="space-y-2">
             <DataDisplay label="Radius" value={data.radius} />
             <DataDisplay label="Mass" value={data.mass} />
@@ -140,7 +140,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
         <Separator />
 
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-primary">Appearance & Lore</h3>
+          <h3 className="text-lg font-bold text-primary-foreground">Appearance & Lore</h3>
           <dl className="space-y-2">
               <DataDisplay label="Appearance from Sebaka" value={data.appearance} />
               <DataDisplay label="Lore" value={data.lore} />

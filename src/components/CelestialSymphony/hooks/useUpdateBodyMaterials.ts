@@ -9,8 +9,6 @@ interface UpdateBodyMaterialsProps {
     planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     viridisOriginalColorRef: React.MutableRefObject<THREE.Color>;
     isViridisAnimationActive: boolean;
-    sebakaDetailedMaterialRef: React.MutableRefObject<THREE.MeshPhongMaterial | undefined>;
-    sebakaSimpleMaterialRef: React.MutableRefObject<THREE.MeshPhongMaterial | undefined>;
     viewFromSebaka: boolean;
     materialProperties: MaterialProperties;
 }
@@ -20,8 +18,6 @@ export const useUpdateBodyMaterials = ({
     planetMeshesRef,
     viridisOriginalColorRef,
     isViridisAnimationActive,
-    sebakaDetailedMaterialRef,
-    sebakaSimpleMaterialRef,
     viewFromSebaka,
     materialProperties,
 }: UpdateBodyMaterialsProps) => {
@@ -58,14 +54,6 @@ export const useUpdateBodyMaterials = ({
 
                 if (props.displacementScale !== undefined && mesh.material.displacementScale !== props.displacementScale) {
                     mesh.material.displacementScale = props.displacementScale;
-                }
-                
-                if (props.aoMapIntensity !== undefined && mesh.material.aoMapIntensity !== props.aoMapIntensity) {
-                    mesh.material.aoMapIntensity = props.aoMapIntensity;
-                }
-
-                if (props.shininess !== undefined && mesh.material.shininess !== props.shininess) {
-                    mesh.material.shininess = props.shininess;
                 }
 
                 if (props.emissiveIntensity !== undefined && mesh.material.emissiveIntensity !== props.emissiveIntensity) {
@@ -141,13 +129,4 @@ export const useUpdateBodyMaterials = ({
         };
     }, [isViridisAnimationActive, planetMeshesRef, viridisOriginalColorRef]);
 
-    useEffect(() => {
-        const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-        if (sebakaMesh && sebakaDetailedMaterialRef.current && sebakaSimpleMaterialRef.current) {
-            const newMaterial = viewFromSebaka ? sebakaSimpleMaterialRef.current : sebakaDetailedMaterialRef.current;
-            if (sebakaMesh.material !== newMaterial) {
-                sebakaMesh.material = newMaterial;
-            }
-        }
-    }, [viewFromSebaka, planetMeshesRef, sebakaDetailedMaterialRef, sebakaSimpleMaterialRef]);
 };
