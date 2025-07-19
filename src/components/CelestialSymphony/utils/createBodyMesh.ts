@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 
@@ -15,7 +14,6 @@ export const createMaterials = () => {
         displacementScale: 0.1,
     });
     
-    // Fallback material, not really used now but good to have
     const sebakaSimpleMaterial = new THREE.MeshPhongMaterial({ color: '#0096C8' });
 
     return { sebakaDetailedMaterial, sebakaSimpleMaterial };
@@ -26,7 +24,7 @@ export const createBodyMesh = (
     sebakaDetailedMaterial: THREE.MeshPhongMaterial,
     viridisOriginalColorRef: React.MutableRefObject<THREE.Color>
 ): THREE.Mesh => {
-    const geometry = new THREE.SphereGeometry(body.size, 64, 64)
+    const geometry = new THREE.SphereGeometry(body.size, 64, 64);
     let material: THREE.Material;
     
     const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: 10 };
@@ -46,7 +44,6 @@ export const createBodyMesh = (
                 emissiveIntensity: 1.2,
                 displacementScale: 0.6,
             });
-            geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
         } else if (body.name === 'Twilight') {
             Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/TwilightTexture.jpg'),
@@ -56,8 +53,6 @@ export const createBodyMesh = (
                 aoMap: textureLoader.load('/maps/Twilight_ambient.png'),
                 displacementScale: 0.2,
             });
-            geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-            geometry.computeTangents();
         } else if (body.name === 'Beacon') {
              Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/BeaconTexture.png'),
@@ -68,8 +63,6 @@ export const createBodyMesh = (
                 emissiveIntensity: 10,
                 displacementScale: 2.95,
              });
-             geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-             geometry.computeTangents();
         }
 
         material = new THREE.MeshPhongMaterial(starMaterialOptions);
@@ -78,6 +71,10 @@ export const createBodyMesh = (
         starMesh.name = body.name;
         starMesh.castShadow = false;
         starMesh.receiveShadow = false;
+        
+        if(starMaterialOptions.normalMap) geometry.computeTangents();
+        if(starMaterialOptions.aoMap) geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+
         return starMesh;
 
     } else { 
@@ -96,12 +93,10 @@ export const createBodyMesh = (
                 textureParams.map = textureLoader.load('/maps/GelidisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/GelidisTexture_specular.png');
                 textureParams.normalMap = textureLoader.load('/maps/GelidisTexture_normal.png');
-                textureParams.normalScale = new THREE.Vector2(0.4, 0.4);
+                textureParams.normalScale = new THREE.Vector2(0.03, 0.03);
                 textureParams.displacementMap = textureLoader.load('/maps/GelidisTexture_displacement.png');
                 textureParams.aoMap = textureLoader.load('/maps/GelidisTexture_ambient.png');
-                textureParams.displacementScale = 0.1;
-                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-                geometry.computeTangents();
+                textureParams.displacementScale = 20.1;
                 break;
             case 'Rutilus':
                 textureParams.map = textureLoader.load('/maps/RutiliusTexture.png');
@@ -109,8 +104,6 @@ export const createBodyMesh = (
                 textureParams.displacementMap = textureLoader.load('/maps/RutiliusTexture_displacement.png');
                 textureParams.aoMap = textureLoader.load('/maps/RutiliusTexture_ambient.png');
                 textureParams.displacementScale = 0.1;
-                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-                geometry.computeTangents();
                 break;
             case 'Spectris':
                 textureParams.map = textureLoader.load('/maps/SpectrisTexture.png');
@@ -120,8 +113,6 @@ export const createBodyMesh = (
                 textureParams.displacementMap = textureLoader.load('/maps/SpectrisTexture_displacement.png');
                 textureParams.aoMap = textureLoader.load('/maps/SpectrisTexture_ambient.png');
                 textureParams.displacementScale = 0.05;
-                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-                geometry.computeTangents();
                 break;
             case 'Viridis':
                 textureParams.map = textureLoader.load('/maps/ViridisTexture.png');
@@ -134,8 +125,6 @@ export const createBodyMesh = (
                  if (body.color) {
                     viridisOriginalColorRef.current.set(body.color);
                 }
-                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-                geometry.computeTangents();
                 break;
             case 'Liminis':
                 textureParams.map = textureLoader.load('/maps/LiminisTexture.png');
@@ -144,13 +133,9 @@ export const createBodyMesh = (
                 textureParams.displacementMap = textureLoader.load('/maps/LiminisDisplacementMap.png');
                 textureParams.aoMap = textureLoader.load('/maps/LiminisAmbientOcclusionMap.png');
                 textureParams.displacementScale = 0.1;
-                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-                geometry.computeTangents();
                 break;
             case 'Sebaka':
                 material = sebakaDetailedMaterial;
-                geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
-                geometry.computeTangents();
                 break;
             default:
                 materialOptions.color = body.color;
@@ -160,6 +145,13 @@ export const createBodyMesh = (
 
         if (planetName !== 'Sebaka') {
             material = new THREE.MeshPhongMaterial({ ...materialOptions, ...textureParams });
+        }
+
+        if (textureParams.aoMap || (planetName === 'Sebaka')) {
+            geometry.setAttribute('uv2', new THREE.BufferAttribute(geometry.attributes.uv.array, 2));
+        }
+        if(textureParams.normalMap || (planetName === 'Sebaka')) {
+            geometry.computeTangents();
         }
     }
     
@@ -183,7 +175,9 @@ export const createBodyMesh = (
             vertexShader: `
               varying vec3 vNormal;
               varying vec3 vViewDir;
+              varying vec2 vUv;
               void main() {
+                vUv = uv;
                 vNormal = normalize(normalMatrix * normal);
                 vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
                 vViewDir = -mvPosition.xyz;
@@ -194,26 +188,49 @@ export const createBodyMesh = (
               uniform float time;
               varying vec3 vNormal;
               varying vec3 vViewDir;
-    
+              varying vec2 vUv;
+
               float fresnel(vec3 normal, vec3 viewDir) {
-                return pow(1.0 - max(dot(normalize(normal), normalize(viewDir)), 0.0), 3.0);
+                return pow(1.0 - max(dot(normalize(normal), normalize(viewDir)), 0.0), 2.0);
               }
-    
-              vec3 iridescentColor(float fresnelFactor) {
-                float hue = mod(time * 0.05 + fresnelFactor * 0.9, 1.0);
+
+              float rand(vec2 co) {
+                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+              }
+
+              float noise(vec2 uv) {
+                vec2 i = floor(uv);
+                vec2 f = fract(uv);
+                float a = rand(i);
+                float b = rand(i + vec2(1.0, 0.0));
+                float c = rand(i + vec2(0.0, 1.0));
+                float d = rand(i + vec2(1.0, 1.0));
+                vec2 u = f*f*(3.0-2.0*f);
+                return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+              }
+
+              vec3 iridescentColor(float hue) {
                 return vec3(
                   0.5 + 0.5 * cos(6.2831 * (hue + 0.0)),
                   0.5 + 0.5 * cos(6.2831 * (hue + 0.33)),
                   0.5 + 0.5 * cos(6.2831 * (hue + 0.66))
                 );
               }
-    
+
               void main() {
-                float f = fresnel(vNormal, vViewDir);
-    
-                vec3 color = iridescentColor(f);
-                float alpha = f * 0.6;
-    
+                vec2 uv = vUv * 50.0; // Scale UV space
+                vec2 gridUV = floor(uv);           // Grid-based pseudo fragments
+
+                float fragmentRand = rand(gridUV);
+                float sparkle = noise(uv * 10.0 + time * 0.5); // Flicker
+
+                float localFresnel = fresnel(vNormal + fragmentRand * 0.2, vViewDir);
+
+                float hue = mod(fragmentRand + time * 0.05 + localFresnel * 0.8, 1.0);
+                vec3 color = iridescentColor(hue);
+
+                float alpha = localFresnel * 0.8 * sparkle;
+
                 gl_FragColor = vec4(color, alpha);
               }
             `,
@@ -222,7 +239,7 @@ export const createBodyMesh = (
         });
 
         const rings = new THREE.Mesh(ringGeometry, ringMaterial);
-        rings.rotation.x = Math.PI / 2 + 0.2; // Tilt the rings
+        rings.rotation.x = Math.PI / 2 + 0.2;
         rings.receiveShadow = true;
         mesh.add(rings);
     }
