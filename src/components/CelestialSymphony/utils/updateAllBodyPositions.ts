@@ -38,7 +38,7 @@ export const updateAllBodyPositions = (
       if (data.eccentric && data.eccentricity) {
           const eccentricity = data.eccentricity;
           const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
-          const focus = Math.sqrt(semiMajorAxis**2 - semiMinorAxis**2);
+          const focus = semiMajorAxis * eccentricity;
           
           x = orbitCenter.x + focus + semiMajorAxis * Math.cos(angle);
           z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
