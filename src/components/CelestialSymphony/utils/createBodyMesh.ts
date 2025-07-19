@@ -43,31 +43,40 @@ export const createBodyMesh = (
             Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/goldenGiverTexture.jpg'),
                 specularMap: textureLoader.load('/maps/goldenGiver_specular.png'),
-                displacementMap: bodyProps?.displacementScale > 0 ? textureLoader.load('/maps/goldenGiver_displacement.png') : undefined,
-                displacementScale: bodyProps?.displacementScale,
             });
+            if (bodyProps?.displacementScale > 0) {
+                 starMaterialOptions.displacementMap = textureLoader.load('/maps/goldenGiver_displacement.png');
+                 starMaterialOptions.displacementScale = bodyProps.displacementScale;
+            }
         } else if (body.name === 'Twilight') {
             Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/TwilightTexture.jpg'),
                 specularMap: textureLoader.load('/maps/Twilight_specular.png'),
-                normalMap: bodyProps?.normalScale > 0 ? textureLoader.load('/maps/Twilight_normal.png') : undefined,
-                displacementMap: bodyProps?.displacementScale > 0 ? textureLoader.load('/maps/Twilight_displacement.png') : undefined,
-                normalScale: new THREE.Vector2(bodyProps?.normalScale, bodyProps?.normalScale),
-                displacementScale: bodyProps?.displacementScale,
             });
+            if (bodyProps?.normalScale > 0) {
+                starMaterialOptions.normalMap = textureLoader.load('/maps/Twilight_normal.png');
+                starMaterialOptions.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
+            }
+            if (bodyProps?.displacementScale > 0) {
+                starMaterialOptions.displacementMap = textureLoader.load('/maps/Twilight_displacement.png');
+                starMaterialOptions.displacementScale = bodyProps.displacementScale;
+            }
         } else if (body.name === 'Beacon') {
              Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/BeaconTexture.png'),
                 specularMap: textureLoader.load('/maps/Beacon_specular.png'),
-                normalMap: bodyProps?.normalScale > 0 ? textureLoader.load('/maps/Beacon_normal.png') : undefined,
-                displacementMap: bodyProps?.displacementScale > 0 ? textureLoader.load('/maps/Beacon_displacement.png') : undefined,
-                normalScale: new THREE.Vector2(bodyProps?.normalScale, bodyProps?.normalScale),
-                displacementScale: bodyProps?.displacementScale,
              });
+             if (bodyProps?.normalScale > 0) {
+                starMaterialOptions.normalMap = textureLoader.load('/maps/Beacon_normal.png');
+                starMaterialOptions.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
+             }
+             if (bodyProps?.displacementScale > 0) {
+                starMaterialOptions.displacementMap = textureLoader.load('/maps/Beacon_displacement.png');
+                starMaterialOptions.displacementScale = bodyProps.displacementScale;
+             }
         }
         
         material = new THREE.MeshPhongMaterial(starMaterialOptions);
-        if(starMaterialOptions.normalMap || starMaterialOptions.aoMap) geometry.computeTangents();
 
     } else { 
         const planetName = body.name;
@@ -158,7 +167,7 @@ export const createBodyMesh = (
         if (planetName !== 'Sebaka') {
             material = new THREE.MeshPhongMaterial({ ...materialOptions, ...textureParams });
         }
-        if (textureParams.normalMap || textureParams.aoMap) {
+        if (textureParams.normalMap || textureParams.displacementMap || bodyProps.aoMapIntensity > 0) {
             geometry.computeTangents();
         }
     }
@@ -179,7 +188,6 @@ export const createBodyMesh = (
             1.0,  // substrate IOR
             512   // lookup resolution
         );
-        iridescenceMap.texture.needsUpdate = true;
         
         const ringMaterial = new THREE.ShaderMaterial({
             transparent: true,
@@ -206,29 +214,30 @@ export const createBodyMesh = (
             fragmentShader: `
                 uniform float time, ringCount;
                 uniform sampler2D iridescenceMap;
-                varying vec3 vNormal, vViewDir, vUv;
+                varying vec3 vNormal, vViewDir;
+                varying vec2 vUv;
 
                 float rand(float x){ return fract(sin(x*91.17)*43758.545); }
 
                 void main(){
-                    float dist = length(vUv - 0.5) * 2.0;
+                  float dist = length(vUv - 0.5) * 2.0;
 
-                    float idx = floor(dist*ringCount);
-                    float seed = rand(idx);
-                    float width = 0.005 + 0.03 * rand(idx*1.37);
-                    float line = fract(dist*ringCount);
-                    float mask = smoothstep(0.5-width, 0.5, 1.-abs(line-0.5));
+                  float idx = floor(dist*ringCount);
+                  float seed = rand(idx);
+                  float width = 0.005 + 0.03 * rand(idx*1.37);
+                  float line = fract(dist*ringCount);
+                  float mask = smoothstep(0.5-width, 0.5, 1.-abs(line-0.5));
 
-                    vec3 N = normalize(vNormal);
-                    vec3 V = normalize(vViewDir);
-                    float NdotV = max(dot(N, V), 0.);
-                    
-                    vec3 filmCol = texture2D(iridescenceMap, vec2(NdotV, 0.)).rgb;
-                    filmCol *= filmCol;
+                  vec3 N = normalize(vNormal);
+                  vec3 V = normalize(vViewDir);
+                  float NdotV = max(dot(N, V), 0.);
+                  
+                  vec3 filmCol = texture2D(iridescenceMap, vec2(NdotV, 0.)).rgb;
+                  filmCol *= filmCol;
 
-                    float fres = pow(1.-NdotV, 3.);
+                  float fres = pow(1.-NdotV, 3.);
 
-                    gl_FragColor = vec4(filmCol, mask * fres * 0.6);
+                  gl_FragColor = vec4(filmCol, mask * fres * 0.6);
                 }
             `
         });
@@ -241,3 +250,4 @@ export const createBodyMesh = (
     
     return mesh;
 };
+
