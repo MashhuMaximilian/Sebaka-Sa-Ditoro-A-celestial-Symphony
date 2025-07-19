@@ -171,9 +171,9 @@ const initialMaterialProperties: MaterialProperties = {
   Sebaka: { normalScale: 0.1, displacementScale: 0.1, specularMap: true },
   Spectris: { normalScale: 0.1, displacementScale: 0.05, specularMap: false },
   Viridis: { normalScale: 2, displacementScale: 0.1, specularMap: false },
-  Aetheris: { normalScale: 0.15, displacementScale: 0, specularMap: true, aoMap: true },
+  Aetheris: { normalScale: 0.15, displacementScale: 0, specularMap: true },
   Gelidis: { normalScale: 0.03, displacementScale: 0.001, specularMap: false },
-  Liminis: { normalScale: 1, displacementScale: 0.1, specularMap: true, aoMap: true },
+  Liminis: { normalScale: 1, displacementScale: 0.1, specularMap: true },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
@@ -314,7 +314,7 @@ export default function Home() {
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
             <>
-                <div className="bg-card backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                         Go to Time
                     </Label>
@@ -324,7 +324,7 @@ export default function Home() {
                         placeholder="Year"
                         value={targetYear}
                         onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
-                        className="w-full"
+                        className="w-full bg-card"
                     />
                     <Input
                         id="day-input"
@@ -332,13 +332,13 @@ export default function Home() {
                         placeholder="Day"
                         value={targetDay}
                         onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
-                        className="w-full"
+                        className="w-full bg-card"
                         min={1}
                         max={324}
                     />
                     <Button onClick={handleGoToTime}>Go</Button>
                 </div>
-                <div className="bg-card backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="speed-input" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                         Speed (hrs/s)
                     </Label>
@@ -347,7 +347,7 @@ export default function Home() {
                         type="number"
                         value={speedMultiplier}
                         onChange={handleSpeedChange}
-                        className="w-full"
+                        className="w-full bg-card"
                         min={0.1}
                         step={0.1}
                     />
@@ -368,7 +368,7 @@ export default function Home() {
         ),
         look: (
             <>
-                <div className="bg-card backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-angle-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Look Up/Down
                     </Label>
@@ -383,7 +383,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{cameraPitch.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Look Left/Right
                     </Label>
@@ -398,7 +398,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{cameraYaw.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="fov-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Field of View
                     </Label>
@@ -417,7 +417,7 @@ export default function Home() {
         ),
         move: (
             <>
-                <div className="bg-card backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="latitude-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Latitude
                     </Label>
@@ -432,7 +432,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{latitude.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="longitude-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Longitude
                     </Label>
@@ -479,7 +479,7 @@ export default function Home() {
       />
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
-        <SheetContent side="left" className="w-[65vw] max-w-2xl p-0 backdrop-blur-sm" withoutOverlay>
+        <SheetContent side="left" className="w-[65vw] max-w-2xl p-0 bg-card/80 backdrop-blur-sm" withoutOverlay>
             <SheetHeader className="sr-only">
               <SheetTitle>Celestial Body Information</SheetTitle>
               <SheetDescription>
@@ -513,7 +513,7 @@ export default function Home() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <DropdownMenuTrigger asChild>
-                                 <Button variant="outline" size="icon" className="backdrop-blur-sm">
+                                 <Button variant="outline" size="icon" className="backdrop-blur-sm bg-card/80">
                                     <Focus className="h-5 w-5" />
                                     <span className="sr-only">Focus Camera</span>
                                 </Button>
@@ -556,7 +556,7 @@ export default function Home() {
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" className="backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
+                         <Button variant="outline" size="icon" className="backdrop-blur-sm bg-card/80" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
                             <Orbit className="h-5 w-5" />
                             <span className="sr-only">Toggle Viridis Animation</span>
                         </Button>
@@ -567,7 +567,7 @@ export default function Home() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="backdrop-blur-sm" onClick={toggleSebakaView}>
+                        <Button variant="outline" size="icon" className="backdrop-blur-sm bg-card/80" onClick={toggleSebakaView}>
                             <PersonStanding className="h-5 w-5" />
                             <span className="sr-only">Toggle View from Sebaka</span>
                         </Button>
@@ -584,7 +584,7 @@ export default function Home() {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="icon" className="backdrop-blur-sm">
+                                    <Button variant="outline" size="icon" className="backdrop-blur-sm bg-card/80">
                                         <Settings className="h-5 w-5" />
                                         <span className="sr-only">Settings</span>
                                     </Button>
@@ -616,7 +616,7 @@ export default function Home() {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <SheetContent className="backdrop-blur-sm" withoutOverlay>
+                <SheetContent className="backdrop-blur-sm bg-card/80" withoutOverlay>
                     <SheetHeader>
                     <SheetTitle>Color Harmonizer</SheetTitle>
                     <SheetDescription>
@@ -649,7 +649,7 @@ export default function Home() {
               </div>
           ) : (
             <>
-              <div className="bg-card backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Go to Time
                   </Label>
@@ -659,7 +659,7 @@ export default function Home() {
                       placeholder="Year"
                       value={targetYear}
                       onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
-                      className="w-full"
+                      className="w-full bg-card"
                   />
                   <Input
                       id="day-input"
@@ -667,13 +667,13 @@ export default function Home() {
                       placeholder="Day"
                       value={targetDay}
                       onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
-                      className="w-full"
+                      className="w-full bg-card"
                       min={1}
                       max={324}
                   />
                   <Button onClick={handleGoToTime}>Go</Button>
               </div>
-              <div className="bg-card backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label htmlFor="speed-input" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Speed (hrs/s)
                   </Label>
@@ -682,7 +682,7 @@ export default function Home() {
                       type="number"
                       value={speedMultiplier}
                       onChange={handleSpeedChange}
-                      className="w-full"
+                      className="w-full bg-card"
                       min={0.1}
                       step={0.1}
                   />
@@ -705,5 +705,7 @@ export default function Home() {
     </main>
   );
 }
+
+    
 
     
