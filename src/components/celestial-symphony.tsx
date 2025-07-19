@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { PlanetData, StarData } from "@/types";
+import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import { useAnimationLoop } from "./CelestialSymphony/hooks/useAnimationLoop";
 import { useBodyClickHandler } from "./CelestialSymphony/hooks/useBodyClickHandler";
 import { useCameraControl } from "./CelestialSymphony/hooks/useCameraControl";
@@ -29,6 +29,7 @@ export interface CelestialSymphonyProps {
   cameraTarget: string | null;
   isInitialized: boolean;
   setIsInitialized: (isInitialized: boolean) => void;
+  materialProperties: MaterialProperties;
 }
 
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
@@ -83,6 +84,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     sebakaDetailedMaterialRef,
     sebakaSimpleMaterialRef,
     viewFromSebaka: props.viewFromSebaka,
+    materialProperties: props.materialProperties,
   });
 
   useAnimationLoop({

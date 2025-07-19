@@ -96,7 +96,7 @@ export const createBodyMesh = (
                 textureParams.normalScale = new THREE.Vector2(0.03, 0.03);
                 textureParams.displacementMap = textureLoader.load('/maps/GelidisTexture_displacement.png');
                 textureParams.aoMap = textureLoader.load('/maps/GelidisTexture_ambient.png');
-                textureParams.displacementScale = 20.1;
+                textureParams.displacementScale = 0.001;
                 break;
             case 'Rutilus':
                 textureParams.map = textureLoader.load('/maps/RutiliusTexture.png');
@@ -185,54 +185,40 @@ export const createBodyMesh = (
               }
             `,
             fragmentShader: `
-              uniform float time;
-              varying vec3 vNormal;
-              varying vec3 vViewDir;
-              varying vec2 vUv;
+                uniform float time;
+                varying vec3 vNormal;
+                varying vec3 vViewDir;
+                varying vec2 vUv;
 
-              float fresnel(vec3 normal, vec3 viewDir) {
-                return pow(1.0 - max(dot(normalize(normal), normalize(viewDir)), 0.0), 2.0);
-              }
+                float fresnel(vec3 normal, vec3 viewDir) {
+                    return pow(1.0 - max(dot(normalize(normal), normalize(viewDir)), 0.0), 3.0);
+                }
 
-              float rand(vec2 co) {
-                return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-              }
+                vec3 iridescentColor(float angle, float band) {
+                    float hue = mod(angle * 0.8 + band + time * 0.03, 1.0);
+                    return vec3(
+                        0.5 + 0.5 * cos(6.2831 * (hue + 0.0)),
+                        0.5 + 0.5 * cos(6.2831 * (hue + 0.33)),
+                        0.5 + 0.5 * cos(6.2831 * (hue + 0.66))
+                    );
+                }
 
-              float noise(vec2 uv) {
-                vec2 i = floor(uv);
-                vec2 f = fract(uv);
-                float a = rand(i);
-                float b = rand(i + vec2(1.0, 0.0));
-                float c = rand(i + vec2(0.0, 1.0));
-                float d = rand(i + vec2(1.0, 1.0));
-                vec2 u = f*f*(3.0-2.0*f);
-                return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-              }
+                void main() {
+                    // Radial coordinates from mesh UVs
+                    float dist = length(vUv - vec2(0.5));
+                    
+                    // Create banding: sinusoidal lines
+                    float bands = sin(dist * 150.0 + time * 0.2) * 0.5 + 0.5;
+                    bands = smoothstep(0.4, 0.6, bands);
 
-              vec3 iridescentColor(float hue) {
-                return vec3(
-                  0.5 + 0.5 * cos(6.2831 * (hue + 0.0)),
-                  0.5 + 0.5 * cos(6.2831 * (hue + 0.33)),
-                  0.5 + 0.5 * cos(6.2831 * (hue + 0.66))
-                );
-              }
+                    float fres = fresnel(vNormal, vViewDir);
+                    vec3 color = iridescentColor(fres, dist);
 
-              void main() {
-                vec2 uv = vUv * 50.0; // Scale UV space
-                vec2 gridUV = floor(uv);           // Grid-based pseudo fragments
+                    // Fade outward, using distance from the center of the ring band (0.5)
+                    float alpha = fres * bands * smoothstep(0.5, 0.4, dist); 
 
-                float fragmentRand = rand(gridUV);
-                float sparkle = noise(uv * 10.0 + time * 0.5); // Flicker
-
-                float localFresnel = fresnel(vNormal + fragmentRand * 0.2, vViewDir);
-
-                float hue = mod(fragmentRand + time * 0.05 + localFresnel * 0.8, 1.0);
-                vec3 color = iridescentColor(hue);
-
-                float alpha = localFresnel * 0.8 * sparkle;
-
-                gl_FragColor = vec4(color, alpha);
-              }
+                    gl_FragColor = vec4(color, alpha);
+                }
             `,
             blending: THREE.AdditiveBlending,
             depthWrite: false

@@ -34,3 +34,10 @@ export interface StarData extends CelestialBody {
   type: 'Star';
   luminosity?: number;
 }
+
+export interface MaterialProperties {
+  [key: string]: {
+    normalScale: number;
+    displacementScale: number;
+  };
+}

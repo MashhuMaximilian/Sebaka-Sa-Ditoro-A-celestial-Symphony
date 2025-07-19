@@ -1,7 +1,7 @@
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import type { PlanetData } from "@/types";
+import type { PlanetData, MaterialProperties } from "@/types";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 
 interface UpdateBodyMaterialsProps {
@@ -12,6 +12,7 @@ interface UpdateBodyMaterialsProps {
     sebakaDetailedMaterialRef: React.MutableRefObject<THREE.MeshPhongMaterial | undefined>;
     sebakaSimpleMaterialRef: React.MutableRefObject<THREE.MeshPhongMaterial | undefined>;
     viewFromSebaka: boolean;
+    materialProperties: MaterialProperties;
 }
 
 export const useUpdateBodyMaterials = ({
@@ -22,6 +23,7 @@ export const useUpdateBodyMaterials = ({
     sebakaDetailedMaterialRef,
     sebakaSimpleMaterialRef,
     viewFromSebaka,
+    materialProperties,
 }: UpdateBodyMaterialsProps) => {
 
     const elapsedHoursRef = useRef(0);
@@ -44,6 +46,22 @@ export const useUpdateBodyMaterials = ({
             }
         });
     }, [planets, planetMeshesRef, viridisOriginalColorRef]);
+
+     useEffect(() => {
+        planetMeshesRef.current.forEach((mesh) => {
+            const props = materialProperties[mesh.name];
+            if (props && mesh.material instanceof THREE.MeshPhongMaterial) {
+                if (mesh.material.normalScale && mesh.material.normalScale.x !== props.normalScale) {
+                    mesh.material.normalScale.set(props.normalScale, props.normalScale);
+                    mesh.material.needsUpdate = true;
+                }
+                if (mesh.material.displacementScale !== props.displacementScale) {
+                    mesh.material.displacementScale = props.displacementScale;
+                    mesh.material.needsUpdate = true;
+                }
+            }
+        });
+    }, [materialProperties, planetMeshesRef]);
 
 
     useEffect(() => {

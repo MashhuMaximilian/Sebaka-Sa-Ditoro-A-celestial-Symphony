@@ -2,12 +2,13 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown } from "lucide-react";
+import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings } from "lucide-react";
 
-import type { PlanetData, StarData } from "@/types";
+import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import ColorHarmonizerPanel from "@/components/color-harmonizer-panel";
 import InfoPanel from "@/components/info-panel";
+import MaterialSettingsPanel from "@/components/material-settings-panel";
 import {
   Accordion,
   AccordionContent,
@@ -21,6 +22,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -175,6 +177,19 @@ const initialPlanets: PlanetData[] = [
   },
 ];
 
+const initialMaterialProperties: MaterialProperties = {
+  Alpha: { normalScale: 1, displacementScale: 0.6 },
+  Twilight: { normalScale: 1, displacementScale: 0.2 },
+  Beacon: { normalScale: 1, displacementScale: 2.95 },
+  Rutilus: { normalScale: 1, displacementScale: 0.1 },
+  Sebaka: { normalScale: 0.1, displacementScale: 0.1 },
+  Spectris: { normalScale: 0.1, displacementScale: 0.05 },
+  Viridis: { normalScale: 2, displacementScale: 0.1 },
+  Aetheris: { normalScale: 0.15, displacementScale: 0 },
+  Gelidis: { normalScale: 0.03, displacementScale: 0.001 },
+  Liminis: { normalScale: 1, displacementScale: 0.1 },
+};
+
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
 
 export default function Home() {
@@ -182,6 +197,7 @@ export default function Home() {
   const [speedMultiplier, setSpeedMultiplier] = useState(24); // Default to 24 hours/sec (1 day/sec)
   const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
+  const [isMaterialSettingsOpen, setMaterialSettingsOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
   const [isSebakaRotating, setIsSebakaRotating] = useState(true);
   const [resetViewToggle, setResetViewToggle] = useState(false);
@@ -193,6 +209,7 @@ export default function Home() {
   const [cameraFov, setCameraFov] = useState(75);
   const [cameraTarget, setCameraTarget] = useState<string | null>(null);
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
+  const [materialProperties, setMaterialProperties] = useState(initialMaterialProperties);
 
   const [currentYear, setCurrentYear] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
@@ -471,6 +488,7 @@ export default function Home() {
         cameraTarget={cameraTarget}
         isInitialized={isInitialized}
         setIsInitialized={setIsInitialized}
+        materialProperties={materialProperties}
       />
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
@@ -484,7 +502,7 @@ export default function Home() {
         <div className="flex items-center gap-2">
             <Dialog open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
                 {selectedBody && (
-                    <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto">
+                    <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto bg-card/75 backdrop-blur-sm">
                         <DialogHeader>
                         <DialogTitle>{selectedBody.name}</DialogTitle>
                         </DialogHeader>
@@ -509,7 +527,7 @@ export default function Home() {
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto">
+                <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto bg-card/75 backdrop-blur-sm">
                     <DropdownMenuLabel>Focus Target</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
@@ -561,46 +579,74 @@ export default function Home() {
                         <p>{viewFromSebaka ? 'Exit Sebaka View' : 'View from Sebaka'}</p>
                     </TooltipContent>
                 </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={() => setIsSebakaRotating(prev => !prev)}>
-                            <RotateCw className="h-5 w-5" />
-                            <span className="sr-only">Toggle Planet Rotation</span>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>{isSebakaRotating ? 'Pause Planet Rotation' : 'Resume Planet Rotation'}</p>
-                    </TooltipContent>
-                </Tooltip>
-                 <Tooltip>
-                    <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm" onClick={handleResetView}>
-                            <Eye className="h-5 w-5" />
-                            <span className="sr-only">Reset View</span>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Reset View</p>
-                    </TooltipContent>
-                </Tooltip>
             </TooltipProvider>
 
+            <Dialog open={isMaterialSettingsOpen} onOpenChange={setMaterialSettingsOpen}>
+                <DropdownMenu>
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm">
+                                        <Settings className="h-5 w-5" />
+                                        <span className="sr-only">Settings</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Settings</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    <DropdownMenuContent className="w-56 bg-card/75 backdrop-blur-sm">
+                        <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={handleResetView}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            <span>Reset View</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => setIsSebakaRotating(prev => !prev)}>
+                            <RotateCw className="mr-2 h-4 w-4" />
+                            <span>{isSebakaRotating ? 'Pause Rotation' : 'Resume Rotation'}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <SheetTrigger asChild>
+                            <DropdownMenuItem>
+                                <Palette className="mr-2 h-4 w-4" />
+                                <span>Color Palette</span>
+                            </DropdownMenuItem>
+                        </SheetTrigger>
+                        <DialogTrigger asChild>
+                            <DropdownMenuItem>
+                               <Settings className="mr-2 h-4 w-4" />
+                                <span>Material Settings</span>
+                            </DropdownMenuItem>
+                        </DialogTrigger>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto bg-card/75 backdrop-blur-sm">
+                    <DialogHeader>
+                        <DialogTitle>Material Settings</DialogTitle>
+                    </DialogHeader>
+                    <MaterialSettingsPanel 
+                        properties={materialProperties} 
+                        onPropertiesChange={setMaterialProperties}
+                        onReset={() => setMaterialProperties(initialMaterialProperties)} 
+                    />
+                </DialogContent>
+            </Dialog>
+
             <Sheet>
-            <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="bg-background/20 backdrop-blur-sm">
-                <Palette className="h-5 w-5" />
-                <span className="sr-only">Open Color Harmonizer</span>
-                </Button>
-            </SheetTrigger>
-            <SheetContent>
-                <SheetHeader>
-                <SheetTitle>Color Harmonizer</SheetTitle>
-                <SheetDescription>
-                    Use AI to generate a new harmonious color palette for the planets.
-                </SheetDescription>
-                </SheetHeader>
-                <ColorHarmonizerPanel onApplyPalette={handleApplyPalette} />
-            </SheetContent>
+                <SheetContent className="bg-card/75 backdrop-blur-sm">
+                    <SheetHeader>
+                    <SheetTitle>Color Harmonizer</SheetTitle>
+                    <SheetDescription>
+                        Use AI to generate a new harmonious color palette for the planets.
+                    </SheetDescription>
+                    </SheetHeader>
+                    <ColorHarmonizerPanel onApplyPalette={handleApplyPalette} />
+                </SheetContent>
             </Sheet>
         </div>
       </div>
