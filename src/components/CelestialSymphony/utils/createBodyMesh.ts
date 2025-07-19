@@ -171,23 +171,13 @@ export const createBodyMesh = (
         const ringOuterRadius = body.size * 2.5;
         const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 64);
         
-        const ringTexture = textureLoader.load('/maps/iridescentring.png');
-
-        const uvs = ringGeometry.attributes.uv.array as Float32Array;
-        const positions = ringGeometry.attributes.position.array as Float32Array;
-        for (let i = 0; i < uvs.length / 2; i++) {
-            const x = positions[i * 3];
-            const y = positions[i * 3 + 1];
-            const radius = Math.sqrt(x * x + y * y);
-            uvs[i * 2] = (radius - ringInnerRadius) / (ringOuterRadius - ringInnerRadius);
-            uvs[i * 2 + 1] = Math.atan2(y, x) / (2 * Math.PI) + 0.5;
-        }
-        
-        const ringMaterial = new THREE.MeshBasicMaterial({
-            map: ringTexture,
+        const ringMaterial = new THREE.MeshPhongMaterial({
+            color: 0xaaaaaa,
+            specular: 0xffffff,
+            shininess: 100,
             side: THREE.DoubleSide,
             transparent: true,
-            opacity: 0.8,
+            opacity: 0.7,
         });
 
         const rings = new THREE.Mesh(ringGeometry, ringMaterial);
