@@ -8,21 +8,8 @@ import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import ColorHarmonizerPanel from "@/components/color-harmonizer-panel";
 import InfoPanel from "@/components/info-panel";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -493,6 +480,12 @@ export default function Home() {
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
         <SheetContent side="left" className="w-[65vw] max-w-2xl bg-card/80 backdrop-blur-lg p-0" withoutOverlay>
+            <SheetHeader className="sr-only">
+              <SheetTitle>Celestial Body Information</SheetTitle>
+              <SheetDescription>
+                Detailed information and material settings for the selected celestial body.
+              </SheetDescription>
+            </SheetHeader>
             {selectedBody && (
                 <InfoPanel 
                   data={selectedBody} 
