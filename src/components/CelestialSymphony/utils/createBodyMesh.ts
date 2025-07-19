@@ -4,54 +4,29 @@ import type { BodyData } from '../hooks/useBodyData';
 
 const textureLoader = new THREE.TextureLoader();
 
-const createStripedTexture = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 256;
-    canvas.height = 256;
-    const context = canvas.getContext('2d');
-    if (!context) return null;
-
-    context.imageSmoothingEnabled = false;
-
-    const colors = ['#A7C7E7', '#FFFFFF'];
-    const stripeWidth = canvas.width / 16;
-
-    for (let i = 0; i < 16; i++) {
-        context.fillStyle = colors[i % 2];
-        context.fillRect(i * stripeWidth, 0, stripeWidth, canvas.height);
-    }
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.NearestFilter;
-    texture.magFilter = THREE.NearestFilter;
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(1, 1);
-    return texture;
-};
-
 export const createMaterials = () => {
-    const sebakaSimpleTexture = createStripedTexture();
-    const sebakaSimpleMaterial = new THREE.MeshPhongMaterial({ map: sebakaSimpleTexture });
-    
     const sebakaDetailedMaterial = new THREE.MeshPhongMaterial({
         map: textureLoader.load('/maps/SebakaTexture.png'),
         specularMap: textureLoader.load('/maps/SebakaSpecularMap.png'),
         normalMap: textureLoader.load('/maps/SebakaNormalMap.png'),
+        normalScale: new THREE.Vector2(0.1, 0.1),
         displacementMap: textureLoader.load('/maps/SebakaDisplacementMap.png'),
         aoMap: textureLoader.load('/maps/SebakaAmbientOcclusionMap.png'),
         displacementScale: 0.1,
     });
+    
+    // Fallback material, not really used now but good to have
+    const sebakaSimpleMaterial = new THREE.MeshPhongMaterial({ color: '#0096C8' });
 
     return { sebakaDetailedMaterial, sebakaSimpleMaterial };
 }
 
 export const createBodyMesh = (
     body: BodyData,
-    sebakaDetailedMaterial: THREE.MeshStandardMaterial,
+    sebakaDetailedMaterial: THREE.MeshPhongMaterial,
     viridisOriginalColorRef: React.MutableRefObject<THREE.Color>
 ): THREE.Mesh => {
-    const geometry = new THREE.SphereGeometry(body.size, 64, 64);
+    const geometry = new THREE.SphereGeometry(body.size, 64, 64)
     let material: THREE.Material;
     
     const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: 10 };
@@ -119,6 +94,7 @@ export const createBodyMesh = (
                 textureParams.map = textureLoader.load('/maps/GelidisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/GelidisTexture_specular.png');
                 textureParams.normalMap = textureLoader.load('/maps/GelidisTexture_normal.png');
+                textureParams.normalScale = new THREE.Vector2(0.1, 0.1);
                 textureParams.displacementMap = textureLoader.load('/maps/GelidisTexture_displacement.png');
                 textureParams.aoMap = textureLoader.load('/maps/GelidisTexture_ambient.png');
                 textureParams.displacementScale = 0.1;
@@ -138,6 +114,7 @@ export const createBodyMesh = (
                 textureParams.map = textureLoader.load('/maps/SpectrisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/SpectrisTexture_specular.png');
                 textureParams.normalMap = textureLoader.load('/maps/SpectrisTexture_normal.png');
+                textureParams.normalScale = new THREE.Vector2(0.1, 0.1);
                 textureParams.displacementMap = textureLoader.load('/maps/SpectrisTexture_displacement.png');
                 textureParams.aoMap = textureLoader.load('/maps/SpectrisTexture_ambient.png');
                 textureParams.displacementScale = 0.1;
@@ -148,6 +125,7 @@ export const createBodyMesh = (
                 textureParams.map = textureLoader.load('/maps/ViridisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/ViridisTexture_specular.png');
                 textureParams.normalMap = textureLoader.load('/maps/ViridisTexture_normal.png');
+                textureParams.normalScale = new THREE.Vector2(2, 2);
                 textureParams.displacementMap = textureLoader.load('/maps/ViridisTexture_displacement.png');
                 textureParams.aoMap = textureLoader.load('/maps/ViridisTexture_ambient.png');
                 textureParams.displacementScale = 0.1;
