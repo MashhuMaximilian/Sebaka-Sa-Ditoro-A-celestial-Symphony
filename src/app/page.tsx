@@ -164,16 +164,16 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0 },
-  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2 },
-  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10 },
-  Rutilus: { normalScale: 1, displacementScale: 0.1 },
-  Sebaka: { normalScale: 0.1, displacementScale: 0.1 },
-  Spectris: { normalScale: 0.1, displacementScale: 0.05 },
-  Viridis: { normalScale: 2, displacementScale: 0.1 },
-  Aetheris: { normalScale: 0.15, displacementScale: 0 },
-  Gelidis: { normalScale: 0.03, displacementScale: 0.001 },
-  Liminis: { normalScale: 1, displacementScale: 0.1 },
+  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, specularMap: false, aoMap: false },
+  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, specularMap: false, aoMap: false },
+  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, specularMap: false, aoMap: false },
+  Rutilus: { normalScale: 1, displacementScale: 0.1, specularMap: false, aoMap: false },
+  Sebaka: { normalScale: 0.1, displacementScale: 0.1, specularMap: true, aoMap: false },
+  Spectris: { normalScale: 0.1, displacementScale: 0.05, specularMap: false, aoMap: false },
+  Viridis: { normalScale: 2, displacementScale: 0.1, specularMap: false, aoMap: false },
+  Aetheris: { normalScale: 0.15, displacementScale: 0, specularMap: true, aoMap: true },
+  Gelidis: { normalScale: 0.03, displacementScale: 0.001, specularMap: false, aoMap: false },
+  Liminis: { normalScale: 1, displacementScale: 0.1, specularMap: true, aoMap: true },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
@@ -489,7 +489,7 @@ export default function Home() {
             {selectedBody && (
                 <InfoPanel 
                   data={selectedBody} 
-                  properties={properties}
+                  properties={materialProperties}
                   onPropertiesChange={setMaterialProperties}
                   onReset={() => setMaterialProperties(initialMaterialProperties)}
                 />
@@ -705,3 +705,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
