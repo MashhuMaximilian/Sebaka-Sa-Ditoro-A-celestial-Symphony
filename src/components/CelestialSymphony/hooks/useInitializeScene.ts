@@ -71,35 +71,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         controls.target.set(0, 0, 0);
         controlsRef.current = controls;
         
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.02);
-        scene.add(ambientLight);
-
-        const goldenGiverLight = new THREE.DirectionalLight(0xfff8e7, 1.8);
-        goldenGiverLight.castShadow = true;
-        goldenGiverLight.shadow.mapSize.width = 2048;
-        goldenGiverLight.shadow.mapSize.height = 2048;
-        goldenGiverLight.shadow.camera.near = 0.5;
-        goldenGiverLight.shadow.camera.far = 500;
-        goldenGiverLight.shadow.camera.left = -50;
-        goldenGiverLight.shadow.camera.right = 50;
-        goldenGiverLight.shadow.camera.top = 50;
-        goldenGiverLight.shadow.camera.bottom = -50;
-        scene.add(goldenGiverLight);
-        goldenGiverLightRef.current = goldenGiverLight;
+        // Lighting is now handled by custom shaders per-planet. No scene-wide lights needed.
         
-        const twilightLight = new THREE.DirectionalLight(0xfff0d4, 1.0);
-        twilightLight.castShadow = true;
-        twilightLight.shadow.mapSize.width = 1024;
-        twilightLight.shadow.mapSize.height = 1024;
-        twilightLight.shadow.camera.near = 0.5;
-        twilightLight.shadow.camera.far = 500;
-        twilightLight.shadow.camera.left = -40;
-        twilightLight.shadow.camera.right = 40;
-        twilightLight.shadow.camera.top = 40;
-        twilightLight.shadow.camera.bottom = -40;
-        scene.add(twilightLight);
-        twilightLightRef.current = twilightLight;
-
         // Clear previous objects if any
         allBodiesRef.current.forEach(obj => scene.remove(obj));
         orbitMeshesRef.current.forEach(obj => scene.remove(obj));

@@ -68,7 +68,7 @@ export const useUpdateBodyMaterials = ({
 
     useEffect(() => {
         const viridisMesh = planetMeshesRef.current.find(p => p.name === 'Viridis');
-        if (!viridisMesh || !(viridisMesh.material instanceof THREE.MeshPhongMaterial)) return;
+        if (!viridisMesh || !(viridisMesh.material instanceof THREE.ShaderMaterial)) return;
 
         let isCancelled = false;
 
@@ -79,6 +79,8 @@ export const useUpdateBodyMaterials = ({
             elapsedHoursRef.current += deltaTime * 24; // Assuming 1 day/sec for this animation's timing
             const elapsedDays = elapsedHoursRef.current / HOURS_IN_SEBAKA_DAY;
 
+            const material = viridisMesh.material as THREE.ShaderMaterial;
+            
             if (isViridisAnimationActive) {
                 const cycleDurationDays = 27;
                 const currentDayInCycle = elapsedDays % cycleDurationDays;
@@ -96,26 +98,12 @@ export const useUpdateBodyMaterials = ({
                     brightnessFactor = 0.1 + ((currentDayInCycle - phaseDuration * 2) / phaseDuration) * 0.9;
                 }
                 
-                const material = viridisMesh.material as THREE.MeshPhongMaterial;
-                if (material.map) {
-                    const originalColor = new THREE.Color(0xffffff);
-                    const targetColor = originalColor.clone().multiplyScalar(brightnessFactor);
-                    material.color.lerp(targetColor, 0.1);
-                } else {
-                     const targetColor = viridisOriginalColorRef.current.clone().multiplyScalar(brightnessFactor);
-                     material.color.lerp(targetColor, 0.1);
-                     material.emissive.lerp(targetColor, 0.1);
-                     material.emissiveIntensity = THREE.MathUtils.lerp(material.emissiveIntensity, brightnessFactor, 0.1);
-                }
+                material.uniforms.alphaIntensity.value = THREE.MathUtils.lerp(material.uniforms.alphaIntensity.value, 1.8 * brightnessFactor, 0.1);
+                material.uniforms.twilightIntensity.value = THREE.MathUtils.lerp(material.uniforms.twilightIntensity.value, 1.0 * brightnessFactor, 0.1);
+
             } else {
-                const material = viridisMesh.material as THREE.MeshPhongMaterial;
-                if (material.map) {
-                    material.color.lerp(new THREE.Color(0xffffff), 0.1);
-                } else {
-                    material.color.lerp(viridisOriginalColorRef.current, 0.1);
-                    material.emissive.lerp(new THREE.Color(0x000000), 0.1);
-                    material.emissiveIntensity = THREE.MathUtils.lerp(material.emissiveIntensity, 0, 0.1);
-                }
+                 material.uniforms.alphaIntensity.value = THREE.MathUtils.lerp(material.uniforms.alphaIntensity.value, 1.8, 0.1);
+                 material.uniforms.twilightIntensity.value = THREE.MathUtils.lerp(material.uniforms.twilightIntensity.value, 1.0, 0.1);
             }
         };
 
@@ -127,6 +115,6 @@ export const useUpdateBodyMaterials = ({
                 cancelAnimationFrame(animationFrameId.current);
             }
         };
-    }, [isViridisAnimationActive, planetMeshesRef, viridisOriginalColorRef]);
+    }, [isViridisAnimationActive, planetMeshesRef]);
 
 };

@@ -56,8 +56,6 @@ export const useAnimationLoop = ({
   beaconPositionRef,
   sebakaRadiusRef,
   isInitialized,
-  goldenGiverLightRef,
-  twilightLightRef
 }: AnimationLoopParams) => {
   const clockRef = useRef(new THREE.Clock());
   const elapsedHoursRef = useRef(0);
@@ -103,13 +101,16 @@ export const useAnimationLoop = ({
       updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
 
       const goldenGiverMesh = allBodiesRef.current.find(b => b.name === 'Alpha');
-      if (goldenGiverMesh && goldenGiverLightRef.current) {
-        goldenGiverLightRef.current.position.copy(goldenGiverMesh.position);
-      }
-
       const twilightMesh = allBodiesRef.current.find(b => b.name === 'Twilight');
-      if (twilightMesh && twilightLightRef.current) {
-        twilightLightRef.current.position.copy(twilightMesh.position);
+      
+      // Update shader uniforms for all planets
+      if (goldenGiverMesh && twilightMesh) {
+          planetMeshesRef.current.forEach(planetMesh => {
+              if (planetMesh.material instanceof THREE.ShaderMaterial) {
+                  planetMesh.material.uniforms.alphaStarPos.value.copy(goldenGiverMesh.position);
+                  planetMesh.material.uniforms.twilightStarPos.value.copy(twilightMesh.position);
+              }
+          });
       }
       
       if (isSebakaRotatingRef.current) {
@@ -206,7 +207,5 @@ export const useAnimationLoop = ({
     sebakaRadiusRef, 
     onTimeUpdate,
     isInitialized,
-    goldenGiverLightRef,
-    twilightLightRef
   ]);
 };
