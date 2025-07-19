@@ -38,7 +38,9 @@ export const createGridTexture = (size = 512, lines = 12) => {
         context.stroke();
     }
 
-    return new THREE.CanvasTexture(canvas);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    return texture;
 };
 
 export const createBodyMesh = (
@@ -49,6 +51,7 @@ export const createBodyMesh = (
     sebakaGridTexture: THREE.CanvasTexture | null,
 ): THREE.Mesh => {
     const geometry = new THREE.SphereGeometry(body.size, 64, 64);
+    geometry.computeTangents();
     let material: THREE.Material;
     
     const bodyProps = materialProperties[body.name];
@@ -77,39 +80,55 @@ export const createBodyMesh = (
     } else { // It's a planet
         const uniforms = THREE.UniformsUtils.clone(planetShader.uniforms);
         let textureUrl = '';
+        let normalMapUrl: string | null = null;
+        let displacementMapUrl: string | null = null;
+
 
         switch (body.name) {
-            case 'Aetheris': textureUrl = '/maps/AetherisTexture.png'; break;
-            case 'Gelidis': textureUrl = '/maps/GelidisTexture.png'; break;
-            case 'Rutilus': textureUrl = '/maps/RutiliusTexture.png'; break;
-            case 'Spectris': textureUrl = '/maps/SpectrisTexture.png'; break;
-            case 'Viridis': textureUrl = '/maps/ViridisTexture.png'; break;
-            case 'Liminis': textureUrl = '/maps/LiminisTexture.png'; break;
-            case 'Sebaka': textureUrl = '/maps/SebakaTexture.png'; break;
+            case 'Aetheris': 
+                textureUrl = '/maps/AetherisTexture.png';
+                break;
+            case 'Gelidis': 
+                textureUrl = '/maps/GelidisTexture.png'; 
+                break;
+            case 'Rutilus': 
+                textureUrl = '/maps/RutiliusTexture.png';
+                break;
+            case 'Spectris': 
+                textureUrl = '/maps/SpectrisTexture.png'; 
+                break;
+            case 'Viridis': 
+                textureUrl = '/maps/ViridisTexture.png';
+                break;
+            case 'Liminis': 
+                textureUrl = '/maps/LiminisTexture.png';
+                break;
+            case 'Sebaka': 
+                textureUrl = '/maps/SebakaTexture.png';
+                break;
         }
 
-        if (body.name === 'Sebaka') {
-             const sebakaDetailedMaterial = new THREE.ShaderMaterial({
-                uniforms: uniforms,
-                vertexShader: planetShader.vertexShader,
-                fragmentShader: planetShader.fragmentShader,
-            });
-            uniforms.planetTexture.value = textureLoader.load('/maps/SebakaTexture.png');
+        material = new THREE.ShaderMaterial({
+            uniforms: uniforms,
+            vertexShader: planetShader.vertexShader,
+            fragmentShader: planetShader.fragmentShader,
+            transparent: body.name === 'Spectris', // For rings
+        });
 
-            const sebakaSimpleMaterial = new THREE.MeshPhongMaterial({
-                color: '#0096C8',
-                map: sebakaGridTexture,
-                transparent: true,
-            });
-            material = viewFromSebaka ? sebakaSimpleMaterial : sebakaDetailedMaterial;
-        } else {
-             material = new THREE.ShaderMaterial({
-                uniforms: uniforms,
-                vertexShader: planetShader.vertexShader,
-                fragmentShader: planetShader.fragmentShader,
-                transparent: body.name === 'Spectris', // For rings
-            });
-            if(textureUrl) uniforms.planetTexture.value = textureLoader.load(textureUrl);
+        if(textureUrl) uniforms.planetTexture.value = textureLoader.load(textureUrl);
+
+        if(body.name === 'Sebaka'){
+            uniforms.gridTexture.value = sebakaGridTexture;
+            uniforms.useGrid.value = viewFromSebaka;
+        }
+        
+        // Pass initial slider values to shader
+        if (bodyProps) {
+            uniforms.normalScale.value.set(bodyProps.normalScale, bodyProps.normalScale);
+            uniforms.displacementScale.value = bodyProps.displacementScale;
+
+            // Load maps if they exist
+            // Example: if (body.name === 'Sebaka') { uniforms.normalMap.value = textureLoader.load(...); }
         }
     }
     

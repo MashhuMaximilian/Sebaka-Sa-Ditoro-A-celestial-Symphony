@@ -29,38 +29,27 @@ export const useUpdateBodyMaterials = ({
     useEffect(() => {
         planetMeshesRef.current.forEach((mesh) => {
             const planetData = planets.find(p => p.name === mesh.name);
-            if (planetData && mesh.material instanceof THREE.MeshPhongMaterial) {
-                if (mesh.name === 'Sebaka') return;
-                
-                if (!mesh.material.map) {
-                     mesh.material.color.set(planetData.color);
-                }
-        
-                if (mesh.name === 'Viridis' && !mesh.material.map) {
-                    viridisOriginalColorRef.current.set(planetData.color);
-                }
-            }
+            // This effect is for color changes, which we are not currently doing with shaders.
+            // If color needs to be a uniform, it would be set here.
         });
-    }, [planets, planetMeshesRef, viridisOriginalColorRef]);
+    }, [planets, planetMeshesRef]);
 
      useEffect(() => {
         planetMeshesRef.current.forEach((mesh) => {
             const props = materialProperties[mesh.name];
-            if (props && mesh.material instanceof THREE.MeshPhongMaterial) {
+            if (props && mesh.material instanceof THREE.ShaderMaterial) {
+                const uniforms = (mesh.material as THREE.ShaderMaterial).uniforms;
+
+                if (props.normalScale !== undefined && uniforms.normalScale.value.x !== props.normalScale) {
+                    uniforms.normalScale.value.set(props.normalScale, props.normalScale);
+                }
+
+                if (props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
+                    uniforms.displacementScale.value = props.displacementScale;
+                }
                 
-                if (props.normalScale !== undefined && mesh.material.normalScale?.x !== props.normalScale) {
-                    mesh.material.normalScale.set(props.normalScale, props.normalScale);
-                }
-
-                if (props.displacementScale !== undefined && mesh.material.displacementScale !== props.displacementScale) {
-                    mesh.material.displacementScale = props.displacementScale;
-                }
-
-                if (props.emissiveIntensity !== undefined && mesh.material.emissiveIntensity !== props.emissiveIntensity) {
-                    mesh.material.emissiveIntensity = props.emissiveIntensity;
-                }
-
-                mesh.material.needsUpdate = true;
+                // Note: emissiveIntensity is handled for stars in createBodyMesh
+                // but could be controlled here if planets were to become emissive.
             }
         });
     }, [materialProperties, planetMeshesRef]);
@@ -116,5 +105,14 @@ export const useUpdateBodyMaterials = ({
             }
         };
     }, [isViridisAnimationActive, planetMeshesRef]);
+
+    // This effect handles toggling the grid view on Sebaka
+    useEffect(() => {
+        const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+        if (sebakaMesh && sebakaMesh.material instanceof THREE.ShaderMaterial) {
+            const uniforms = (sebakaMesh.material as THREE.ShaderMaterial).uniforms;
+            uniforms.useGrid.value = viewFromSebaka;
+        }
+    }, [viewFromSebaka, planetMeshesRef]);
 
 };

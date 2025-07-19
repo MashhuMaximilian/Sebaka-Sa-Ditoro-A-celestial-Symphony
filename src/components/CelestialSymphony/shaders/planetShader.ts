@@ -16,21 +16,43 @@ export const planetShader = {
     
     // Planet properties
     planetTexture: { value: null },
-    ambientLevel: { value: 0.02 }
+    gridTexture: { value: null },
+    useGrid: { value: false },
+    ambientLevel: { value: 0.02 },
+
+    // Normal and displacement maps
+    normalMap: { value: null },
+    normalScale: { value: new THREE.Vector2(1, 1) },
+    displacementMap: { value: null },
+    displacementScale: { value: 1.0 },
   },
   
   vertexShader: `
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying vec2 vUv;
-    
+    varying mat3 vTBN;
+
+    uniform sampler2D displacementMap;
+    uniform float displacementScale;
+
     void main() {
       vUv = uv;
-      // Calculate the normal in world space, not view space
-      vNormal = normalize( mat3(modelMatrix) * normal );
-      vWorldPosition = (modelMatrix * vec4(position, 1.0)).xyz;
+      vNormal = normalize( normalMatrix * normal );
+
+      vec3 tangent = normalize( normalMatrix * tangent.xyz );
+      vec3 bitangent = cross( vNormal, tangent );
+      vTBN = mat3( tangent, bitangent, vNormal );
       
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      // Apply displacement mapping
+      vec3 displacedPosition = position;
+      if (displacementScale > 0.0) {
+        displacedPosition += normal * texture2D(displacementMap, uv).r * displacementScale;
+      }
+
+      vWorldPosition = (modelMatrix * vec4(displacedPosition, 1.0)).xyz;
+      
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(displacedPosition, 1.0);
     }
   `,
   
@@ -44,27 +66,48 @@ export const planetShader = {
     uniform float alphaIntensity;
     uniform float twilightIntensity;
     uniform float beaconIntensity;
+    
     uniform sampler2D planetTexture;
+    uniform sampler2D gridTexture;
+    uniform bool useGrid;
+
     uniform float ambientLevel;
+
+    uniform sampler2D normalMap;
+    uniform vec2 normalScale;
     
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying vec2 vUv;
+    varying mat3 vTBN;
     
     void main() {
       // Get base texture color
       vec4 texColor = texture2D(planetTexture, vUv);
       vec3 baseColor = texColor.rgb;
+
+      if (useGrid) {
+        vec4 gridColor = texture2D(gridTexture, vUv);
+        baseColor = mix(baseColor, gridColor.rgb, gridColor.a * 0.5); // Blend grid over texture
+      }
       
+      // Get normal from normal map
+      vec3 normal = vNormal;
+      if (texture2D(normalMap, vUv).r > 0.0) { // Check if normal map exists
+          vec3 mapN = texture2D(normalMap, vUv).xyz * 2.0 - 1.0;
+          mapN.xy *= normalScale;
+          normal = normalize(vTBN * mapN);
+      }
+
       // Calculate directions to each star
       vec3 alphaDir = normalize(alphaStarPos - vWorldPosition);
       vec3 twilightDir = normalize(twilightStarPos - vWorldPosition);
       vec3 beaconDir = normalize(beaconStarPos - vWorldPosition);
       
       // Calculate dot products (how much each star illuminates this surface)
-      float alphaDot = max(dot(vNormal, alphaDir), 0.0);
-      float twilightDot = max(dot(vNormal, twilightDir), 0.0);
-      float beaconDot = max(dot(vNormal, beaconDir), 0.0);
+      float alphaDot = max(dot(normal, alphaDir), 0.0);
+      float twilightDot = max(dot(normal, twilightDir), 0.0);
+      float beaconDot = max(dot(normal, beaconDir), 0.0);
       
       // Calculate distance attenuation (simplified)
       float alphaDist = length(alphaStarPos - vWorldPosition);
