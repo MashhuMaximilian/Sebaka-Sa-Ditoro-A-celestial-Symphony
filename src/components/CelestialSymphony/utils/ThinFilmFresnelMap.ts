@@ -100,11 +100,11 @@ export class ThinFilmFresnelMap {
     this._substrateIor = substrateIor;
     this._size = size;
 
-    this._data = new Uint8Array(this._size * 4);
+    this._data = new Uint8Array(this._size * this._size * 4);
     this.texture = new THREE.DataTexture(
       this._data,
       this._size,
-      1,
+      this._size,
       THREE.RGBAFormat
     );
     this.texture.needsUpdate = true;
@@ -117,21 +117,23 @@ export class ThinFilmFresnelMap {
     const size = this._size;
 
     for (let i = 0; i < size; i++) {
-      const cos_theta = i / (size - 1);
-      const lambda = new THREE.Vector3(700.0, 550.0, 440.0); // RGB wavelengths
-
-      const reflectance = evalFilm(
-        this._filmThickness,
-        cos_theta,
-        filmEta / substrateEta,
-        lambda
-      );
-      this._data[i * 4 + 0] = Math.min(255, reflectance.x * 255);
-      this._data[i * 4 + 1] = Math.min(255, reflectance.y * 255);
-      this._data[i * 4 + 2] = Math.min(255, reflectance.z * 255);
-      this._data[i * 4 + 3] = 255;
+        for (let j = 0; j < size; j++) {
+            const cos_theta = i / (size - 1);
+            const thickness = j * 2000.0 / (size -1);
+            const lambda = new THREE.Vector3(700.0, 550.0, 440.0); // RGB wavelengths
+            const reflectance = evalFilm(
+                thickness,
+                cos_theta,
+                filmEta / substrateEta,
+                lambda
+            );
+            const index = (i * size + j) * 4;
+            this._data[index + 0] = Math.min(255, reflectance.x * 255);
+            this._data[index + 1] = Math.min(255, reflectance.y * 255);
+            this._data[index + 2] = Math.min(255, reflectance.z * 255);
+            this._data[index + 3] = 255;
+        }
     }
-
     this.texture.needsUpdate = true;
   }
 }

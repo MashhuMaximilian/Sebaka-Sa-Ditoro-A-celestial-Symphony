@@ -30,7 +30,7 @@ export const createBodyMesh = (
     let material: THREE.Material;
     
     const bodyProps = materialProperties[body.name];
-    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: bodyProps?.shininess || 10 };
+    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: 10 };
 
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
@@ -80,9 +80,7 @@ export const createBodyMesh = (
 
     } else { 
         const planetName = body.name;
-        const textureParams: THREE.MeshPhongMaterialParameters = {
-            shininess: bodyProps.shininess
-        };
+        const textureParams: THREE.MeshPhongMaterialParameters = {};
         
         switch (planetName) {
             case 'Aetheris':
@@ -167,7 +165,7 @@ export const createBodyMesh = (
         if (planetName !== 'Sebaka') {
             material = new THREE.MeshPhongMaterial({ ...materialOptions, ...textureParams });
         }
-        if (textureParams.normalMap || textureParams.displacementMap || bodyProps.aoMapIntensity > 0) {
+        if (textureParams.normalMap || textureParams.displacementMap ) {
             geometry.computeTangents();
         }
     }
@@ -197,7 +195,7 @@ export const createBodyMesh = (
             uniforms: {
                 time: { value: 0 },
                 viewVector: { value: new THREE.Vector3() },
-                ringCount: { value: 80.0 }, // number of bands
+                ringCount: { value: 80.0 },
                 iridescenceMap: { value: iridescenceMap.texture }
             },
             vertexShader: `
@@ -220,7 +218,7 @@ export const createBodyMesh = (
                 float rand(float x){ return fract(sin(x*91.17)*43758.545); }
 
                 void main(){
-                  float dist = length(vUv - 0.5) * 2.0;
+                  float dist = vUv.y;
 
                   float idx = floor(dist*ringCount);
                   float seed = rand(idx);
@@ -250,4 +248,3 @@ export const createBodyMesh = (
     
     return mesh;
 };
-

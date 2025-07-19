@@ -638,7 +638,7 @@ export default function Home() {
                               key={panelId}
                               onClick={() => handleSebakaPanelToggle(panelId)}
                               variant={activeSebakaPanel === panelId ? "secondary" : "default"}
-                              className="bg-transparent backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 flex-1 basis-1/3 capitalize"
+                              className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 flex-1 basis-1/3 capitalize"
                           >
                               {panelId}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
