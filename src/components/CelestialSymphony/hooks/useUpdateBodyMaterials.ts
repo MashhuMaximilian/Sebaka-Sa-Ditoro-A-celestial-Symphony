@@ -9,8 +9,8 @@ interface UpdateBodyMaterialsProps {
     planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     viridisOriginalColorRef: React.MutableRefObject<THREE.Color>;
     isViridisAnimationActive: boolean;
-    sebakaDetailedMaterialRef: React.MutableRefObject<THREE.MeshStandardMaterial | undefined>;
-    sebakaSimpleMaterialRef: React.MutableRefObject<THREE.MeshStandardMaterial | undefined>;
+    sebakaDetailedMaterialRef: React.MutableRefObject<THREE.MeshPhongMaterial | undefined>;
+    sebakaSimpleMaterialRef: React.MutableRefObject<THREE.MeshPhongMaterial | undefined>;
     viewFromSebaka: boolean;
 }
 
@@ -31,7 +31,7 @@ export const useUpdateBodyMaterials = ({
     useEffect(() => {
         planetMeshesRef.current.forEach((mesh) => {
             const planetData = planets.find(p => p.name === mesh.name);
-            if (planetData && mesh.material instanceof THREE.MeshStandardMaterial) {
+            if (planetData && mesh.material instanceof THREE.MeshPhongMaterial) {
                 if (mesh.name === 'Sebaka') return;
                 
                 if (!mesh.material.map) {
@@ -48,7 +48,7 @@ export const useUpdateBodyMaterials = ({
 
     useEffect(() => {
         const viridisMesh = planetMeshesRef.current.find(p => p.name === 'Viridis');
-        if (!viridisMesh || !(viridisMesh.material instanceof THREE.MeshStandardMaterial)) return;
+        if (!viridisMesh || !(viridisMesh.material instanceof THREE.MeshPhongMaterial)) return;
 
         let isCancelled = false;
 
@@ -76,7 +76,7 @@ export const useUpdateBodyMaterials = ({
                     brightnessFactor = 0.1 + ((currentDayInCycle - phaseDuration * 2) / phaseDuration) * 0.9;
                 }
                 
-                const material = viridisMesh.material as THREE.MeshStandardMaterial;
+                const material = viridisMesh.material as THREE.MeshPhongMaterial;
                 if (material.map) {
                     const originalColor = new THREE.Color(0xffffff);
                     const targetColor = originalColor.clone().multiplyScalar(brightnessFactor);
@@ -88,7 +88,7 @@ export const useUpdateBodyMaterials = ({
                      material.emissiveIntensity = THREE.MathUtils.lerp(material.emissiveIntensity, brightnessFactor, 0.1);
                 }
             } else {
-                const material = viridisMesh.material as THREE.MeshStandardMaterial;
+                const material = viridisMesh.material as THREE.MeshPhongMaterial;
                 if (material.map) {
                     material.color.lerp(new THREE.Color(0xffffff), 0.1);
                 } else {
