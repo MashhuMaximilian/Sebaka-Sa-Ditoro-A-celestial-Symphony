@@ -17,7 +17,7 @@ import { Button } from "./ui/button";
 
 interface InfoPanelProps {
   data: PlanetData | StarData;
-  properties: MaterialProperties;
+  materialProperties: MaterialProperties;
   onPropertiesChange: (newProperties: MaterialProperties) => void;
   onReset: () => void;
 }
@@ -27,13 +27,13 @@ const bodiesWithSettings = [
   'Spectris', 'Viridis', 'Aetheris', 'Gelidis', 'Liminis'
 ];
 
-const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelProps) => {
+const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: InfoPanelProps) => {
 
   const handleSliderChange = (bodyName: string, propName: keyof MaterialProperties[string], value: number[]) => {
     const newProps = {
-      ...properties,
+      ...materialProperties,
       [bodyName]: {
-        ...properties[bodyName],
+        ...materialProperties[bodyName],
         [propName]: value[0]
       }
     };
@@ -41,7 +41,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
   };
   
   const renderMaterialSettings = () => {
-    const bodyProps = properties[data.name];
+    const bodyProps = materialProperties[data.name];
     if (!bodyProps || !bodiesWithSettings.includes(data.name)) return null;
     
     return (
@@ -80,35 +80,6 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
                     <span className="text-xs font-mono w-12 text-center">{bodyProps.displacementScale.toFixed(2)}</span>
                 </div>
               </div>
-               <div className="grid gap-2">
-                <Label htmlFor={`${data.name}-shininess`}>Shininess</Label>
-                 <div className="flex items-center gap-2">
-                    <Slider
-                      id={`${data.name}-shininess`}
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={[bodyProps.shininess]}
-                      onValueChange={(value) => handleSliderChange(data.name, 'shininess', value)}
-                    />
-                    <span className="text-xs font-mono w-12 text-center">{bodyProps.shininess.toFixed(0)}</span>
-                </div>
-              </div>
-               <div className="grid gap-2">
-                <Label htmlFor={`${data.name}-ao`}>Ambient Occlusion</Label>
-                 <div className="flex items-center gap-2">
-                    <Slider
-                      id={`${data.name}-ao`}
-                      min={0}
-                      max={2}
-                      step={0.01}
-                      value={[bodyProps.aoMapIntensity]}
-                      onValueChange={(value) => handleSliderChange(data.name, 'aoMapIntensity', value)}
-                      disabled={!bodyProps.aoMap}
-                    />
-                    <span className="text-xs font-mono w-12 text-center">{bodyProps.aoMapIntensity.toFixed(2)}</span>
-                </div>
-              </div>
                {data.type === 'Star' && (
                 <div className="grid gap-2">
                   <Label htmlFor={`${data.name}-emissive`}>Emissive Intensity</Label>
@@ -136,7 +107,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
   }
 
   return (
-    <ScrollArea className="h-full w-full p-6 backdrop-blur-lg">
+    <ScrollArea className="h-full w-full p-6">
       <div className="space-y-6 text-sm">
         <h2 className="text-2xl font-bold">{data.name}</h2>
         <div className="space-y-2">
@@ -183,3 +154,5 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
 };
 
 export default InfoPanel;
+
+    

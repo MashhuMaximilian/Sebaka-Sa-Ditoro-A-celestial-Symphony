@@ -164,16 +164,16 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
-  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
-  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
-  Rutilus: { normalScale: 1, displacementScale: 0.1, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
-  Sebaka: { normalScale: 0.1, displacementScale: 0.1, specularMap: true, aoMap: false, aoMapIntensity: 0, shininess: 30 },
-  Spectris: { normalScale: 0.1, displacementScale: 0.05, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
-  Viridis: { normalScale: 2, displacementScale: 0.1, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
-  Aetheris: { normalScale: 0.15, displacementScale: 0, specularMap: true, aoMap: true, aoMapIntensity: 1, shininess: 10 },
-  Gelidis: { normalScale: 0.03, displacementScale: 0.001, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
-  Liminis: { normalScale: 1, displacementScale: 0.1, specularMap: true, aoMap: true, aoMapIntensity: 1, shininess: 80 },
+  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, specularMap: false },
+  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, specularMap: false },
+  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, specularMap: false },
+  Rutilus: { normalScale: 1, displacementScale: 0.1, specularMap: false },
+  Sebaka: { normalScale: 0.1, displacementScale: 0.1, specularMap: true },
+  Spectris: { normalScale: 0.1, displacementScale: 0.05, specularMap: false },
+  Viridis: { normalScale: 2, displacementScale: 0.1, specularMap: false },
+  Aetheris: { normalScale: 0.15, displacementScale: 0, specularMap: true, aoMap: true },
+  Gelidis: { normalScale: 0.03, displacementScale: 0.001, specularMap: false },
+  Liminis: { normalScale: 1, displacementScale: 0.1, specularMap: true, aoMap: true },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
@@ -314,7 +314,7 @@ export default function Home() {
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
             <>
-                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label className="text-sm font-medium text-foreground min-w-20 text-center">
                         Go to Time
                     </Label>
@@ -338,7 +338,7 @@ export default function Home() {
                     />
                     <Button onClick={handleGoToTime}>Go</Button>
                 </div>
-                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="speed-input" className="text-sm font-medium text-foreground min-w-20 text-center">
                         Speed (hrs/s)
                     </Label>
@@ -368,7 +368,7 @@ export default function Home() {
         ),
         look: (
             <>
-                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-angle-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Look Up/Down
                     </Label>
@@ -383,7 +383,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{cameraPitch.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Look Left/Right
                     </Label>
@@ -398,7 +398,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{cameraYaw.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="fov-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Field of View
                     </Label>
@@ -417,7 +417,7 @@ export default function Home() {
         ),
         move: (
             <>
-                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="latitude-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Latitude
                     </Label>
@@ -432,7 +432,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{latitude.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="longitude-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Longitude
                     </Label>
@@ -479,7 +479,7 @@ export default function Home() {
       />
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
-        <SheetContent side="left" className="w-[65vw] max-w-2xl p-0" withoutOverlay>
+        <SheetContent side="left" className="w-[65vw] max-w-2xl p-0 backdrop-blur-lg" withoutOverlay>
             <SheetHeader className="sr-only">
               <SheetTitle>Celestial Body Information</SheetTitle>
               <SheetDescription>
@@ -489,7 +489,7 @@ export default function Home() {
             {selectedBody && (
                 <InfoPanel 
                   data={selectedBody} 
-                  properties={materialProperties}
+                  materialProperties={materialProperties}
                   onPropertiesChange={setMaterialProperties}
                   onReset={() => setMaterialProperties(initialMaterialProperties)}
                 />
@@ -649,7 +649,7 @@ export default function Home() {
               </div>
           ) : (
             <>
-              <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-card backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label className="text-sm font-medium text-foreground min-w-20 text-center">
                       Go to Time
                   </Label>
@@ -673,7 +673,7 @@ export default function Home() {
                   />
                   <Button onClick={handleGoToTime}>Go</Button>
               </div>
-              <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-card backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label htmlFor="speed-input" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Speed (hrs/s)
                   </Label>
@@ -705,3 +705,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
