@@ -8,7 +8,6 @@ import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import ColorHarmonizerPanel from "@/components/color-harmonizer-panel";
 import InfoPanel from "@/components/info-panel";
-import MaterialSettingsPanel from "@/components/material-settings-panel";
 import {
   Accordion,
   AccordionContent,
@@ -197,7 +196,6 @@ export default function Home() {
   const [speedMultiplier, setSpeedMultiplier] = useState(24); // Default to 24 hours/sec (1 day/sec)
   const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
-  const [isMaterialSettingsOpen, setMaterialSettingsOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
   const [isSebakaRotating, setIsSebakaRotating] = useState(true);
   const [resetViewToggle, setResetViewToggle] = useState(false);
@@ -295,6 +293,8 @@ export default function Home() {
             setCameraYaw(0);
             setCameraFov(75);
             setActiveSebakaPanel(null);
+          } else {
+            if(isInfoPanelOpen) setInfoPanelOpen(false);
           }
           return newView;
       })
@@ -490,6 +490,20 @@ export default function Home() {
         setIsInitialized={setIsInitialized}
         materialProperties={materialProperties}
       />
+
+      <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
+        <SheetContent side="left" className="w-[65vw] max-w-2xl bg-card/80 backdrop-blur-lg p-0" withoutOverlay>
+            {selectedBody && (
+                <InfoPanel 
+                  data={selectedBody} 
+                  properties={materialProperties}
+                  onPropertiesChange={setMaterialProperties}
+                  onReset={() => setMaterialProperties(initialMaterialProperties)}
+                />
+            )}
+        </SheetContent>
+      </Sheet>
+
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
           <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary-foreground/90 tracking-tighter">
@@ -500,16 +514,6 @@ export default function Home() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-            <Dialog open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
-                {selectedBody && (
-                    <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto bg-card/75 backdrop-blur-sm">
-                        <DialogHeader>
-                        <DialogTitle>{selectedBody.name}</DialogTitle>
-                        </DialogHeader>
-                        <InfoPanel data={selectedBody} />
-                    </DialogContent>
-                )}
-            </Dialog>
             
             <DropdownMenu>
                 <TooltipProvider>
@@ -581,8 +585,8 @@ export default function Home() {
                 </Tooltip>
             </TooltipProvider>
 
-            <Dialog open={isMaterialSettingsOpen} onOpenChange={setMaterialSettingsOpen}>
-                <DropdownMenu>
+            <Sheet>
+                 <DropdownMenu>
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -616,29 +620,10 @@ export default function Home() {
                                 <span>Color Palette</span>
                             </DropdownMenuItem>
                         </SheetTrigger>
-                        <DialogTrigger asChild>
-                            <DropdownMenuItem>
-                               <Settings className="mr-2 h-4 w-4" />
-                                <span>Material Settings</span>
-                            </DropdownMenuItem>
-                        </DialogTrigger>
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <DialogContent className="max-w-xl max-h-[80vh] overflow-y-auto bg-card/75 backdrop-blur-sm">
-                    <DialogHeader>
-                        <DialogTitle>Material Settings</DialogTitle>
-                    </DialogHeader>
-                    <MaterialSettingsPanel 
-                        properties={materialProperties} 
-                        onPropertiesChange={setMaterialProperties}
-                        onReset={() => setMaterialProperties(initialMaterialProperties)} 
-                    />
-                </DialogContent>
-            </Dialog>
-
-            <Sheet>
-                <SheetContent className="bg-card/75 backdrop-blur-sm">
+                <SheetContent className="bg-card/80 backdrop-blur-lg" withoutOverlay>
                     <SheetHeader>
                     <SheetTitle>Color Harmonizer</SheetTitle>
                     <SheetDescription>

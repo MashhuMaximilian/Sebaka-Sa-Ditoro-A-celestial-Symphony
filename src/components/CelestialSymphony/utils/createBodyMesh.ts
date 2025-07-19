@@ -168,9 +168,12 @@ export const createBodyMesh = (
         const ringMaterial = new THREE.ShaderMaterial({
             transparent: true,
             side: THREE.DoubleSide,
+            depthWrite: false,
+            blending: THREE.AdditiveBlending,
             uniforms: {
                 time: { value: 0 },
                 viewVector: { value: new THREE.Vector3() },
+                ringCount: { value: 50.0 }
             },
             vertexShader: `
               varying vec3 vNormal;
@@ -186,6 +189,7 @@ export const createBodyMesh = (
             `,
             fragmentShader: `
                 uniform float time;
+                uniform float ringCount;
                 varying vec3 vNormal;
                 varying vec3 vViewDir;
                 varying vec2 vUv;
@@ -194,8 +198,11 @@ export const createBodyMesh = (
                     return pow(1.0 - max(dot(normalize(normal), normalize(viewDir)), 0.0), 3.0);
                 }
 
-                vec3 iridescentColor(float angle, float band) {
-                    float hue = mod(angle * 0.8 + band + time * 0.03, 1.0);
+                float rand(float x) {
+                    return fract(sin(x * 91.17) * 43758.5453123);
+                }
+
+                vec3 hueToRGB(float hue) {
                     return vec3(
                         0.5 + 0.5 * cos(6.2831 * (hue + 0.0)),
                         0.5 + 0.5 * cos(6.2831 * (hue + 0.33)),
@@ -204,24 +211,25 @@ export const createBodyMesh = (
                 }
 
                 void main() {
-                    // Radial coordinates from mesh UVs
-                    float dist = length(vUv - vec2(0.5));
-                    
-                    // Create banding: sinusoidal lines
-                    float bands = sin(dist * 150.0 + time * 0.2) * 0.5 + 0.5;
-                    bands = smoothstep(0.4, 0.6, bands);
+                    float dist = length(vUv - vec2(0.5, 0.5));
+
+                    // Ring segmentation
+                    float ringIndex = floor(dist * ringCount);
+                    float ringSeed = rand(ringIndex);
+                    float ringHue = mod(ringSeed + time * 0.05, 1.0);
+                    float ringAlpha = smoothstep(0.2, 1.0, fract(ringSeed * 5.0)) * 0.8;
+
+                    // Ring thickness
+                    float ringLine = fract(dist * ringCount);
+                    float width = 0.08 + 0.05 * rand(ringIndex * 1.3);
+                    float mask = smoothstep(0.5 - width, 0.5, 1.0 - abs(ringLine - 0.5));
 
                     float fres = fresnel(vNormal, vViewDir);
-                    vec3 color = iridescentColor(fres, dist);
+                    vec3 color = hueToRGB(ringHue);
 
-                    // Fade outward, using distance from the center of the ring band (0.5)
-                    float alpha = fres * bands * smoothstep(0.5, 0.4, dist); 
-
-                    gl_FragColor = vec4(color, alpha);
+                    gl_FragColor = vec4(color, ringAlpha * mask * fres);
                 }
-            `,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
+            `
         });
 
         const rings = new THREE.Mesh(ringGeometry, ringMaterial);
