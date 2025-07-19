@@ -164,16 +164,16 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6 },
-  Twilight: { normalScale: 1, displacementScale: 0.2 },
-  Beacon: { normalScale: 1, displacementScale: 2.95 },
-  Rutilus: { normalScale: 1, displacementScale: 0.1 },
-  Sebaka: { normalScale: 0.1, displacementScale: 0.1 },
-  Spectris: { normalScale: 0.1, displacementScale: 0.05 },
-  Viridis: { normalScale: 2, displacementScale: 0.1 },
-  Aetheris: { normalScale: 0.15, displacementScale: 0 },
-  Gelidis: { normalScale: 0.03, displacementScale: 0.001 },
-  Liminis: { normalScale: 1, displacementScale: 0.1 },
+  Alpha: { normalScale: 1, displacementScale: 0.6, shininess: 30, emissiveIntensity: 1.2, aoMapIntensity: 1 },
+  Twilight: { normalScale: 1, displacementScale: 0.2, shininess: 30, emissiveIntensity: 1, aoMapIntensity: 1 },
+  Beacon: { normalScale: 1, displacementScale: 2.95, shininess: 30, emissiveIntensity: 10, aoMapIntensity: 1 },
+  Rutilus: { normalScale: 1, displacementScale: 0.1, shininess: 10, aoMapIntensity: 1 },
+  Sebaka: { normalScale: 0.1, displacementScale: 0.1, shininess: 5, aoMapIntensity: 1 },
+  Spectris: { normalScale: 0.1, displacementScale: 0.05, shininess: 10, aoMapIntensity: 1 },
+  Viridis: { normalScale: 2, displacementScale: 0.1, shininess: 10, aoMapIntensity: 1 },
+  Aetheris: { normalScale: 0.15, displacementScale: 0, shininess: 10, aoMapIntensity: 1 },
+  Gelidis: { normalScale: 0.03, displacementScale: 0.001, shininess: 10, aoMapIntensity: 1 },
+  Liminis: { normalScale: 1, displacementScale: 0.1, shininess: 20, aoMapIntensity: 1 },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';

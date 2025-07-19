@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
+import { MaterialProperties } from '@/types';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -8,10 +9,8 @@ export const createMaterials = () => {
         map: textureLoader.load('/maps/SebakaTexture.png'),
         specularMap: textureLoader.load('/maps/SebakaSpecularMap.png'),
         normalMap: textureLoader.load('/maps/SebakaNormalMap.png'),
-        normalScale: new THREE.Vector2(0.1, 0.1),
         displacementMap: textureLoader.load('/maps/SebakaDisplacementMap.png'),
         aoMap: textureLoader.load('/maps/SebakaAmbientOcclusionMap.png'),
-        displacementScale: 0.1,
     });
     
     const sebakaSimpleMaterial = new THREE.MeshPhongMaterial({ color: '#0096C8' });
@@ -22,46 +21,52 @@ export const createMaterials = () => {
 export const createBodyMesh = (
     body: BodyData,
     sebakaDetailedMaterial: THREE.MeshPhongMaterial,
-    viridisOriginalColorRef: React.MutableRefObject<THREE.Color>
+    viridisOriginalColorRef: React.MutableRefObject<THREE.Color>,
+    materialProperties: MaterialProperties,
 ): THREE.Mesh => {
     const geometry = new THREE.SphereGeometry(body.size, 64, 64);
     let material: THREE.Material;
     
-    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: 10 };
+    const bodyProps = materialProperties[body.name];
+    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: bodyProps?.shininess || 10 };
 
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
             emissive: body.color,
-            emissiveIntensity: 2,
+            emissiveIntensity: bodyProps?.emissiveIntensity || 1,
+            ...materialOptions,
         };
 
         if (body.name === 'Alpha') {
             Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/goldenGiverTexture.jpg'),
                 specularMap: textureLoader.load('/maps/goldenGiver_specular.png'),
-                displacementMap: textureLoader.load('/maps/goldenGiver_displacement.png'),
-                aoMap: textureLoader.load('/maps/goldenGiver_ambient.png'),
-                emissiveIntensity: 1.2,
-                displacementScale: 0.6,
+                displacementMap: bodyProps?.displacementScale > 0 ? textureLoader.load('/maps/goldenGiver_displacement.png') : undefined,
+                aoMap: bodyProps?.aoMapIntensity > 0 ? textureLoader.load('/maps/goldenGiver_ambient.png') : undefined,
+                displacementScale: bodyProps?.displacementScale,
+                aoMapIntensity: bodyProps?.aoMapIntensity,
             });
         } else if (body.name === 'Twilight') {
             Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/TwilightTexture.jpg'),
                 specularMap: textureLoader.load('/maps/Twilight_specular.png'),
-                normalMap: textureLoader.load('/maps/Twilight_normal.png'),
-                displacementMap: textureLoader.load('/maps/Twilight_displacement.png'),
-                aoMap: textureLoader.load('/maps/Twilight_ambient.png'),
-                displacementScale: 0.2,
+                normalMap: bodyProps?.normalScale > 0 ? textureLoader.load('/maps/Twilight_normal.png') : undefined,
+                displacementMap: bodyProps?.displacementScale > 0 ? textureLoader.load('/maps/Twilight_displacement.png') : undefined,
+                aoMap: bodyProps?.aoMapIntensity > 0 ? textureLoader.load('/maps/Twilight_ambient.png') : undefined,
+                normalScale: new THREE.Vector2(bodyProps?.normalScale, bodyProps?.normalScale),
+                displacementScale: bodyProps?.displacementScale,
+                aoMapIntensity: bodyProps?.aoMapIntensity,
             });
         } else if (body.name === 'Beacon') {
              Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/BeaconTexture.png'),
                 specularMap: textureLoader.load('/maps/Beacon_specular.png'),
-                normalMap: textureLoader.load('/maps/Beacon_normal.png'),
-                displacementMap: textureLoader.load('/maps/Beacon_displacement.png'),
-                aoMap: textureLoader.load('/maps/Beacon_ambient.png'),
-                emissiveIntensity: 10,
-                displacementScale: 2.95,
+                normalMap: bodyProps?.normalScale > 0 ? textureLoader.load('/maps/Beacon_normal.png') : undefined,
+                displacementMap: bodyProps?.displacementScale > 0 ? textureLoader.load('/maps/Beacon_displacement.png') : undefined,
+                aoMap: bodyProps?.aoMapIntensity > 0 ? textureLoader.load('/maps/Beacon_ambient.png') : undefined,
+                normalScale: new THREE.Vector2(bodyProps?.normalScale, bodyProps?.normalScale),
+                displacementScale: bodyProps?.displacementScale,
+                aoMapIntensity: bodyProps?.aoMapIntensity,
              });
         }
 
@@ -79,60 +84,98 @@ export const createBodyMesh = (
 
     } else { 
         const planetName = body.name;
-        
         const textureParams: THREE.MeshPhongMaterialParameters = {};
         
         switch (planetName) {
             case 'Aetheris':
                 textureParams.map = textureLoader.load('/maps/AetherisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/AetherisTexture_specular.png');
-                textureParams.normalMap = textureLoader.load('/maps/AetherisTexture_normal.png');
-                textureParams.normalScale = new THREE.Vector2(0.15, 0.15);
+                if (bodyProps?.normalScale > 0) {
+                    textureParams.normalMap = textureLoader.load('/maps/AetherisTexture_normal.png');
+                    textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
+                }
                 break;
             case 'Gelidis':
                 textureParams.map = textureLoader.load('/maps/GelidisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/GelidisTexture_specular.png');
-                textureParams.normalMap = textureLoader.load('/maps/GelidisTexture_normal.png');
-                textureParams.normalScale = new THREE.Vector2(0.03, 0.03);
-                textureParams.displacementMap = textureLoader.load('/maps/GelidisTexture_displacement.png');
-                textureParams.aoMap = textureLoader.load('/maps/GelidisTexture_ambient.png');
-                textureParams.displacementScale = 0.001;
+                if (bodyProps?.normalScale > 0) {
+                    textureParams.normalMap = textureLoader.load('/maps/GelidisTexture_normal.png');
+                    textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
+                }
+                if (bodyProps?.displacementScale > 0) {
+                    textureParams.displacementMap = textureLoader.load('/maps/GelidisTexture_displacement.png');
+                    textureParams.displacementScale = bodyProps.displacementScale;
+                }
+                if (bodyProps?.aoMapIntensity > 0) {
+                    textureParams.aoMap = textureLoader.load('/maps/GelidisTexture_ambient.png');
+                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
+                }
                 break;
             case 'Rutilus':
                 textureParams.map = textureLoader.load('/maps/RutiliusTexture.png');
-                textureParams.normalMap = textureLoader.load('/maps/RutiliusTexture_normal.png');
-                textureParams.displacementMap = textureLoader.load('/maps/RutiliusTexture_displacement.png');
-                textureParams.aoMap = textureLoader.load('/maps/RutiliusTexture_ambient.png');
-                textureParams.displacementScale = 0.1;
+                if (bodyProps?.normalScale > 0) {
+                    textureParams.normalMap = textureLoader.load('/maps/RutiliusTexture_normal.png');
+                    textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
+                }
+                if (bodyProps?.displacementScale > 0) {
+                    textureParams.displacementMap = textureLoader.load('/maps/RutiliusTexture_displacement.png');
+                    textureParams.displacementScale = bodyProps.displacementScale;
+                }
+                if (bodyProps?.aoMapIntensity > 0) {
+                    textureParams.aoMap = textureLoader.load('/maps/RutiliusTexture_ambient.png');
+                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
+                }
                 break;
             case 'Spectris':
                 textureParams.map = textureLoader.load('/maps/SpectrisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/SpectrisTexture_specular.png');
-                textureParams.normalMap = textureLoader.load('/maps/SpectrisTexture_normal.png');
-                textureParams.normalScale = new THREE.Vector2(0.1, 0.1);
-                textureParams.displacementMap = textureLoader.load('/maps/SpectrisTexture_displacement.png');
-                textureParams.aoMap = textureLoader.load('/maps/SpectrisTexture_ambient.png');
-                textureParams.displacementScale = 0.05;
+                if (bodyProps?.normalScale > 0) {
+                    textureParams.normalMap = textureLoader.load('/maps/SpectrisTexture_normal.png');
+                    textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
+                }
+                if (bodyProps?.displacementScale > 0) {
+                    textureParams.displacementMap = textureLoader.load('/maps/SpectrisTexture_displacement.png');
+                    textureParams.displacementScale = bodyProps.displacementScale;
+                }
+                if (bodyProps?.aoMapIntensity > 0) {
+                    textureParams.aoMap = textureLoader.load('/maps/SpectrisTexture_ambient.png');
+                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
+                }
                 break;
             case 'Viridis':
                 textureParams.map = textureLoader.load('/maps/ViridisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/ViridisTexture_specular.png');
-                textureParams.normalMap = textureLoader.load('/maps/ViridisTexture_normal.png');
-                textureParams.normalScale = new THREE.Vector2(2, 2);
-                textureParams.displacementMap = textureLoader.load('/maps/ViridisTexture_displacement.png');
-                textureParams.aoMap = textureLoader.load('/maps/ViridisTexture_ambient.png');
-                textureParams.displacementScale = 0.1;
-                 if (body.color) {
+                 if (bodyProps?.normalScale > 0) {
+                    textureParams.normalMap = textureLoader.load('/maps/ViridisTexture_normal.png');
+                    textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
+                }
+                if (bodyProps?.displacementScale > 0) {
+                    textureParams.displacementMap = textureLoader.load('/maps/ViridisTexture_displacement.png');
+                    textureParams.displacementScale = bodyProps.displacementScale;
+                }
+                if (bodyProps?.aoMapIntensity > 0) {
+                    textureParams.aoMap = textureLoader.load('/maps/ViridisTexture_ambient.png');
+                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
+                }
+                if (body.color) {
                     viridisOriginalColorRef.current.set(body.color);
                 }
                 break;
             case 'Liminis':
                 textureParams.map = textureLoader.load('/maps/LiminisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/LiminisSpecularMap.png');
-                textureParams.normalMap = textureLoader.load('/maps/LiminisNormalMap.png');
-                textureParams.displacementMap = textureLoader.load('/maps/LiminisDisplacementMap.png');
-                textureParams.aoMap = textureLoader.load('/maps/LiminisAmbientOcclusionMap.png');
-                textureParams.displacementScale = 0.1;
+                if (bodyProps?.normalScale > 0) {
+                    textureParams.normalMap = textureLoader.load('/maps/LiminisNormalMap.png');
+                    textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
+                }
+                if (bodyProps?.displacementScale > 0) {
+                    textureParams.displacementMap = textureLoader.load('/maps/LiminisDisplacementMap.png');
+                    textureParams.displacementScale = bodyProps.displacementScale;
+                }
+                if (bodyProps?.aoMapIntensity > 0) {
+                    textureParams.aoMap = textureLoader.load('/maps/LiminisAmbientOcclusionMap.png');
+                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
+                }
                 break;
             case 'Sebaka':
                 material = sebakaDetailedMaterial;

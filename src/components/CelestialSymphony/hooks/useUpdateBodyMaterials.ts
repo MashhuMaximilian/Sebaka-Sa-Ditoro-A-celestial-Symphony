@@ -51,14 +51,28 @@ export const useUpdateBodyMaterials = ({
         planetMeshesRef.current.forEach((mesh) => {
             const props = materialProperties[mesh.name];
             if (props && mesh.material instanceof THREE.MeshPhongMaterial) {
-                if (mesh.material.normalScale && mesh.material.normalScale.x !== props.normalScale) {
+                
+                if (props.normalScale !== undefined && mesh.material.normalScale?.x !== props.normalScale) {
                     mesh.material.normalScale.set(props.normalScale, props.normalScale);
-                    mesh.material.needsUpdate = true;
                 }
-                if (mesh.material.displacementScale !== props.displacementScale) {
+
+                if (props.displacementScale !== undefined && mesh.material.displacementScale !== props.displacementScale) {
                     mesh.material.displacementScale = props.displacementScale;
-                    mesh.material.needsUpdate = true;
                 }
+                
+                if (props.aoMapIntensity !== undefined && mesh.material.aoMapIntensity !== props.aoMapIntensity) {
+                    mesh.material.aoMapIntensity = props.aoMapIntensity;
+                }
+
+                if (props.shininess !== undefined && mesh.material.shininess !== props.shininess) {
+                    mesh.material.shininess = props.shininess;
+                }
+
+                if (props.emissiveIntensity !== undefined && mesh.material.emissiveIntensity !== props.emissiveIntensity) {
+                    mesh.material.emissiveIntensity = props.emissiveIntensity;
+                }
+
+                mesh.material.needsUpdate = true;
             }
         });
     }, [materialProperties, planetMeshesRef]);

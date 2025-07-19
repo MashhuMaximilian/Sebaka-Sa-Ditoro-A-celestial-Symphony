@@ -39,5 +39,8 @@ export interface MaterialProperties {
   [key: string]: {
     normalScale: number;
     displacementScale: number;
+    aoMapIntensity: number;
+    shininess: number;
+    emissiveIntensity?: number;
   };
 }

@@ -45,43 +45,92 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
     if (!bodyProps || !bodiesWithSettings.includes(data.name)) return null;
     
     return (
-      <div className="space-y-2">
-        <Separator />
-        <h3 className="text-lg font-bold text-primary">Material Settings</h3>
-          <div className="space-y-4 pt-2">
-            <div className="grid gap-2">
-              <Label htmlFor={`${data.name}-normal`}>Normal Map Strength</Label>
-              <div className="flex items-center gap-2">
-                <Slider
-                  id={`${data.name}-normal`}
-                  min={0}
-                  max={5}
-                  step={0.01}
-                  value={[bodyProps.normalScale]}
-                  onValueChange={(value) => handleSliderChange(data.name, 'normalScale', value)}
-                />
-                <span className="text-xs font-mono w-12 text-center">{bodyProps.normalScale.toFixed(2)}</span>
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor={`${data.name}-displacement`}>Displacement Map Strength</Label>
-               <div className="flex items-center gap-2">
+       <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="item-1">
+          <AccordionTrigger>
+             <h3 className="text-lg font-bold text-primary">Material Settings</h3>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4 pt-2">
+               <div className="grid gap-2">
+                <Label htmlFor={`${data.name}-normal`}>Normal Map Strength</Label>
+                <div className="flex items-center gap-2">
                   <Slider
-                    id={`${data.name}-displacement`}
+                    id={`${data.name}-normal`}
                     min={0}
                     max={5}
                     step={0.01}
-                    value={[bodyProps.displacementScale]}
-                    onValueChange={(value) => handleSliderChange(data.name, 'displacementScale', value)}
+                    value={[bodyProps.normalScale]}
+                    onValueChange={(value) => handleSliderChange(data.name, 'normalScale', value)}
                   />
-                  <span className="text-xs font-mono w-12 text-center">{bodyProps.displacementScale.toFixed(2)}</span>
+                  <span className="text-xs font-mono w-12 text-center">{bodyProps.normalScale.toFixed(2)}</span>
+                </div>
               </div>
+              <div className="grid gap-2">
+                <Label htmlFor={`${data.name}-displacement`}>Displacement Map Strength</Label>
+                 <div className="flex items-center gap-2">
+                    <Slider
+                      id={`${data.name}-displacement`}
+                      min={0}
+                      max={5}
+                      step={0.01}
+                      value={[bodyProps.displacementScale]}
+                      onValueChange={(value) => handleSliderChange(data.name, 'displacementScale', value)}
+                    />
+                    <span className="text-xs font-mono w-12 text-center">{bodyProps.displacementScale.toFixed(2)}</span>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor={`${data.name}-ao`}>Ambient Occlusion</Label>
+                 <div className="flex items-center gap-2">
+                    <Slider
+                      id={`${data.name}-ao`}
+                      min={0}
+                      max={2}
+                      step={0.01}
+                      value={[bodyProps.aoMapIntensity]}
+                      onValueChange={(value) => handleSliderChange(data.name, 'aoMapIntensity', value)}
+                    />
+                    <span className="text-xs font-mono w-12 text-center">{bodyProps.aoMapIntensity.toFixed(2)}</span>
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor={`${data.name}-shininess`}>Shininess</Label>
+                 <div className="flex items-center gap-2">
+                    <Slider
+                      id={`${data.name}-shininess`}
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={[bodyProps.shininess]}
+                      onValueChange={(value) => handleSliderChange(data.name, 'shininess', value)}
+                    />
+                    <span className="text-xs font-mono w-12 text-center">{bodyProps.shininess.toFixed(0)}</span>
+                </div>
+              </div>
+               {data.type === 'Star' && (
+                <div className="grid gap-2">
+                  <Label htmlFor={`${data.name}-emissive`}>Emissive Intensity</Label>
+                  <div className="flex items-center gap-2">
+                    <Slider
+                      id={`${data.name}-emissive`}
+                      min={0}
+                      max={20}
+                      step={0.1}
+                      value={[bodyProps.emissiveIntensity || 1]}
+                      onValueChange={(value) => handleSliderChange(data.name, 'emissiveIntensity', value)}
+                    />
+                    <span className="text-xs font-mono w-12 text-center">{(bodyProps.emissiveIntensity || 1).toFixed(1)}</span>
+                  </div>
+                </div>
+              )}
+              <Button onClick={onReset} variant="outline" className="w-full">
+                Reset All to Defaults
+              </Button>
             </div>
-            <Button onClick={onReset} variant="outline" className="w-full">
-              Reset {data.name} to Defaults
-            </Button>
-          </div>
-      </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     )
   }
 
