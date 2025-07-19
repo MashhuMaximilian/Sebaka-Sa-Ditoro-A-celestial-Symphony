@@ -67,7 +67,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor={`${data.name}-displacement`}>Displacement Map Strength</Label>
+                <Label htmlFor={`${data.name}-displacement`}>Displacement Scale</Label>
                  <div className="flex items-center gap-2">
                     <Slider
                       id={`${data.name}-displacement`}

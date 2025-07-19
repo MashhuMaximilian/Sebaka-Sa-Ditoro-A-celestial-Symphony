@@ -206,7 +206,7 @@ export const createBodyMesh = (
     if (body.type === 'Planet' && body.name === "Spectris") {
         const ringInnerRadius = body.size * 1.5;
         const ringOuterRadius = body.size * 2.5;
-        const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 128, 1);
+        const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 256, 1);
         
         const ringMaterial = new THREE.ShaderMaterial({
             transparent: true,
@@ -216,7 +216,7 @@ export const createBodyMesh = (
             uniforms: {
                 time: { value: 0 },
                 viewVector: { value: new THREE.Vector3() },
-                ringCount: { value: 50.0 }
+                ringCount: { value: 100.0 }
             },
             vertexShader: `
               varying vec3 vNormal;
@@ -245,30 +245,30 @@ export const createBodyMesh = (
                     return fract(sin(x * 91.17) * 43758.5453123);
                 }
 
-                vec3 hueToRGB(float hue) {
-                    return vec3(
-                        0.5 + 0.5 * cos(6.2831 * (hue + 0.0)),
-                        0.5 + 0.5 * cos(6.2831 * (hue + 0.33)),
-                        0.5 + 0.5 * cos(6.2831 * (hue + 0.66))
-                    );
+                vec3 spectralColor(float hue) {
+                    // Custom spectral theme: icy tones only
+                    hue = mod(hue, 1.0);
+                    float h = hue * 4.0;
+                    if (h < 1.0) return mix(vec3(0.5,0.7,1.0), vec3(0.7,0.9,1.0), h);
+                    else if (h < 2.0) return mix(vec3(0.7,0.9,1.0), vec3(0.9,1.0,0.9), h - 1.0);
+                    else if (h < 3.0) return mix(vec3(0.9,1.0,0.9), vec3(0.7,0.8,1.0), h - 2.0);
+                    else return mix(vec3(0.7,0.8,1.0), vec3(0.5,0.7,1.0), h - 3.0);
                 }
 
                 void main() {
-                    float dist = length(vUv - vec2(0.5, 0.5));
-
                     // Ring segmentation
-                    float ringIndex = floor(dist * ringCount);
+                    float ringIndex = floor(vUv.x * ringCount);
                     float ringSeed = rand(ringIndex);
                     float ringHue = mod(ringSeed + time * 0.05, 1.0);
                     float ringAlpha = smoothstep(0.2, 1.0, fract(ringSeed * 5.0)) * 0.8;
 
                     // Ring thickness
-                    float ringLine = fract(dist * ringCount);
-                    float width = 0.08 + 0.05 * rand(ringIndex * 1.3);
-                    float mask = smoothstep(0.5 - width, 0.5, 1.0 - abs(ringLine - 0.5));
+                    float ringLine = fract(vUv.x * ringCount);
+                    float ringWidth = 0.03 + 0.1 * rand(ringIndex * 2.37);
+                    float mask = smoothstep(0.5 - ringWidth, 0.5, 1.0 - abs(ringLine - 0.5));
 
                     float fres = fresnel(vNormal, vViewDir);
-                    vec3 color = hueToRGB(ringHue);
+                    vec3 color = spectralColor(ringHue);
 
                     gl_FragColor = vec4(color, ringAlpha * mask * fres);
                 }

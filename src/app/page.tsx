@@ -480,12 +480,6 @@ export default function Home() {
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
         <SheetContent side="left" className="w-[65vw] max-w-2xl bg-card/80 backdrop-blur-lg p-0" withoutOverlay>
-            <SheetHeader className="sr-only">
-              <SheetTitle>Celestial Body Information</SheetTitle>
-              <SheetDescription>
-                Detailed information and material settings for the selected celestial body.
-              </SheetDescription>
-            </SheetHeader>
             {selectedBody && (
                 <InfoPanel 
                   data={selectedBody} 
