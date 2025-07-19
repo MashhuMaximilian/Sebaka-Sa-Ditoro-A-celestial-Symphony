@@ -164,16 +164,16 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, specularMap: false, aoMap: false },
-  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, specularMap: false, aoMap: false },
-  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, specularMap: false, aoMap: false },
-  Rutilus: { normalScale: 1, displacementScale: 0.1, specularMap: false, aoMap: false },
-  Sebaka: { normalScale: 0.1, displacementScale: 0.1, specularMap: true, aoMap: false },
-  Spectris: { normalScale: 0.1, displacementScale: 0.05, specularMap: false, aoMap: false },
-  Viridis: { normalScale: 2, displacementScale: 0.1, specularMap: false, aoMap: false },
-  Aetheris: { normalScale: 0.15, displacementScale: 0, specularMap: true, aoMap: true },
-  Gelidis: { normalScale: 0.03, displacementScale: 0.001, specularMap: false, aoMap: false },
-  Liminis: { normalScale: 1, displacementScale: 0.1, specularMap: true, aoMap: true },
+  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
+  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
+  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
+  Rutilus: { normalScale: 1, displacementScale: 0.1, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
+  Sebaka: { normalScale: 0.1, displacementScale: 0.1, specularMap: true, aoMap: false, aoMapIntensity: 0, shininess: 30 },
+  Spectris: { normalScale: 0.1, displacementScale: 0.05, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
+  Viridis: { normalScale: 2, displacementScale: 0.1, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
+  Aetheris: { normalScale: 0.15, displacementScale: 0, specularMap: true, aoMap: true, aoMapIntensity: 1, shininess: 10 },
+  Gelidis: { normalScale: 0.03, displacementScale: 0.001, specularMap: false, aoMap: false, aoMapIntensity: 0, shininess: 10 },
+  Liminis: { normalScale: 1, displacementScale: 0.1, specularMap: true, aoMap: true, aoMapIntensity: 1, shininess: 80 },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
@@ -314,7 +314,7 @@ export default function Home() {
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
             <>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label className="text-sm font-medium text-foreground min-w-20 text-center">
                         Go to Time
                     </Label>
@@ -338,7 +338,7 @@ export default function Home() {
                     />
                     <Button onClick={handleGoToTime}>Go</Button>
                 </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="speed-input" className="text-sm font-medium text-foreground min-w-20 text-center">
                         Speed (hrs/s)
                     </Label>
@@ -368,7 +368,7 @@ export default function Home() {
         ),
         look: (
             <>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-angle-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Look Up/Down
                     </Label>
@@ -383,7 +383,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{cameraPitch.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Look Left/Right
                     </Label>
@@ -398,7 +398,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{cameraYaw.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="fov-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Field of View
                     </Label>
@@ -417,7 +417,7 @@ export default function Home() {
         ),
         move: (
             <>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="latitude-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Latitude
                     </Label>
@@ -432,7 +432,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{latitude.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="longitude-slider" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Longitude
                     </Label>
@@ -479,7 +479,7 @@ export default function Home() {
       />
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
-        <SheetContent side="left" className="w-[65vw] max-w-2xl p-0 backdrop-blur-lg" withoutOverlay>
+        <SheetContent side="left" className="w-[65vw] max-w-2xl p-0" withoutOverlay>
             <SheetHeader className="sr-only">
               <SheetTitle>Celestial Body Information</SheetTitle>
               <SheetDescription>
@@ -513,7 +513,7 @@ export default function Home() {
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <DropdownMenuTrigger asChild>
-                                 <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm">
+                                 <Button variant="outline" size="icon" className="backdrop-blur-lg">
                                     <Focus className="h-5 w-5" />
                                     <span className="sr-only">Focus Camera</span>
                                 </Button>
@@ -524,7 +524,7 @@ export default function Home() {
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
-                <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto backdrop-blur-sm">
+                <DropdownMenuContent className="w-56 max-h-[80vh] overflow-y-auto backdrop-blur-lg">
                     <DropdownMenuLabel>Focus Target</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
@@ -556,7 +556,7 @@ export default function Home() {
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
+                         <Button variant="outline" size="icon" className="backdrop-blur-lg" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
                             <Orbit className="h-5 w-5" />
                             <span className="sr-only">Toggle Viridis Animation</span>
                         </Button>
@@ -567,7 +567,7 @@ export default function Home() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm" onClick={toggleSebakaView}>
+                        <Button variant="outline" size="icon" className="backdrop-blur-lg" onClick={toggleSebakaView}>
                             <PersonStanding className="h-5 w-5" />
                             <span className="sr-only">Toggle View from Sebaka</span>
                         </Button>
@@ -584,7 +584,7 @@ export default function Home() {
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm">
+                                    <Button variant="outline" size="icon" className="backdrop-blur-lg">
                                         <Settings className="h-5 w-5" />
                                         <span className="sr-only">Settings</span>
                                     </Button>
@@ -595,7 +595,7 @@ export default function Home() {
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
-                    <DropdownMenuContent className="w-56 backdrop-blur-sm">
+                    <DropdownMenuContent className="w-56 backdrop-blur-lg">
                         <DropdownMenuLabel>Settings</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onSelect={handleResetView}>
@@ -638,7 +638,7 @@ export default function Home() {
                               key={panelId}
                               onClick={() => handleSebakaPanelToggle(panelId)}
                               variant={activeSebakaPanel === panelId ? "secondary" : "default"}
-                              className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg text-foreground flex-1 basis-1/3 capitalize"
+                              className="backdrop-blur-lg p-4 rounded-lg shadow-lg text-foreground flex-1 basis-1/3 capitalize"
                           >
                               {panelId}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -649,7 +649,7 @@ export default function Home() {
               </div>
           ) : (
             <>
-              <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label className="text-sm font-medium text-foreground min-w-20 text-center">
                       Go to Time
                   </Label>
@@ -673,7 +673,7 @@ export default function Home() {
                   />
                   <Button onClick={handleGoToTime}>Go</Button>
               </div>
-              <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-card/80 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label htmlFor="speed-input" className="text-sm font-medium text-foreground min-w-20 text-center">
                       Speed (hrs/s)
                   </Label>
@@ -705,5 +705,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

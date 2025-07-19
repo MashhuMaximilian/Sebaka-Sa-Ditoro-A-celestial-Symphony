@@ -40,7 +40,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
     }, []);
 
     useEffect(() => {
-        if (!mountRef.current || !bodyData.length || !sebakaGridTexture) return;
+        if (!mountRef.current || !bodyData.length) return;
+        if(viewFromSebaka && !sebakaGridTexture) return;
 
         const currentMount = mountRef.current;
         const scene = new THREE.Scene();
@@ -70,7 +71,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         controls.target.set(0, 0, 0);
         controlsRef.current = controls;
         
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.02); // very dim
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.02);
         scene.add(ambientLight);
 
         const goldenGiverLight = new THREE.DirectionalLight(0xfff8e7, 1.8);

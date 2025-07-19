@@ -2,11 +2,13 @@
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { MaterialProperties } from '@/types';
+import { ThinFilmFresnelMap } from './ThinFilmFresnelMap';
 
 const textureLoader = new THREE.TextureLoader();
 
 // Helper to create a grid texture
 export const createGridTexture = (size = 512, lines = 12) => {
+    if (typeof document === 'undefined') return null;
     const canvas = document.createElement('canvas');
     canvas.width = size;
     canvas.height = size;
@@ -50,7 +52,7 @@ export const createBodyMesh = (
     let material: THREE.Material;
     
     const bodyProps = materialProperties[body.name];
-    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: 10 };
+    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: bodyProps.shininess || 10 };
 
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
@@ -111,8 +113,10 @@ export const createBodyMesh = (
         switch (planetName) {
             case 'Aetheris':
                 textureParams.map = textureLoader.load('/maps/AetherisTexture.png');
-                if (bodyProps?.specularMap) {
-                    textureParams.specularMap = textureLoader.load('/maps/AetherisTexture_specular.png');
+                if (bodyProps?.specularMap) textureParams.specularMap = textureLoader.load('/maps/AetherisTexture_specular.png');
+                if (bodyProps.aoMap && bodyProps.aoMapIntensity > 0) {
+                    textureParams.aoMap = textureLoader.load('/maps/Aetheris_ao.png');
+                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
                 }
                 if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/AetherisTexture_normal.png');
@@ -121,9 +125,7 @@ export const createBodyMesh = (
                 break;
             case 'Gelidis':
                 textureParams.map = textureLoader.load('/maps/GelidisTexture.png');
-                if (bodyProps?.specularMap) {
-                    textureParams.specularMap = textureLoader.load('/maps/GelidisTexture_specular.png');
-                }
+                if (bodyProps?.specularMap) textureParams.specularMap = textureLoader.load('/maps/GelidisTexture_specular.png');
                 if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/GelidisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -146,9 +148,7 @@ export const createBodyMesh = (
                 break;
             case 'Spectris':
                 textureParams.map = textureLoader.load('/maps/SpectrisTexture.png');
-                 if (bodyProps?.specularMap) {
-                    textureParams.specularMap = textureLoader.load('/maps/SpectrisTexture_specular.png');
-                }
+                 if (bodyProps?.specularMap) textureParams.specularMap = textureLoader.load('/maps/SpectrisTexture_specular.png');
                 if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/SpectrisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -160,9 +160,7 @@ export const createBodyMesh = (
                 break;
             case 'Viridis':
                 textureParams.map = textureLoader.load('/maps/ViridisTexture.png');
-                 if (bodyProps?.specularMap) {
-                    textureParams.specularMap = textureLoader.load('/maps/ViridisTexture_specular.png');
-                }
+                 if (bodyProps?.specularMap) textureParams.specularMap = textureLoader.load('/maps/ViridisTexture_specular.png');
                  if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/ViridisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -177,8 +175,10 @@ export const createBodyMesh = (
                 break;
             case 'Liminis':
                 textureParams.map = textureLoader.load('/maps/LiminisTexture.png');
-                 if (bodyProps?.specularMap) {
-                    textureParams.specularMap = textureLoader.load('/maps/LiminisSpecularMap.png');
+                 if (bodyProps?.specularMap) textureParams.specularMap = textureLoader.load('/maps/LiminisSpecularMap.png');
+                if (bodyProps.aoMap && bodyProps.aoMapIntensity > 0) {
+                    textureParams.aoMap = textureLoader.load('/maps/LiminisAOMap.png');
+                    textureParams.aoMapIntensity = bodyProps.aoMapIntensity;
                 }
                 if (bodyProps.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/LiminisNormalMap.png');
@@ -192,7 +192,8 @@ export const createBodyMesh = (
             case 'Sebaka':
                 const sebakaDetailedMaterial = new THREE.MeshPhongMaterial({
                     map: textureLoader.load('/maps/SebakaTexture.png'),
-                    specularMap: textureLoader.load('/maps/SebakaSpecularMap.png'),
+                    specularMap: bodyProps?.specularMap ? textureLoader.load('/maps/SebakaSpecularMap.png') : undefined,
+                    shininess: bodyProps.shininess,
                 });
                 if (bodyProps.normalScale > 0) {
                     sebakaDetailedMaterial.normalMap = textureLoader.load('/maps/SebakaNormalMap.png');

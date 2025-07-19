@@ -48,7 +48,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
        <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="item-1">
           <AccordionTrigger>
-             <h3 className="text-lg font-bold text-primary-foreground">Material Settings</h3>
+             <h3 className="text-lg font-bold">Material Settings</h3>
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4 pt-2">
@@ -80,6 +80,35 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
                     <span className="text-xs font-mono w-12 text-center">{bodyProps.displacementScale.toFixed(2)}</span>
                 </div>
               </div>
+               <div className="grid gap-2">
+                <Label htmlFor={`${data.name}-shininess`}>Shininess</Label>
+                 <div className="flex items-center gap-2">
+                    <Slider
+                      id={`${data.name}-shininess`}
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={[bodyProps.shininess]}
+                      onValueChange={(value) => handleSliderChange(data.name, 'shininess', value)}
+                    />
+                    <span className="text-xs font-mono w-12 text-center">{bodyProps.shininess.toFixed(0)}</span>
+                </div>
+              </div>
+               <div className="grid gap-2">
+                <Label htmlFor={`${data.name}-ao`}>Ambient Occlusion</Label>
+                 <div className="flex items-center gap-2">
+                    <Slider
+                      id={`${data.name}-ao`}
+                      min={0}
+                      max={2}
+                      step={0.01}
+                      value={[bodyProps.aoMapIntensity]}
+                      onValueChange={(value) => handleSliderChange(data.name, 'aoMapIntensity', value)}
+                      disabled={!bodyProps.aoMap}
+                    />
+                    <span className="text-xs font-mono w-12 text-center">{bodyProps.aoMapIntensity.toFixed(2)}</span>
+                </div>
+              </div>
                {data.type === 'Star' && (
                 <div className="grid gap-2">
                   <Label htmlFor={`${data.name}-emissive`}>Emissive Intensity</Label>
@@ -107,11 +136,11 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
   }
 
   return (
-    <ScrollArea className="h-full w-full p-6 bg-card/80 backdrop-blur-lg">
+    <ScrollArea className="h-full w-full p-6 backdrop-blur-lg">
       <div className="space-y-6 text-sm">
-        <h2 className="text-2xl font-bold text-primary-foreground">{data.name}</h2>
+        <h2 className="text-2xl font-bold">{data.name}</h2>
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-primary-foreground">Overview</h3>
+          <h3 className="text-lg font-bold">Overview</h3>
           <dl className="space-y-2">
             <DataDisplay label="Type" value={data.type} />
             <DataDisplay label="Classification" value={data.classification} />
@@ -124,7 +153,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
         <Separator />
 
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-primary-foreground">Physical Characteristics</h3>
+          <h3 className="text-lg font-bold">Physical Characteristics</h3>
           <dl className="space-y-2">
             <DataDisplay label="Radius" value={data.radius} />
             <DataDisplay label="Mass" value={data.mass} />
@@ -140,7 +169,7 @@ const InfoPanel = ({ data, properties, onPropertiesChange, onReset }: InfoPanelP
         <Separator />
 
         <div className="space-y-2">
-          <h3 className="text-lg font-bold text-primary-foreground">Appearance & Lore</h3>
+          <h3 className="text-lg font-bold">Appearance & Lore</h3>
           <dl className="space-y-2">
               <DataDisplay label="Appearance from Sebaka" value={data.appearance} />
               <DataDisplay label="Lore" value={data.lore} />

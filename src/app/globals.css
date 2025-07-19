@@ -44,31 +44,34 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
   .dark {
-    --background: 270 50% 5%; /* Deep space purple */
+    --background: 270 50% 5%; /* Deep space color */
     --foreground: 0 0% 98%; /* White text */
 
-    /* Glass Effect Base */
-    --card: 0 0% 100% / 0.1; /* Translucent white base for panels */
-    --popover: 0 0% 100% / 0.1; /* Translucent white for popovers */
-    --primary: 0 0% 100%; /* White for primary text/icons on dark buttons */
-    --primary-foreground: 270 50% 8%; /* Dark purple for text on white buttons */
-    
-    --secondary: 0 0% 100% / 0.15; /* Slightly more opaque for secondary elements */
+    /* Glass Panels, Popovers, Cards */
+    --card: 0 0% 100% / 0.1;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 100% / 0.1;
+    --popover-foreground: 0 0% 98%;
+
+    /* Buttons */
+    --primary: 0 0% 100% / 0.1;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 100% / 0.1;
     --secondary-foreground: 0 0% 98%;
-    
-    --muted: 0 0% 100% / 0.05;
-    --muted-foreground: 0 0% 60%;
-    
-    --accent: 0 0% 100% / 0.15; /* Hover/active states */
+
+    /* Muted & Accent (Hover) States */
+    --muted: 0 0% 100% / 0.1;
+    --muted-foreground: 0 0% 80%;
+    --accent: 0 0% 100% / 0.2; /* More opaque on hover */
     --accent-foreground: 0 0% 98%;
-    
+
+    /* Destructive */
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    
-    /* Glass Borders */
+
+    /* Borders, Inputs, Rings */
     --border: 0 0% 100% / 0.2; /* Faint white border for glass edges */
-    --input: 0 0% 100% / 0.2; /* Input border color */
-    
+    --input: 0 0% 100% / 0.2;
     --ring: 0 0% 100%; /* Focus ring color */
 
     --chart-1: 220 70% 50%;
