@@ -52,7 +52,11 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     originalCameraPosRef,
     goldenGiverLightRef,
     twilightLightRef
-  } = useInitializeScene({ bodyData, setIsInitialized: props.setIsInitialized });
+  } = useInitializeScene({ 
+    bodyData, 
+    setIsInitialized: props.setIsInitialized,
+    materialProperties: props.materialProperties 
+  });
 
   useBodyClickHandler({
     renderer: rendererRef.current,

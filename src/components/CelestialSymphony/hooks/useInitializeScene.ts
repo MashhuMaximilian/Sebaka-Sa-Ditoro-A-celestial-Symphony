@@ -6,13 +6,15 @@ import { createBodyMesh, createMaterials } from "../utils/createBodyMesh";
 import { createOrbitMesh } from "../utils/createOrbitMesh";
 import type { BodyData } from "./useBodyData";
 import { createStarfield } from "../utils/createStarfield";
+import { MaterialProperties } from "@/types";
 
 interface InitializeSceneProps {
     bodyData: BodyData[];
     setIsInitialized: (isInitialized: boolean) => void;
+    materialProperties: MaterialProperties;
 }
 
-export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSceneProps) => {
+export const useInitializeScene = ({ bodyData, setIsInitialized, materialProperties }: InitializeSceneProps) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer>();
     const sceneRef = useRef<THREE.Scene>();
@@ -27,8 +29,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
     const originalCameraPosRef = useRef(new THREE.Vector3(0, 400, 800));
     const viridisOriginalColorRef = useRef(new THREE.Color("#9ACD32"));
     
-    const sebakaDetailedMaterialRef = useRef<THREE.MeshStandardMaterial>();
-    const sebakaSimpleMaterialRef = useRef<THREE.MeshStandardMaterial>();
+    const sebakaDetailedMaterialRef = useRef<THREE.MeshPhongMaterial>();
+    const sebakaSimpleMaterialRef = useRef<THREE.MeshPhongMaterial>();
     
     const goldenGiverLightRef = useRef<THREE.PointLight>();
     const twilightLightRef = useRef<THREE.PointLight>();
@@ -95,7 +97,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
         orbitMeshesRef.current = [];
         
         bodyData.forEach(body => {
-            const mesh = createBodyMesh(body, sebakaDetailedMaterialRef.current!, viridisOriginalColorRef);
+            const mesh = createBodyMesh(body, sebakaDetailedMaterialRef.current!, viridisOriginalColorRef, materialProperties);
             if (body.name === 'Sebaka') {
                 sebakaRadiusRef.current = body.size;
             }
@@ -184,7 +186,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized }: InitializeSce
                 }
             }
         };
-    }, [bodyData, setIsInitialized]);
+    }, [bodyData, setIsInitialized, materialProperties]);
 
     return {
         mountRef,
