@@ -314,7 +314,7 @@ export default function Home() {
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
             <>
-                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                         Go to Time
                     </Label>
@@ -338,7 +338,7 @@ export default function Home() {
                     />
                     <Button onClick={handleGoToTime}>Go</Button>
                 </div>
-                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                         Speed (hrs/s)
                     </Label>
@@ -354,7 +354,7 @@ export default function Home() {
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-background/30 hover:text-primary-foreground">
+                                <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-accent hover:text-primary-foreground">
                                     <History className="h-5 w-5" />
                                 </Button>
                             </TooltipTrigger>
@@ -368,7 +368,7 @@ export default function Home() {
         ),
         look: (
             <>
-                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-angle-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                       Look Up/Down
                     </Label>
@@ -383,7 +383,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{cameraPitch.toFixed(0)}°</span>
                 </div>
-                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                       Look Left/Right
                     </Label>
@@ -398,7 +398,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{cameraYaw.toFixed(0)}°</span>
                 </div>
-                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="fov-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                       Field of View
                     </Label>
@@ -417,7 +417,7 @@ export default function Home() {
         ),
         move: (
             <>
-                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="latitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                       Latitude
                     </Label>
@@ -432,7 +432,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-primary-foreground/90 w-10 text-center">{latitude.toFixed(0)}°</span>
                 </div>
-                <div className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="longitude-slider" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                       Longitude
                     </Label>
@@ -638,7 +638,7 @@ export default function Home() {
                               key={panelId}
                               onClick={() => handleSebakaPanelToggle(panelId)}
                               variant={activeSebakaPanel === panelId ? "secondary" : "default"}
-                              className="bg-background/20 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 flex-1 basis-1/3 capitalize"
+                              className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg text-primary-foreground/90 flex-1 basis-1/3 capitalize"
                           >
                               {panelId}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -649,7 +649,7 @@ export default function Home() {
               </div>
           ) : (
             <>
-              <div className="bg-background/20 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                       Go to Time
                   </Label>
@@ -673,7 +673,7 @@ export default function Home() {
                   />
                   <Button onClick={handleGoToTime}>Go</Button>
               </div>
-              <div className="bg-background/20 backdrop-blur-lg p-4 rounded-lg shadow-lg flex items-center gap-4">
+              <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                   <Label htmlFor="speed-input" className="text-sm font-medium text-primary-foreground/90 min-w-20 text-center">
                       Speed (hrs/s)
                   </Label>
@@ -689,7 +689,7 @@ export default function Home() {
                    <TooltipProvider>
                       <Tooltip>
                           <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-background/30 hover:text-primary-foreground">
+                              <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-primary-foreground/90 hover:bg-accent hover:text-primary-foreground">
                                   <History className="h-5 w-5" />
                               </Button>
                           </TooltipTrigger>

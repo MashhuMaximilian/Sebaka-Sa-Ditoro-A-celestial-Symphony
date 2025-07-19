@@ -40,7 +40,7 @@ export interface MaterialProperties {
     normalScale: number;
     displacementScale: number;
     emissiveIntensity?: number;
-    shininess?: number;
-    aoMapIntensity?: number;
+    specularMap?: boolean;
+    aoMap?: boolean;
   };
 }

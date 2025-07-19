@@ -132,13 +132,9 @@ export const useAnimationLoop = ({
       const spectrisMesh = planetMeshesRef.current.find(p => p.name === 'Spectris');
       if (spectrisMesh) {
           spectrisMesh.children.forEach(child => {
-              if (child instanceof THREE.Mesh && child.material instanceof THREE.ShaderMaterial) {
-                  const ringMaterial = child.material;
-                  const time = performance.now() * 0.001;
-                  ringMaterial.uniforms.time.value = time;
-                  if (camera) {
-                    ringMaterial.uniforms.viewVector.value.copy(camera.position).sub(child.getWorldPosition(new THREE.Vector3())).normalize();
-                  }
+              if (child instanceof THREE.Mesh) {
+                  const speed = (Math.random() - 0.5) * 0.001;
+                  child.rotation.z += speed;
               }
           });
       }

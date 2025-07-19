@@ -2,7 +2,6 @@
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { MaterialProperties } from '@/types';
-import { ThinFilmFresnelMap } from './ThinFilmFresnelMap';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -30,7 +29,7 @@ export const createBodyMesh = (
     let material: THREE.Material;
     
     const bodyProps = materialProperties[body.name];
-    const materialOptions: THREE.MeshPhongMaterialParameters = { shininess: 10 };
+    const materialOptions: THREE.MeshPhongMaterialParameters = {};
 
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
@@ -42,8 +41,10 @@ export const createBodyMesh = (
         if (body.name === 'Alpha') {
             Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/goldenGiverTexture.jpg'),
-                specularMap: textureLoader.load('/maps/goldenGiver_specular.png'),
             });
+             if (bodyProps?.specularMap) {
+                starMaterialOptions.specularMap = textureLoader.load('/maps/goldenGiver_specular.png');
+            }
             if (bodyProps?.displacementScale > 0) {
                  starMaterialOptions.displacementMap = textureLoader.load('/maps/goldenGiver_displacement.png');
                  starMaterialOptions.displacementScale = bodyProps.displacementScale;
@@ -51,8 +52,10 @@ export const createBodyMesh = (
         } else if (body.name === 'Twilight') {
             Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/TwilightTexture.jpg'),
-                specularMap: textureLoader.load('/maps/Twilight_specular.png'),
             });
+            if (bodyProps?.specularMap) {
+                starMaterialOptions.specularMap = textureLoader.load('/maps/Twilight_specular.png');
+            }
             if (bodyProps?.normalScale > 0) {
                 starMaterialOptions.normalMap = textureLoader.load('/maps/Twilight_normal.png');
                 starMaterialOptions.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -64,8 +67,10 @@ export const createBodyMesh = (
         } else if (body.name === 'Beacon') {
              Object.assign(starMaterialOptions, {
                 map: textureLoader.load('/maps/BeaconTexture.png'),
-                specularMap: textureLoader.load('/maps/Beacon_specular.png'),
              });
+            if (bodyProps?.specularMap) {
+                starMaterialOptions.specularMap = textureLoader.load('/maps/Beacon_specular.png');
+            }
              if (bodyProps?.normalScale > 0) {
                 starMaterialOptions.normalMap = textureLoader.load('/maps/Beacon_normal.png');
                 starMaterialOptions.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -85,7 +90,9 @@ export const createBodyMesh = (
         switch (planetName) {
             case 'Aetheris':
                 textureParams.map = textureLoader.load('/maps/AetherisTexture.png');
-                textureParams.specularMap = textureLoader.load('/maps/AetherisTexture_specular.png');
+                if (bodyProps?.specularMap) {
+                    textureParams.specularMap = textureLoader.load('/maps/AetherisTexture_specular.png');
+                }
                 if (bodyProps?.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/AetherisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -93,7 +100,9 @@ export const createBodyMesh = (
                 break;
             case 'Gelidis':
                 textureParams.map = textureLoader.load('/maps/GelidisTexture.png');
-                textureParams.specularMap = textureLoader.load('/maps/GelidisTexture_specular.png');
+                if (bodyProps?.specularMap) {
+                    textureParams.specularMap = textureLoader.load('/maps/GelidisTexture_specular.png');
+                }
                 if (bodyProps?.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/GelidisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -116,7 +125,9 @@ export const createBodyMesh = (
                 break;
             case 'Spectris':
                 textureParams.map = textureLoader.load('/maps/SpectrisTexture.png');
-                textureParams.specularMap = textureLoader.load('/maps/SpectrisTexture_specular.png');
+                 if (bodyProps?.specularMap) {
+                    textureParams.specularMap = textureLoader.load('/maps/SpectrisTexture_specular.png');
+                }
                 if (bodyProps?.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/SpectrisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -128,7 +139,9 @@ export const createBodyMesh = (
                 break;
             case 'Viridis':
                 textureParams.map = textureLoader.load('/maps/ViridisTexture.png');
-                textureParams.specularMap = textureLoader.load('/maps/ViridisTexture_specular.png');
+                 if (bodyProps?.specularMap) {
+                    textureParams.specularMap = textureLoader.load('/maps/ViridisTexture_specular.png');
+                }
                  if (bodyProps?.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/ViridisTexture_normal.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -143,7 +156,9 @@ export const createBodyMesh = (
                 break;
             case 'Liminis':
                 textureParams.map = textureLoader.load('/maps/LiminisTexture.png');
-                textureParams.specularMap = textureLoader.load('/maps/LiminisSpecularMap.png');
+                 if (bodyProps?.specularMap) {
+                    textureParams.specularMap = textureLoader.load('/maps/LiminisSpecularMap.png');
+                }
                 if (bodyProps?.normalScale > 0) {
                     textureParams.normalMap = textureLoader.load('/maps/LiminisNormalMap.png');
                     textureParams.normalScale = new THREE.Vector2(bodyProps.normalScale, bodyProps.normalScale);
@@ -176,74 +191,28 @@ export const createBodyMesh = (
     mesh.receiveShadow = true;
 
     if (body.type === 'Planet' && body.name === "Spectris") {
-        const ringInnerRadius = body.size * 1.5;
-        const ringOuterRadius = body.size * 2.5;
-        const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 256, 1);
-        
-        const iridescenceMap = new ThinFilmFresnelMap(
-            550,  // film thickness (nm)
-            1.33, // film IOR
-            1.0,  // substrate IOR
-            512   // lookup resolution
-        );
-        
-        const ringMaterial = new THREE.ShaderMaterial({
-            transparent: true,
-            side: THREE.DoubleSide,
-            depthWrite: false,
-            blending: THREE.AdditiveBlending,
-            uniforms: {
-                time: { value: 0 },
-                viewVector: { value: new THREE.Vector3() },
-                ringCount: { value: 80.0 },
-                iridescenceMap: { value: iridescenceMap.texture }
-            },
-            vertexShader: `
-                varying vec3 vNormal, vViewDir;
-                varying vec2 vUv;
-                void main(){
-                    vUv = uv;
-                    vNormal = normalize(normalMatrix * normal);
-                    vec4 mv = modelViewMatrix * vec4(position,1.);
-                    vViewDir = -mv.xyz;
-                    gl_Position = projectionMatrix * mv;
-                }
-            `,
-            fragmentShader: `
-                uniform float time, ringCount;
-                uniform sampler2D iridescenceMap;
-                varying vec3 vNormal, vViewDir;
-                varying vec2 vUv;
+        const ringCount = Math.floor(Math.random() * 70) + 80; // Random between 80-150
+        const iridescentColors = [0xaaaaaa, 0xbbbbbb, 0xcccccc, 0xdddddd, 0xeeeeee, 0xffffff];
 
-                float rand(float x){ return fract(sin(x*91.17)*43758.545); }
+        for (let i = 0; i < ringCount; i++) {
+            const innerRadius = body.size * (1.5 + i * 0.02 + Math.random() * 0.01);
+            const outerRadius = innerRadius + (Math.random() * 0.05 + 0.01) * body.size;
 
-                void main(){
-                  float dist = vUv.y;
+            const ringGeometry = new THREE.RingGeometry(innerRadius, outerRadius, 128, 1);
+            
+            const ringMaterial = new THREE.MeshPhongMaterial({
+                color: iridescentColors[Math.floor(Math.random() * iridescentColors.length)],
+                transparent: true,
+                opacity: Math.random() * 0.4 + 0.1,
+                side: THREE.DoubleSide,
+                shininess: Math.random() * 30,
+            });
 
-                  float idx = floor(dist*ringCount);
-                  float seed = rand(idx);
-                  float width = 0.005 + 0.03 * rand(idx*1.37);
-                  float line = fract(dist*ringCount);
-                  float mask = smoothstep(0.5-width, 0.5, 1.-abs(line-0.5));
-
-                  vec3 N = normalize(vNormal);
-                  vec3 V = normalize(vViewDir);
-                  float NdotV = max(dot(N, V), 0.);
-                  
-                  vec3 filmCol = texture2D(iridescenceMap, vec2(NdotV, 0.)).rgb;
-                  filmCol *= filmCol;
-
-                  float fres = pow(1.-NdotV, 3.);
-
-                  gl_FragColor = vec4(filmCol, mask * fres * 0.6);
-                }
-            `
-        });
-
-        const rings = new THREE.Mesh(ringGeometry, ringMaterial);
-        rings.rotation.x = Math.PI / 2 + 0.2;
-        rings.receiveShadow = true;
-        mesh.add(rings);
+            const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+            ringMesh.rotation.x = Math.PI / 2 + (Math.random() - 0.5) * 0.1;
+            ringMesh.rotation.y = (Math.random() - 0.5) * 0.05;
+            mesh.add(ringMesh);
+        }
     }
     
     return mesh;
