@@ -129,6 +129,18 @@ export const useAnimationLoop = ({
       if(gelidisOrbit) gelidisOrbit.position.copy(beaconPositionRef.current);
       if(liminisOrbit) liminisOrbit.position.copy(beaconPositionRef.current);
 
+      const spectrisMesh = planetMeshesRef.current.find(p => p.name === 'Spectris');
+      if (spectrisMesh) {
+          spectrisMesh.children.forEach(child => {
+              if (child instanceof THREE.Mesh && child.material instanceof THREE.ShaderMaterial) {
+                  const ringMaterial = child.material;
+                  const time = performance.now() * 0.001;
+                  ringMaterial.uniforms.time.value = time;
+                  ringMaterial.uniforms.viewVector.value.copy(camera!.position).sub(child.getWorldPosition(new THREE.Vector3())).normalize();
+              }
+          });
+      }
+
       if (viewFromSebakaRef.current && sebakaMesh) {
         const lat = playerInputsRef.current.latitude;
         const lon = playerInputsRef.current.longitude;

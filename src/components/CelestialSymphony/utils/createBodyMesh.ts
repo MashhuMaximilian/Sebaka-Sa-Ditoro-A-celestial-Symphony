@@ -89,6 +89,8 @@ export const createBodyMesh = (
             case 'Aetheris':
                 textureParams.map = textureLoader.load('/maps/AetherisTexture.png');
                 textureParams.specularMap = textureLoader.load('/maps/AetherisTexture_specular.png');
+                textureParams.normalMap = textureLoader.load('/maps/AetherisTexture_normal.png');
+                textureParams.normalScale = new THREE.Vector2(0.1, 0.1);
                 break;
             case 'Gelidis':
                 textureParams.map = textureLoader.load('/maps/GelidisTexture.png');
@@ -169,15 +171,50 @@ export const createBodyMesh = (
     if (body.type === 'Planet' && body.name === "Spectris") {
         const ringInnerRadius = body.size * 1.5;
         const ringOuterRadius = body.size * 2.5;
-        const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 64);
+        const ringGeometry = new THREE.RingGeometry(ringInnerRadius, ringOuterRadius, 128, 1);
         
-        const ringMaterial = new THREE.MeshPhongMaterial({
-            color: 0xaaaaaa,
-            specular: 0xffffff,
-            shininess: 100,
-            side: THREE.DoubleSide,
+        const ringMaterial = new THREE.ShaderMaterial({
             transparent: true,
-            opacity: 0.7,
+            side: THREE.DoubleSide,
+            uniforms: {
+                time: { value: 0 },
+                viewVector: { value: new THREE.Vector3() },
+            },
+            vertexShader: `
+              varying vec3 vNormal;
+              varying vec3 vViewDir;
+              void main() {
+                vNormal = normalize(normalMatrix * normal);
+                vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                vViewDir = -mvPosition.xyz;
+                gl_Position = projectionMatrix * mvPosition;
+              }
+            `,
+            fragmentShader: `
+              uniform float time;
+              varying vec3 vNormal;
+              varying vec3 vViewDir;
+    
+              float fresnel(vec3 normal, vec3 viewDir) {
+                return pow(1.0 - dot(normal, normalize(viewDir)), 3.0);
+              }
+    
+              void main() {
+                float f = fresnel(vNormal, vViewDir);
+    
+                // Iridescent hue shift
+                float hue = mod(time * 0.1 + f * 0.8, 1.0);
+                vec3 iridescentColor = vec3(
+                  0.5 + 0.5 * cos(6.2831 * (hue + vec3(0.0, 0.33, 0.66)))
+                );
+    
+                // Soft shimmer
+                float alpha = f * 0.8;
+                gl_FragColor = vec4(iridescentColor, alpha);
+              }
+            `,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
         });
 
         const rings = new THREE.Mesh(ringGeometry, ringMaterial);
