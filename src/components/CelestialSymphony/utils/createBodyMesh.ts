@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { planetShader } from '../shaders/planetShader';
 import { spiderStrandShader } from '../shaders/spiderStrandShader';
-import type { PlanetData } from '@/types';
+import type { MaterialProperties, PlanetData } from '@/types';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -48,6 +48,7 @@ export const createBodyMesh = (
     body: BodyData,
     viewFromSebaka: boolean,
     sebakaGridTexture: THREE.CanvasTexture | null,
+    initialProps: MaterialProperties[string]
 ): THREE.Object3D => {
     const geometry = new THREE.SphereGeometry(body.size, 64, 64);
     geometry.computeTangents();
@@ -61,18 +62,22 @@ export const createBodyMesh = (
 
     if (body.type === 'Star') {
          const texturePaths: { [key: string]: { [key: string]: string } } = {
-             Alpha: { base: '/maps/goldenGiverTexture.jpg' },
-             Twilight: { base: '/maps/TwilightTexture.jpg' },
-             Beacon: { base: '/maps/BeaconTexture.png' },
+            Alpha: { base: '/maps/goldenGiverTexture.jpg', normal: '/maps/goldenGiver_normal.png', displacement: '/maps/goldenGiver_displacement.png' },
+            Twilight: { base: '/maps/TwilightTexture.jpg', normal: '/maps/Twilight_normal.png', displacement: '/maps/Twilight_displacement.png' },
+            Beacon: { base: '/maps/BeaconTexture.png', normal: '/maps/Beacon_normal.png', displacement: '/maps/Beacon_displacement.png' },
         };
         
         const paths = texturePaths[body.name];
         
         material = new THREE.MeshPhongMaterial({
             emissive: body.color,
-            emissiveIntensity: 1,
-            shininess: 10,
+            emissiveIntensity: initialProps.emissiveIntensity,
+            shininess: initialProps.shininess,
             map: paths?.base ? textureLoader.load(paths.base) : undefined,
+            normalMap: paths?.normal ? textureLoader.load(paths.normal) : undefined,
+            normalScale: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale),
+            displacementMap: paths?.displacement ? textureLoader.load(paths.displacement) : undefined,
+            displacementScale: initialProps.displacementScale,
         });
 
         mesh = new THREE.Mesh(geometry, material);
@@ -106,24 +111,24 @@ export const createBodyMesh = (
                 alphaIntensity: { value: 1.0 },
                 twilightIntensity: { value: 0.7 },
                 beaconIntensity: { value: 500.0 },
-                albedo: { value: 1.0 },
+                albedo: { value: initialProps.albedo },
                 planetTexture: { value: paths?.base ? textureLoader.load(paths.base) : null },
                 gridTexture: { value: null },
                 useGrid: { value: false },
                 ambientLevel: { value: 0.02 },
                 useNormalMap: { value: !!normalMap },
                 normalMap: { value: normalMap },
-                normalScale: { value: new THREE.Vector2(1, 1) },
+                normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
                 useDisplacementMap: { value: !!displacementMap },
                 displacementMap: { value: displacementMap },
-                displacementScale: { value: 1.0 },
+                displacementScale: { value: initialProps.displacementScale },
                 useSpecularMap: { value: !!specularMap },
                 specularMap: { value: specularMap },
-                specularIntensity: { value: 1.0 },
-                shininess: { value: 30.0 },
+                specularIntensity: { value: initialProps.specularIntensity },
+                shininess: { value: initialProps.shininess },
                 useAoMap: { value: !!aoMap },
                 aoMap: { value: aoMap },
-                aoMapIntensity: { value: 1.0 },
+                aoMapIntensity: { value: initialProps.aoMapIntensity },
             },
             vertexShader: planetShader.vertexShader,
             fragmentShader: planetShader.fragmentShader,

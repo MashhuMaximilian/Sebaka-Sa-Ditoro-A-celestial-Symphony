@@ -6,15 +6,17 @@ import { createBodyMesh, createGridTexture } from "../utils/createBodyMesh";
 import { createOrbitMesh } from "../utils/createOrbitMesh";
 import type { BodyData } from "./useBodyData";
 import { createStarfield } from "../utils/createStarfield";
+import { MaterialProperties } from "@/types";
 
 interface InitializeSceneProps {
     bodyData: BodyData[];
     setIsInitialized: (isInitialized: boolean) => void;
     viewFromSebaka: boolean;
     usePlainOrbits: boolean;
+    materialProperties: MaterialProperties;
 }
 
-export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka, usePlainOrbits }: InitializeSceneProps) => {
+export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka, usePlainOrbits, materialProperties }: InitializeSceneProps) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer>();
     const sceneRef = useRef<THREE.Scene>();
@@ -79,10 +81,10 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         orbitMeshesRef.current = [];
         
         bodyData.forEach(body => {
-            const bodyObject = createBodyMesh(body, viewFromSebaka, sebakaGridTexture);
+            const bodyObject = createBodyMesh(body, viewFromSebaka, sebakaGridTexture, materialProperties[body.name]);
             const mesh = bodyObject.getObjectByProperty('isMesh', true) as THREE.Mesh;
             
-            if (body.name === 'Sebaka') {
+            if (body.type === 'Planet' && body.name === 'Sebaka') {
                 sebakaRadiusRef.current = body.size;
             }
             scene.add(bodyObject);
@@ -142,7 +144,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 mountRef.current.removeChild(rendererRef.current.domElement);
             }
         };
-    }, [bodyData, viewFromSebaka, usePlainOrbits, sebakaGridTexture]);
+    }, [bodyData, viewFromSebaka, usePlainOrbits, sebakaGridTexture, materialProperties]);
 
     return {
         mountRef,

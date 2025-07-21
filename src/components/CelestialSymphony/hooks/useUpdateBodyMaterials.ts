@@ -6,7 +6,6 @@ import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 
 interface UpdateBodyMaterialsProps {
     planets: PlanetData[];
-    allBodiesRef: React.MutableRefObject<THREE.Object3D[]>;
     planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     isViridisAnimationActive: boolean;
     viewFromSebaka: boolean;
@@ -15,7 +14,6 @@ interface UpdateBodyMaterialsProps {
 
 export const useUpdateBodyMaterials = ({
     planets,
-    allBodiesRef,
     planetMeshesRef,
     isViridisAnimationActive,
     viewFromSebaka,
@@ -29,13 +27,16 @@ export const useUpdateBodyMaterials = ({
     useEffect(() => {
         planetMeshesRef.current.forEach((mesh) => {
             const planetData = planets.find(p => p.name === mesh.name);
+            if (!planetData) return;
+            const planetColor = new THREE.Color(planetData.color);
+            if (mesh.material instanceof THREE.ShaderMaterial) {
+                // This logic is currently not used but might be useful later.
+                // mesh.material.uniforms.baseColor.value.set(planetColor);
+            }
         });
     }, [planets, planetMeshesRef]);
 
     useEffect(() => {
-        // By iterating over planetMeshesRef, we ensure this logic only ever applies to planets,
-        // which use the custom ShaderMaterial, and not stars, which use MeshPhongMaterial.
-        // This prevents the rendering glitch seen when a slider was changed.
         planetMeshesRef.current.forEach((mesh) => {
             if (!mesh) return;
 

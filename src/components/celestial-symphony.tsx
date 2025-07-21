@@ -52,6 +52,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     setIsInitialized: props.setIsInitialized,
     viewFromSebaka: props.viewFromSebaka,
     usePlainOrbits: props.usePlainOrbits,
+    materialProperties: props.materialProperties,
   });
 
   useBodyClickHandler({
@@ -77,7 +78,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
 
   useUpdateBodyMaterials({
     planets: props.planets,
-    allBodiesRef,
     planetMeshesRef,
     isViridisAnimationActive: props.isViridisAnimationActive,
     viewFromSebaka: props.viewFromSebaka,
