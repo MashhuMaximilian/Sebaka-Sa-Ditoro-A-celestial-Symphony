@@ -4,51 +4,42 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 /**
  * A specialized version of OrbitControls for a third-person view on a spherical planet.
- * It follows a target, prevents the camera from going below the planet's surface,
- * and uses the planet's local "up" direction for camera orientation.
+ * It follows a target and is physically constrained by the planet's surface.
  */
 export class ThirdPersonOrbitControls {
   private camera: THREE.PerspectiveCamera;
   private domElement: HTMLElement;
   private target: THREE.Object3D;
   private planet: THREE.Mesh;
+  private planetRadius: number;
   
   public controls: OrbitControls;
-  private raycaster: THREE.Raycaster;
   
   private characterWorldPos = new THREE.Vector3();
-  private cameraWorldPos = new THREE.Vector3();
-  private cameraToCharacter = new THREE.Vector3();
+  private planetWorldPos = new THREE.Vector3();
 
   constructor(camera: THREE.PerspectiveCamera, domElement: HTMLElement, target: THREE.Object3D, planet: THREE.Mesh) {
     this.camera = camera;
     this.domElement = domElement;
     this.target = target;
     this.planet = planet;
+    this.planetRadius = (planet.geometry as THREE.SphereGeometry).parameters.radius;
     
     this.controls = new OrbitControls(this.camera, this.domElement);
-    this.raycaster = new THREE.Raycaster();
 
     this.init();
   }
 
   private init() {
-    this.controls.enablePan = false; // Panning is usually not desired for this camera style
+    this.controls.enablePan = false;
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     
-    // Set initial distance and angle
+    // Set initial distance and angle constraints
     this.controls.minDistance = 0.5;
-    this.controls.maxDistance = 10;
-    this.controls.minPolarAngle = 0; // Allow looking from directly above
-    this.controls.maxPolarAngle = Math.PI - 0.1; // Don't allow camera to go below horizon
-
-    // Set initial camera position
-    this.target.getWorldPosition(this.characterWorldPos);
-    this.camera.position.copy(this.characterWorldPos).add(new THREE.Vector3(0, 1, 2));
-    this.controls.target.copy(this.characterWorldPos);
-    
-    this.controls.update();
+    this.controls.maxDistance = 20;
+    this.controls.minPolarAngle = 0;
+    this.controls.maxPolarAngle = Math.PI; // Allow full orbit
   }
 
   public update() {
@@ -59,29 +50,17 @@ export class ThirdPersonOrbitControls {
     // 2. Perform the standard OrbitControls update
     this.controls.update();
     
-    // 3. Perform collision detection with the planet surface
-    this.camera.getWorldPosition(this.cameraWorldPos);
+    // 3. Enforce ground collision
+    this.planet.getWorldPosition(this.planetWorldPos);
     
-    // The ray should be cast from the character towards the camera
-    this.cameraToCharacter.subVectors(this.cameraWorldPos, this.characterWorldPos);
-    const distanceToCamera = this.cameraToCharacter.length();
-    this.cameraToCharacter.normalize();
+    const cameraToPlanetCenter = new THREE.Vector3().subVectors(this.camera.position, this.planetWorldPos);
+    const distanceToCenter = cameraToPlanetCenter.length();
+    const surfaceBuffer = 0.2; // A small buffer to prevent the camera from being exactly on the surface
 
-    // The raycaster needs to work in the planet's parent's coordinate space (world space)
-    this.raycaster.set(this.characterWorldPos, this.cameraToCharacter);
-    this.raycaster.far = distanceToCamera;
-
-    const intersects = this.raycaster.intersectObject(this.planet, false);
-
-    if (intersects.length > 0) {
-      // Collision detected! Move the camera to the intersection point.
-      const collisionPoint = intersects[0].point;
-      const newCamPos = collisionPoint.addScaledVector(this.cameraToCharacter, -0.1); // pull back slightly from surface
-      this.camera.position.copy(newCamPos);
-      
-      // Since we manually moved the camera, we need to make it look at the target again.
-      // This might not be strictly necessary as OrbitControls does this, but it adds robustness.
-      this.camera.lookAt(this.controls.target);
+    // If camera is inside the planet, push it out to the surface
+    if (distanceToCenter < this.planetRadius + surfaceBuffer) {
+      cameraToPlanetCenter.setLength(this.planetRadius + surfaceBuffer);
+      this.camera.position.copy(this.planetWorldPos).add(cameraToPlanetCenter);
     }
   }
 

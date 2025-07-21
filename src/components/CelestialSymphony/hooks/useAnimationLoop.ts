@@ -27,7 +27,6 @@ interface AnimationLoopParams {
     planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     orbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
-    sebakaRadiusRef: React.MutableRefObject<number>;
     isInitialized: boolean;
     cameraTarget: string | null;
 };
@@ -50,7 +49,6 @@ export const useAnimationLoop = ({
   planetMeshesRef,
   orbitMeshesRef,
   beaconPositionRef,
-  sebakaRadiusRef,
   isInitialized,
 }: AnimationLoopParams) => {
   const clockRef = useRef(new THREE.Clock());
@@ -85,25 +83,30 @@ export const useAnimationLoop = ({
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
       thirdPersonControlsRef.current = new ThirdPersonOrbitControls(camera, renderer.domElement, characterControllerRef.current.characterMesh, sebakaMesh);
       
-      const charWorldPos = new THREE.Vector3();
-      characterControllerRef.current.characterMesh.getWorldPosition(charWorldPos);
-      
+      // Set a closer, more "behind the shoulder" initial view
+      const startDistance = 2; // Much closer
+      thirdPersonControlsRef.current.controls.minDistance = 0.5; // Allow zooming in very close
+      thirdPersonControlsRef.current.controls.maxDistance = 20; // Limit max zoom out
+
+      const characterWorldPos = new THREE.Vector3();
+      characterControllerRef.current.characterMesh.getWorldPosition(characterWorldPos);
+
       const planetWorldPos = new THREE.Vector3();
       sebakaMesh.getWorldPosition(planetWorldPos);
 
-      const upVector = charWorldPos.clone().sub(planetWorldPos).normalize();
+      // Vector from planet center to character is the "up" direction
+      const upVector = characterWorldPos.clone().sub(planetWorldPos).normalize();
       
-      // Get the character's forward direction to position camera behind it
-      const forwardVector = new THREE.Vector3();
-      characterControllerRef.current.characterMesh.getWorldDirection(forwardVector);
-      
+      // A vector pointing "forward" from the character. We can start by assuming a direction, e.g., along the planet's Z-axis in its local space.
+      const forwardVector = new THREE.Vector3(0,0,1).applyQuaternion(sebakaMesh.quaternion).normalize();
+
       // Position camera behind and slightly above the character
-      const behindOffset = forwardVector.clone().multiplyScalar(-1.5); // Start behind
-      const aboveOffset = upVector.clone().multiplyScalar(0.75); // Start slightly above
-      const cameraPos = charWorldPos.clone().add(behindOffset).add(aboveOffset);
+      const behindOffset = forwardVector.clone().multiplyScalar(-startDistance);
+      const aboveOffset = upVector.clone().multiplyScalar(startDistance * 0.5); // Elevate it a bit
+      const cameraPos = characterWorldPos.clone().add(behindOffset).add(aboveOffset);
       
       camera.position.copy(cameraPos);
-      thirdPersonControlsRef.current.controls.target.copy(charWorldPos);
+      thirdPersonControlsRef.current.controls.target.copy(characterWorldPos);
       thirdPersonControlsRef.current.controls.update();
 
     } else {
@@ -262,5 +265,3 @@ export const useAnimationLoop = ({
     longitude, 
   ]);
 };
-
-    
