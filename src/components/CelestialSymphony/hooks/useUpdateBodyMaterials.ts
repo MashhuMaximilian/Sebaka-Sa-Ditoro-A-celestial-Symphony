@@ -33,8 +33,10 @@ export const useUpdateBodyMaterials = ({
     }, [planets, planetMeshesRef]);
 
     useEffect(() => {
-        allBodiesRef.current.forEach((bodyObject) => {
-            const mesh = bodyObject.getObjectByProperty('isMesh', true) as THREE.Mesh;
+        // By iterating over planetMeshesRef, we ensure this logic only ever applies to planets,
+        // which use the custom ShaderMaterial, and not stars, which use MeshPhongMaterial.
+        // This prevents the rendering glitch seen when a slider was changed.
+        planetMeshesRef.current.forEach((mesh) => {
             if (!mesh) return;
 
             const props = materialProperties[mesh.name];
@@ -78,14 +80,9 @@ export const useUpdateBodyMaterials = ({
                 if (uniforms.aoMapIntensity && props.aoMapIntensity !== undefined && uniforms.aoMapIntensity.value !== props.aoMapIntensity) {
                     uniforms.aoMapIntensity.value = props.aoMapIntensity;
                 }
-
-            } else if (mesh.material instanceof THREE.MeshPhongMaterial) {
-                 if (props.emissiveIntensity !== undefined && mesh.material.emissiveIntensity !== props.emissiveIntensity) {
-                    mesh.material.emissiveIntensity = props.emissiveIntensity;
-                 }
             }
         });
-    }, [materialProperties, allBodiesRef]);
+    }, [materialProperties, planetMeshesRef]);
 
 
     useEffect(() => {
