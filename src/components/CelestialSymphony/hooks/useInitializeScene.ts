@@ -74,8 +74,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         controls.target.set(0, 0, 0);
         controlsRef.current = controls;
         
-        // Lighting is now handled by custom shaders per-planet. No scene-wide lights needed.
-        
         allBodiesRef.current = [];
         planetMeshesRef.current = [];
         orbitMeshesRef.current = [];
@@ -89,7 +87,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
             }
             scene.add(bodyObject);
             allBodiesRef.current.push(bodyObject);
-            if (mesh && body.type === 'Planet') planetMeshesRef.current.push(mesh);
+            if (mesh && body.type !== 'Star') planetMeshesRef.current.push(mesh);
             
             const orbit = createOrbitMesh(body, usePlainOrbits);
             if (orbit) {
@@ -144,7 +142,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 mountRef.current.removeChild(rendererRef.current.domElement);
             }
         };
-    }, [bodyData, viewFromSebaka, usePlainOrbits, sebakaGridTexture, materialProperties]);
+    }, [bodyData, viewFromSebaka, usePlainOrbits, sebakaGridTexture]);
 
     return {
         mountRef,
