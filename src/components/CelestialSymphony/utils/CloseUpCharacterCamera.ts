@@ -8,7 +8,7 @@ export class CloseUpCharacterCamera {
   public planet: THREE.Mesh;
   
   private planetRadius: number;
-  private distance = 0.5;
+  private distance = 0.2; // Default to min zoom
   private height = eyeHeight;
   
   private isMouseDown = false;
@@ -90,7 +90,7 @@ export class CloseUpCharacterCamera {
     this.distance = THREE.MathUtils.clamp(
       this.distance + event.deltaY * 0.01,
       0.2,  // Min zoom (point blank)
-      5     // Max zoom (closer)
+      40     // Max zoom
     );
   }
   
@@ -104,32 +104,34 @@ export class CloseUpCharacterCamera {
     // Vector from planet center to character
     const toCharacter = characterWorldPos.clone().sub(planetWorldPos);
     
-    // Create a local coordinate system at the character's position
+    // Create a stable local coordinate system at the character's position
+    // This system is independent of the character's own rotation.
     const surfaceNormal = toCharacter.clone().normalize(); // This is our "UP"
     const someVector = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
     const forward = new THREE.Vector3().crossVectors(surfaceNormal, someVector).normalize();
     const right = new THREE.Vector3().crossVectors(forward, surfaceNormal).normalize();
     
-    // Calculate the camera's offset from the character
+    // Calculate the camera's offset based on mouse input angles
     const horizontalOffset = this.distance * Math.cos(this.verticalAngle) * Math.sin(this.horizontalAngle);
     const verticalOffset = this.distance * Math.sin(this.verticalAngle);
     const depthOffset = this.distance * Math.cos(this.verticalAngle) * Math.cos(this.horizontalAngle);
 
-    // Combine offsets to get the ideal position
+    // Combine offsets based on our stable coordinate system
     const offset = right.multiplyScalar(horizontalOffset)
                    .add(surfaceNormal.multiplyScalar(verticalOffset))
                    .add(forward.multiplyScalar(depthOffset));
 
     const idealCameraPos = characterWorldPos.clone().add(offset);
     
-    // --- Ground Pinning ---
-    // Now, ensure this position is on the surface
+    // --- Enforce Ground Pinning ---
+    // Ensure the final camera position is on the surface
     const cameraToPlanetCenter = idealCameraPos.clone().sub(planetWorldPos);
     const finalCamPos = planetWorldPos.clone().add(cameraToPlanetCenter.normalize().multiplyScalar(this.planetRadius + this.height));
 
     this.camera.position.copy(finalCamPos);
     
-    // --- Upright Orientation ---
+    // --- Enforce Upright Orientation ---
+    // The "up" direction for the camera is always away from the planet's center
     const cameraUp = this.camera.position.clone().sub(planetWorldPos).normalize();
     this.camera.up.copy(cameraUp);
 
