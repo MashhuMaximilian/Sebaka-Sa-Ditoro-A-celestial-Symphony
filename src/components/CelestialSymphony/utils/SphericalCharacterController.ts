@@ -40,16 +40,12 @@ export class SphericalCharacterController {
       lonRad
     );
     this.characterMesh.position.copy(localPosition);
-
+    
+    // The character's "up" is always pointing away from the planet center.
+    // The rest of its orientation is inherited from the parent planet's rotation.
+    // We no longer call lookAt() here, which was causing the wiggle.
     const upVector = localPosition.clone().normalize();
     this.characterMesh.up.copy(upVector);
-
-    const lookAtTarget = new THREE.Vector3().setFromSphericalCoords(
-      this.planetRadius,
-      THREE.MathUtils.degToRad(89 - latitude),
-      lonRad
-    );
-    this.characterMesh.lookAt(lookAtTarget);
   }
 
   public dispose() {
