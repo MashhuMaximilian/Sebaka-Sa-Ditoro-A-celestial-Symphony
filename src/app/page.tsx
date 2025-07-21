@@ -212,7 +212,7 @@ const initialMaterialProperties: MaterialProperties = {
   Liminis: { albedo: 0.72, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 32, specularIntensity: 0.00, aoMapIntensity: 2.00 },
 };
 
-type ActiveSebakaPanel = 'time' | 'look' | 'move';
+type ActiveSebakaPanel = 'time' | 'move';
 
 export default function Home() {
   const [planets, setPlanets] = useState<PlanetData[]>(initialPlanets);
@@ -225,7 +225,6 @@ export default function Home() {
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [longitude, setLongitude] = useState(0);
   const [latitude, setLatitude] = useState(0);
-  const [sebakaCamera, setSebakaCamera] = useState({ pitch: 0, yaw: 0, fov: 2.0 });
   const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [materialProperties, setMaterialProperties] = useState(initialMaterialProperties);
@@ -271,10 +270,6 @@ export default function Home() {
   const handleLatitudeChange = (value: number[]) => {
     setLatitude(value[0]);
   };
-  
-  const handleSebakaCameraChange = (prop: keyof typeof sebakaCamera, value: number) => {
-    setSebakaCamera(prev => ({ ...prev, [prop]: value }));
-  }
 
   const resetSpeed = () => {
     setSpeedMultiplier(24);
@@ -306,7 +301,6 @@ export default function Home() {
           setViewFromSebaka(true);
           setLongitude(0);
           setLatitude(0);
-          setSebakaCamera({ pitch: -45, yaw: 0, fov: 0.5 });
           setActiveSebakaPanel(null);
       }
   }
@@ -415,55 +409,6 @@ export default function Home() {
                 </div>
             </>
         ),
-        look: (
-            <>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Turn Character
-                    </Label>
-                    <Slider
-                        id="look-yaw-slider"
-                        min={0}
-                        max={360}
-                        step={1}
-                        value={[sebakaCamera.yaw]}
-                        onValueChange={(val) => handleSebakaCameraChange('yaw', val[0])}
-                        className="w-full"
-                    />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.yaw.toFixed(0)}°</span>
-                </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="look-angle-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Camera Angle
-                    </Label>
-                    <Slider
-                        id="look-angle-slider"
-                        min={-90}
-                        max={90}
-                        step={1}
-                        value={[sebakaCamera.pitch]}
-                        onValueChange={(val) => handleSebakaCameraChange('pitch', val[0])}
-                        className="w-full"
-                    />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.pitch.toFixed(0)}°</span>
-                </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="fov-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Camera Distance
-                    </Label>
-                    <Slider
-                        id="fov-slider"
-                        min={0.5}
-                        max={5}
-                        step={0.1}
-                        value={[sebakaCamera.fov]}
-                        onValueChange={(val) => handleSebakaCameraChange('fov', val[0])}
-                        className="w-full"
-                    />
-                     <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.fov.toFixed(1)}</span>
-                </div>
-            </>
-        ),
         move: (
             <>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
@@ -519,9 +464,6 @@ export default function Home() {
         isSebakaRotating={isSebakaRotating}
         longitude={longitude}
         latitude={latitude}
-        cameraPitch={sebakaCamera.pitch}
-        cameraYaw={sebakaCamera.yaw}
-        cameraFov={sebakaCamera.fov}
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
@@ -677,14 +619,13 @@ export default function Home() {
           {viewFromSebaka ? (
               <div className="flex flex-col-reverse items-center gap-2">
                   <div className="flex items-center justify-center gap-2 w-full">
-                      {(['time', 'look', 'move'] as const).map((panelId) => (
+                      {(['time', 'move'] as const).map((panelId) => (
                            <Button 
                               key={panelId}
                               onClick={() => handleSebakaPanelToggle(panelId)}
                               variant={activeSebakaPanel === panelId ? "secondary" : "default"}
-                              className="backdrop-blur-sm p-4 rounded-lg shadow-lg text-foreground flex-1 basis-1/3 capitalize"
+                              className="backdrop-blur-sm p-4 rounded-lg shadow-lg text-foreground flex-1 basis-1/2 capitalize"
                           >
-                              {panelId === 'look' ? <Camera className="mr-2 h-4 w-4"/> : null}
                               {panelId === 'move' ? <PersonStanding className="mr-2 h-4 w-4"/> : null}
                               {panelId === 'time' ? <History className="mr-2 h-4 w-4"/> : null}
                               {panelId}

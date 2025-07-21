@@ -31,10 +31,10 @@ export const useCameraControl = ({
 }: CameraControlProps) => {
 
     useEffect(() => {
-        if (!camera || !controls) return;
+        if (!camera || !controls || viewFromSebaka) return;
 
         const followTarget = () => {
-            if (cameraTarget && !viewFromSebaka) {
+            if (cameraTarget) {
                 const targetBodyObject = allBodiesRef.current.find(b => b.name === cameraTarget);
                 if (targetBodyObject) {
                     controls.target.copy(targetBodyObject.position);
@@ -63,7 +63,7 @@ export const useCameraControl = ({
         let targetPosition = new THREE.Vector3(0, 0, 0);
         let desiredCameraPosition: THREE.Vector3 | null = null;
         
-        if (cameraTarget === 'Binary Stars') {
+        if (cameraTarget === 'Binary Stars' || cameraTarget === 'Sebaka') { // Focus on Sebaka initially for a better default view
             targetPosition.set(0, 0, 0);
             desiredCameraPosition = originalCameraPosRef.current.clone();
         } else if (cameraTarget === 'Beacon System') {
@@ -98,14 +98,9 @@ export const useCameraControl = ({
             camera.far = 200000;
             controls.enabled = true;
             controls.target.set(0, 0, 0);
+            camera.position.copy(originalCameraPosRef.current);
         }
         camera.updateProjectionMatrix();
-    }, [viewFromSebaka, camera, controls]);
-
-    useEffect(() => {
-        if (camera && !viewFromSebaka) {
-            camera.fov = 75; // Reset FOV for orbital view
-            camera.updateProjectionMatrix();
-        }
-    }, [camera, viewFromSebaka]);
+    }, [viewFromSebaka, camera, controls, originalCameraPosRef]);
 };
+

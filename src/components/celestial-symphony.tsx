@@ -18,9 +18,6 @@ export interface CelestialSymphonyProps {
   isSebakaRotating: boolean;
   longitude: number;
   latitude: number;
-  cameraPitch: number;
-  cameraYaw: number;
-  cameraFov: number;
   isViridisAnimationActive: boolean;
   onTimeUpdate: (elapsedHours: number) => void;
   goToTime: number | null;
