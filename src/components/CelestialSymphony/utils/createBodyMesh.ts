@@ -97,8 +97,8 @@ export const createBodyMesh = (
                 break;
             case 'Sebaka': 
                 textureUrl = '/maps/SebakaTexture.png';
-                uniforms.normalMap.value = textureLoader.load('/maps/Sebaka_normal.png');
-                uniforms.displacementMap.value = textureLoader.load('/maps/Sebaka_displacement.png');
+                uniforms.normalMap.value = textureLoader.load('/maps/SebakaNormalMap.png');
+                uniforms.displacementMap.value = textureLoader.load('/maps/SebakaDisplacementMap.png');
                 break;
         }
 
@@ -126,6 +126,18 @@ export const createBodyMesh = (
     mesh.name = body.name;
     mesh.castShadow = true;
     mesh.receiveShadow = true;
+
+    if (body.type === 'Planet' && body.axialTilt) {
+        const tiltDegrees = parseFloat(body.axialTilt.replace('°', ''));
+        if (!isNaN(tiltDegrees)) {
+            const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
+            // Apply axial tilt around the world's X-axis after orbital rotation
+            const tiltQuaternion = new THREE.Quaternion().setFromAxisAngle(
+                new THREE.Vector3(1, 0, 0), tiltRadians
+            );
+            mesh.userData.tiltQuaternion = tiltQuaternion;
+        }
+    }
 
     if (body.type === 'Planet' && body.name === "Spectris") {
         const ringCount = Math.floor(Math.random() * 70) + 80;

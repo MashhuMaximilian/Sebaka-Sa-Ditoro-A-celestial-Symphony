@@ -326,7 +326,8 @@ export default function Home() {
     } else {
       setSpeedMultiplier(0);
       setSpeedInput('0');
-      setIsSebakaRotating(false);
+      // We don't automatically pause rotation here anymore to allow manual control.
+      // setIsSebakaRotating(false); 
     }
   };
   
