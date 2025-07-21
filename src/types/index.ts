@@ -35,6 +35,8 @@ export interface StarData extends CelestialBody {
   luminosity?: number;
 }
 
+export type AnyBodyData = PlanetData | StarData;
+
 export interface MaterialProperties {
   [key: string]: {
     normalScale: number;

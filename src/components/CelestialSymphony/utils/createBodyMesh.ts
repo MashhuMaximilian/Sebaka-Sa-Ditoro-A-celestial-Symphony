@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { planetShader } from '../shaders/planetShader';
 import { spiderStrandShader } from '../shaders/spiderStrandShader';
+import type { PlanetData } from '@/types';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -52,8 +53,11 @@ export const createBodyMesh = (
     geometry.computeTangents();
     let material: THREE.Material;
     
-    const bodyObjectContainer = new THREE.Object3D();
-    bodyObjectContainer.name = body.name;
+    // This Object3D will handle the orbital position and axial tilt
+    const tiltAxis = new THREE.Object3D();
+    tiltAxis.name = body.name;
+
+    let mesh: THREE.Mesh;
 
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
@@ -70,10 +74,8 @@ export const createBodyMesh = (
              Object.assign(starMaterialOptions, { map: textureLoader.load('/maps/BeaconTexture.png') });
         }
         material = new THREE.MeshPhongMaterial(starMaterialOptions);
-        const mesh = new THREE.Mesh(geometry, material);
+        mesh = new THREE.Mesh(geometry, material);
         mesh.name = body.name; // Keep name on mesh for raycasting
-        bodyObjectContainer.add(mesh);
-
     } else { // It's a planet
         const uniforms = THREE.UniformsUtils.clone(planetShader.uniforms);
         let textureUrl = '';
@@ -121,19 +123,10 @@ export const createBodyMesh = (
             transparent: body.name === 'Spectris' || body.name === 'Aetheris',
         });
 
-        const mesh = new THREE.Mesh(geometry, material!);
+        mesh = new THREE.Mesh(geometry, material!);
         mesh.name = body.name;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-
-        if (body.type === 'Planet' && body.axialTilt) {
-            const tiltDegrees = parseFloat(body.axialTilt.replace('°', ''));
-            if (!isNaN(tiltDegrees)) {
-                const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
-                bodyObjectContainer.rotation.set(0, 0, tiltRadians, 'XYZ');
-            }
-        }
-        bodyObjectContainer.add(mesh);
 
         if (body.name === "Spectris") {
             const ringCount = Math.floor(Math.random() * 70) + 80;
@@ -183,5 +176,17 @@ export const createBodyMesh = (
         }
     }
     
-    return bodyObjectContainer;
+    // Apply axial tilt to the container object. The mesh inside will then rotate on this tilted axis.
+    if (body.type === 'Planet' && body.axialTilt) {
+        const planetBody = body as PlanetData;
+        const tiltDegrees = parseFloat(planetBody.axialTilt.replace('°', ''));
+        if (!isNaN(tiltDegrees)) {
+            const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
+            // We set the rotation of the container. The mesh inside will spin on its own Y-axis.
+            tiltAxis.rotation.set(0, 0, tiltRadians, 'XYZ');
+        }
+    }
+
+    tiltAxis.add(mesh);
+    return tiltAxis;
 };

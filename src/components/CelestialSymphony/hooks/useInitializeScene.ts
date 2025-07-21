@@ -23,7 +23,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
     const [sebakaGridTexture, setSebakaGridTexture] = useState<THREE.CanvasTexture | null>(null);
 
 
-    const allBodiesRef = useRef<THREE.Mesh[]>([]);
+    const allBodiesRef = useRef<THREE.Object3D[]>([]);
     const planetMeshesRef = useRef<THREE.Mesh[]>([]);
     const orbitMeshesRef = useRef<THREE.Mesh[]>([]);
     const beaconPositionRef = useRef(new THREE.Vector3());
@@ -87,7 +87,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
             }
             scene.add(bodyObject);
             allBodiesRef.current.push(bodyObject);
-            if (body.type === 'Planet') planetMeshesRef.current.push(mesh);
+            if (mesh && body.type === 'Planet') planetMeshesRef.current.push(mesh);
             
             const orbit = createOrbitMesh(body, usePlainOrbits);
             if (orbit) {

@@ -35,7 +35,7 @@ export const updateAllBodyPositions = (
       let x, z;
       const angle = currentHours * data.radsPerHour;
 
-      if (data.eccentric && data.eccentricity) {
+      if (data.type === 'Planet' && data.eccentric && data.eccentricity) {
           const eccentricity = data.eccentricity;
           const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
           const focus = semiMajorAxis * eccentricity;

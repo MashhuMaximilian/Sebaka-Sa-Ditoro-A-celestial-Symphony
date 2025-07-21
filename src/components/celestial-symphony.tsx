@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { PlanetData, StarData, MaterialProperties } from "@/types";
+import type { PlanetData, StarData, MaterialProperties, AnyBodyData } from "@/types";
 import { useAnimationLoop } from "./CelestialSymphony/hooks/useAnimationLoop";
 import { useBodyClickHandler } from "./CelestialSymphony/hooks/useBodyClickHandler";
 import { useCameraControl } from "./CelestialSymphony/hooks/useCameraControl";
@@ -68,7 +68,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     cameraTarget: props.cameraTarget,
     viewFromSebaka: props.viewFromSebaka,
     cameraFov: props.cameraFov,
-    allBodiesRef: allBodiesRef as React.MutableRefObject<THREE.Mesh[]>,
+    allBodiesRef,
     bodyData,
     beaconPositionRef,
     originalCameraPosRef,
@@ -77,7 +77,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
 
   useUpdateBodyMaterials({
     planets: props.planets,
-    allBodiesRef: allBodiesRef as React.MutableRefObject<THREE.Mesh[]>,
+    allBodiesRef,
     planetMeshesRef,
     isViridisAnimationActive: props.isViridisAnimationActive,
     viewFromSebaka: props.viewFromSebaka,
@@ -91,7 +91,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     camera: cameraRef.current,
     renderer: rendererRef.current,
     controls: controlsRef.current,
-    allBodiesRef: allBodiesRef as React.MutableRefObject<THREE.Mesh[]>,
+    allBodiesRef,
     planetMeshesRef,
     orbitMeshesRef,
     beaconPositionRef,

@@ -25,7 +25,7 @@ interface AnimationLoopParams {
     camera: THREE.PerspectiveCamera | undefined;
     renderer: THREE.WebGLRenderer | undefined;
     controls: OrbitControls | undefined;
-    allBodiesRef: React.MutableRefObject<THREE.Mesh[]>;
+    allBodiesRef: React.MutableRefObject<THREE.Object3D[]>;
     planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     orbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -100,17 +100,17 @@ export const useAnimationLoop = ({
       onTimeUpdate(elapsedHoursRef.current);
       updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
 
-      const alphaStarMesh = allBodiesRef.current.find(b => b.name === 'Alpha');
-      const twilightStarMesh = allBodiesRef.current.find(b => b.name === 'Twilight');
-      const beaconStarMesh = allBodiesRef.current.find(b => b.name === 'Beacon');
+      const alphaStarBody = allBodiesRef.current.find(b => b.name === 'Alpha');
+      const twilightStarBody = allBodiesRef.current.find(b => b.name === 'Twilight');
+      const beaconStarBody = allBodiesRef.current.find(b => b.name === 'Beacon');
       
-      if (alphaStarMesh && twilightStarMesh && beaconStarMesh) {
+      if (alphaStarBody && twilightStarBody && beaconStarBody) {
           // Update shader uniforms for all planets
           planetMeshesRef.current.forEach(planetMesh => {
               if (planetMesh.material instanceof THREE.ShaderMaterial) {
-                  planetMesh.material.uniforms.alphaStarPos.value.copy(alphaStarMesh.position);
-                  planetMesh.material.uniforms.twilightStarPos.value.copy(twilightStarMesh.position);
-                  planetMesh.material.uniforms.beaconStarPos.value.copy(beaconStarMesh.position);
+                  planetMesh.material.uniforms.alphaStarPos.value.copy(alphaStarBody.position);
+                  planetMesh.material.uniforms.twilightStarPos.value.copy(twilightStarBody.position);
+                  planetMesh.material.uniforms.beaconStarPos.value.copy(beaconStarBody.position);
               }
           });
           
@@ -121,9 +121,9 @@ export const useAnimationLoop = ({
               if (mat instanceof THREE.ShaderMaterial && mat.uniforms.hasOwnProperty('alphaStarPos')) {
                   const uniforms = mat.uniforms;
                   uniforms.time.value = elapsedHoursRef.current * 0.001;
-                  uniforms.alphaStarPos.value.copy(alphaStarMesh.position);
-                  uniforms.twilightStarPos.value.copy(twilightStarMesh.position);
-                  uniforms.beaconStarPos.value.copy(beaconStarMesh.position);
+                  uniforms.alphaStarPos.value.copy(alphaStarBody.position);
+                  uniforms.twilightStarPos.value.copy(twilightStarBody.position);
+                  uniforms.beaconStarPos.value.copy(beaconStarBody.position);
               }
             });
           };
@@ -160,8 +160,7 @@ export const useAnimationLoop = ({
         });
       }
 
-      const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-      const sebakaTiltAxis = sebakaMesh?.parent as THREE.Object3D | undefined;
+      const sebakaBody = allBodiesRef.current.find(p => p.name === 'Sebaka');
 
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.name === 'Gelidis_orbit');
       const liminisOrbit = orbitMeshesRef.current.find(o => o.name === 'Liminis_orbit');
@@ -178,7 +177,7 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebakaRef.current && sebakaMesh && sebakaTiltAxis) {
+      if (viewFromSebakaRef.current && sebakaBody) {
         const lat = playerInputsRef.current.latitude;
         const lon = playerInputsRef.current.longitude;
         const pitch = playerInputsRef.current.pitch;
@@ -191,34 +190,41 @@ export const useAnimationLoop = ({
         
         const radius = sebakaRadiusRef.current + 0.1;
         
+        // This is the tricky part: getting the camera position relative to a tilted, rotating planet.
+        const sebakaMesh = sebakaBody.children[0] as THREE.Mesh; // The mesh is the first child of the tilt container
+        
         const cameraLocalPosition = new THREE.Vector3();
         cameraLocalPosition.setFromSphericalCoords(radius, latRad, lonRad);
-        
-        // Apply Sebaka's rotation to the camera's local position
-        const sebakaWorldQuaternion = new THREE.Quaternion();
-        sebakaMesh.getWorldQuaternion(sebakaWorldQuaternion);
-        cameraLocalPosition.applyQuaternion(sebakaWorldQuaternion);
 
-        camera.position.copy(sebakaTiltAxis.position).add(cameraLocalPosition);
+        // First, apply the planet's self-rotation to the local position
+        cameraLocalPosition.applyQuaternion(sebakaMesh.quaternion);
+
+        // Then, apply the container's tilt (world rotation) to the position
+        cameraLocalPosition.applyQuaternion(sebakaBody.quaternion);
+
+        // Now, set the camera's world position
+        camera.position.copy(sebakaBody.position).add(cameraLocalPosition);
         
+        // Get the world 'up' vector from the camera's local position relative to the planet's center
         const up = cameraLocalPosition.clone().normalize();
         camera.up.copy(up);
-        
-        const tangent = new THREE.Vector3().crossVectors(up, new THREE.Vector3(0, 1, 0)).normalize();
-        const forward = new THREE.Vector3().crossVectors(up, tangent).normalize();
-        
-        camera.lookAt(camera.position.clone().add(forward));
 
+        // Point the camera towards the planet's center initially
+        camera.lookAt(sebakaBody.position);
+        
+        // Now, apply the player's 'look' rotation (pitch and yaw)
+        // We do this by creating rotation quaternions around the camera's local axes
         const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRad);
         const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawRad);
         
-        const rotationQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
-        camera.quaternion.multiply(rotationQuat);
+        // Apply yaw first, then pitch relative to the new orientation
+        camera.quaternion.multiply(yawQuat);
+        camera.quaternion.multiply(pitchQuat);
 
-        const forwardVector = new THREE.Vector3();
-        camera.getWorldDirection(forwardVector);
-        controls.target.copy(camera.position).add(forwardVector);
+        // We don't need to manually set controls.target in this mode.
+        // Let OrbitControls handle it if/when it's re-enabled.
         controls.update();
+
       } else {
         controls.update();
       }

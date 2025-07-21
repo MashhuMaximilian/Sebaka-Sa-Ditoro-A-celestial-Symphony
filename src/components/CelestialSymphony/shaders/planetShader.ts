@@ -10,23 +10,23 @@ export const planetShader = {
     alphaColor: { value: new THREE.Color(0xfff8e7) },
     twilightColor: { value: new THREE.Color(0xfff0d4) },
     beaconColor: { value: new THREE.Color(0xaaccff) },
-    alphaIntensity: { value: 1.8 },
-    twilightIntensity: { value: 1.0 },
-    beaconIntensity: { value: 25.0 },
+    alphaIntensity: { value: 1.0 },
+    twilightIntensity: { value: 0.7 },
+    beaconIntensity: { value: 1000.0 },
     
     // Planet properties
     albedo: { value: 1.0 },
-    planetTexture: { value: null },
-    gridTexture: { value: null },
+    planetTexture: { value: null as THREE.Texture | null },
+    gridTexture: { value: null as THREE.CanvasTexture | null },
     useGrid: { value: false },
     ambientLevel: { value: 0.02 },
 
     // Normal and displacement maps
     useNormalMap: { value: false },
-    normalMap: { value: null },
+    normalMap: { value: null as THREE.Texture | null },
     normalScale: { value: new THREE.Vector2(1, 1) },
     useDisplacementMap: { value: false },
-    displacementMap: { value: null },
+    displacementMap: { value: null as THREE.Texture | null },
     displacementScale: { value: 1.0 },
   },
   
@@ -94,9 +94,9 @@ export const planetShader = {
     varying mat3 vTBN;
     
     void main() {
-      // Get base texture color and apply albedo
+      // Get base texture color
       vec4 texColor = texture2D(planetTexture, vUv);
-      vec3 baseColor = texColor.rgb * albedo;
+      vec3 baseColor = texColor.rgb;
 
       if (useGrid) {
         vec4 gridColor = texture2D(gridTexture, vUv);
@@ -138,9 +138,9 @@ export const planetShader = {
       
       // Add minimal ambient lighting
       lighting += vec3(ambientLevel);
-      
-      // Apply lighting to base color
-      vec3 finalColor = baseColor * lighting;
+
+      // Mix between base color and lit color based on albedo
+      vec3 finalColor = mix(baseColor, baseColor * lighting, albedo);
       
       gl_FragColor = vec4(finalColor, texColor.a);
     }
