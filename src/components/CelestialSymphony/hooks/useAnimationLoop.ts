@@ -6,6 +6,7 @@ import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 import type { BodyData } from "./useBodyData";
 import type { PlanetData } from "@/types";
+import { spiderStrandShader } from "../shaders/spiderStrandShader";
 
 // Define props directly to avoid circular dependency
 interface AnimationLoopParams {
@@ -95,19 +96,44 @@ export const useAnimationLoop = ({
       onTimeUpdate(elapsedHoursRef.current);
       updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
 
-      const goldenGiverMesh = allBodiesRef.current.find(b => b.name === 'Alpha');
-      const twilightMesh = allBodiesRef.current.find(b => b.name === 'Twilight');
-      const beaconMesh = allBodiesRef.current.find(b => b.name === 'Beacon');
+      const alphaStarMesh = allBodiesRef.current.find(b => b.name === 'Alpha');
+      const twilightStarMesh = allBodiesRef.current.find(b => b.name === 'Twilight');
+      const beaconStarMesh = allBodiesRef.current.find(b => b.name === 'Beacon');
       
-      // Update shader uniforms for all planets
-      if (goldenGiverMesh && twilightMesh && beaconMesh) {
+      if (alphaStarMesh && twilightStarMesh && beaconStarMesh) {
+          // Update shader uniforms for all planets
           planetMeshesRef.current.forEach(planetMesh => {
               if (planetMesh.material instanceof THREE.ShaderMaterial) {
-                  planetMesh.material.uniforms.alphaStarPos.value.copy(goldenGiverMesh.position);
-                  planetMesh.material.uniforms.twilightStarPos.value.copy(twilightMesh.position);
-                  planetMesh.material.uniforms.beaconStarPos.value.copy(beaconMesh.position);
+                  planetMesh.material.uniforms.alphaStarPos.value.copy(alphaStarMesh.position);
+                  planetMesh.material.uniforms.twilightStarPos.value.copy(twilightStarMesh.position);
+                  planetMesh.material.uniforms.beaconStarPos.value.copy(beaconStarMesh.position);
               }
           });
+          
+          // Update spider strand shader uniforms (orbits and rings)
+          const updateSpiderStrandMaterial = (material: THREE.Material) => {
+              if (material instanceof THREE.ShaderMaterial && material.uniforms.hasOwnProperty('alphaStarPos')) {
+                  const uniforms = material.uniforms;
+                  uniforms.time.value = elapsedHoursRef.current * 0.001;
+                  uniforms.alphaStarPos.value.copy(alphaStarMesh.position);
+                  uniforms.twilightStarPos.value.copy(twilightStarMesh.position);
+                  uniforms.beaconStarPos.value.copy(beaconStarMesh.position);
+                  uniforms.cameraPosition.value.copy(camera.position);
+              }
+          };
+
+          orbitMeshesRef.current.forEach(orbitMesh => {
+              updateSpiderStrandMaterial(orbitMesh.material);
+          });
+          
+          const spectrisMesh = planetMeshesRef.current.find(p => p.name === 'Spectris');
+          if (spectrisMesh) {
+              spectrisMesh.children.forEach(child => {
+                  if (child instanceof THREE.Mesh) {
+                     updateSpiderStrandMaterial(child.material);
+                  }
+              });
+          }
       }
       
       if (isSebakaRotatingRef.current) {
