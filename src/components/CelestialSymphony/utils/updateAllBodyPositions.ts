@@ -1,6 +1,7 @@
 
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
+import { PlanetData } from '@/types';
 
 export const updateAllBodyPositions = (
     currentHours: number,
