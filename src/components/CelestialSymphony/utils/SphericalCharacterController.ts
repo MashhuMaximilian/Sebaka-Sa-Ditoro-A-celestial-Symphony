@@ -1,6 +1,7 @@
 
 import * as THREE from 'three';
 import { eyeHeight } from '../constants/config';
+import { spiderStrandShader } from '../shaders/spiderStrandShader';
 
 /**
  * A controller to manage a character object that is "stuck" to the surface
@@ -23,7 +24,20 @@ export class SphericalCharacterController {
     }
     
     const geometry = new THREE.BoxGeometry(0.02, 0.02, 0.02);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    
+    const uniforms = THREE.UniformsUtils.clone(spiderStrandShader.uniforms);
+    uniforms.baseColor.value = new THREE.Color(0x00ff00);
+    uniforms.iridescenceStrength.value = 1.0;
+    uniforms.opacity.value = 1.0;
+    
+    const material = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: spiderStrandShader.vertexShader,
+        fragmentShader: spiderStrandShader.fragmentShader,
+        transparent: true,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+    });
     
     this.characterMesh = new THREE.Mesh(geometry, material);
     this.characterMesh.name = "Character";
