@@ -6,29 +6,35 @@ export class CloseUpCharacterCamera {
   public camera: THREE.PerspectiveCamera;
   public character: THREE.Object3D;
   public planet: THREE.Mesh;
-  public planetRadius: number;
-  public domElement: HTMLElement;
   
-  public distance = 2.0;
+  private planetRadius: number;
+  private distance = 0.5;
   private height = eyeHeight;
   
   private isMouseDown = false;
   private lastMouseX = 0;
   private lastMouseY = 0;
-  private horizontalAngle = 0;
+  private horizontalAngle = Math.PI; // Start behind the character
+  private verticalAngle = 0.1; // Slight upward angle
 
   // Bound event handlers
   private onMouseDown: (event: MouseEvent) => void;
   private onMouseUp: () => void;
   private onMouseMove: (event: MouseEvent) => void;
   private onWheel: (event: WheelEvent) => void;
+  private domElement: HTMLElement;
   
   constructor(camera: THREE.PerspectiveCamera, character: THREE.Object3D, planet: THREE.Mesh, domElement: HTMLElement) {
     this.camera = camera;
     this.character = character;
     this.planet = planet;
     this.domElement = domElement;
-    this.planetRadius = (planet.geometry as THREE.SphereGeometry).parameters.radius;
+    
+    // Ensure planetRadius is calculated correctly
+    if (planet.geometry.boundingSphere === null) {
+      planet.geometry.computeBoundingSphere();
+    }
+    this.planetRadius = planet.geometry.boundingSphere!.radius * planet.scale.x;
 
     this.onMouseDown = this._onMouseDown.bind(this);
     this.onMouseUp = this._onMouseUp.bind(this);
@@ -40,19 +46,20 @@ export class CloseUpCharacterCamera {
   
   private setupEventListeners() {
     this.domElement.addEventListener('mousedown', this.onMouseDown);
-    this.domElement.addEventListener('mouseup', this.onMouseUp);
-    this.domElement.addEventListener('mousemove', this.onMouseMove);
+    document.addEventListener('mouseup', this.onMouseUp);
+    document.addEventListener('mousemove', this.onMouseMove);
     this.domElement.addEventListener('wheel', this.onWheel);
   }
 
   public dispose() {
     this.domElement.removeEventListener('mousedown', this.onMouseDown);
-    this.domElement.removeEventListener('mouseup', this.onMouseUp);
-    this.domElement.removeEventListener('mousemove', this.onMouseMove);
+    document.removeEventListener('mouseup', this.onMouseUp);
+    document.removeEventListener('mousemove', this.onMouseMove);
     this.domElement.removeEventListener('wheel', this.onWheel);
   }
 
   private _onMouseDown(event: MouseEvent) {
+    if (event.target !== this.domElement) return;
     this.isMouseDown = true;
     this.lastMouseX = event.clientX;
     this.lastMouseY = event.clientY;
@@ -66,7 +73,14 @@ export class CloseUpCharacterCamera {
     if (!this.isMouseDown) return;
     
     const deltaX = event.clientX - this.lastMouseX;
-    this.horizontalAngle -= deltaX * 0.01;
+    const deltaY = event.clientY - this.lastMouseY;
+    
+    this.horizontalAngle -= deltaX * 0.005;
+    this.verticalAngle = THREE.MathUtils.clamp(
+      this.verticalAngle - deltaY * 0.005,
+      0.05, // Prevent looking underground
+      Math.PI / 2.5 // Limit looking too high up
+    );
     
     this.lastMouseX = event.clientX;
     this.lastMouseY = event.clientY;
@@ -75,8 +89,8 @@ export class CloseUpCharacterCamera {
   private _onWheel(event: WheelEvent) {
     this.distance = THREE.MathUtils.clamp(
       this.distance + event.deltaY * 0.01,
-      0.2, // Minimum distance - very close
-      10   // Maximum distance - still close
+      0.2,  // Min zoom (point blank)
+      5     // Max zoom (closer)
     );
   }
   
@@ -87,30 +101,37 @@ export class CloseUpCharacterCamera {
     const planetWorldPos = new THREE.Vector3();
     this.planet.getWorldPosition(planetWorldPos);
 
-    // This is the "up" vector from the planet's center to the character.
-    const upVector = characterWorldPos.clone().sub(planetWorldPos).normalize();
-
-    // The forward direction is calculated based on the horizontal angle (mouse movement).
-    // We start with a base forward vector (e.g., world Z axis) and rotate it around the character.
-    const baseForward = new THREE.Vector3(0, 0, -1);
-    const rotation = new THREE.Quaternion().setFromAxisAngle(upVector, this.horizontalAngle);
-    const forwardVector = baseForward.clone().applyQuaternion(rotation);
-
-    // The ideal camera position is behind the character.
-    const idealOffset = forwardVector.multiplyScalar(-this.distance);
-    const idealCameraPos = characterWorldPos.clone().add(idealOffset);
-
-    // Now, we force the camera to be "on the ground".
-    // We take the vector from the planet's center to the ideal camera position...
-    const finalCameraDirection = idealCameraPos.clone().sub(planetWorldPos).normalize();
-    // ...and set its length to be the planet's radius plus a fixed height.
-    const finalCameraPos = planetWorldPos.clone().add(finalCameraDirection.multiplyScalar(this.planetRadius + this.height));
+    // Vector from planet center to character
+    const toCharacter = characterWorldPos.clone().sub(planetWorldPos);
     
-    this.camera.position.copy(finalCameraPos);
+    // Create a local coordinate system at the character's position
+    const surfaceNormal = toCharacter.clone().normalize(); // This is our "UP"
+    const someVector = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+    const forward = new THREE.Vector3().crossVectors(surfaceNormal, someVector).normalize();
+    const right = new THREE.Vector3().crossVectors(forward, surfaceNormal).normalize();
     
-    // Set the camera's UP vector to point away from the planet's center.
-    const surfaceNormal = this.camera.position.clone().sub(planetWorldPos).normalize();
-    this.camera.up.copy(surfaceNormal);
+    // Calculate the camera's offset from the character
+    const horizontalOffset = this.distance * Math.cos(this.verticalAngle) * Math.sin(this.horizontalAngle);
+    const verticalOffset = this.distance * Math.sin(this.verticalAngle);
+    const depthOffset = this.distance * Math.cos(this.verticalAngle) * Math.cos(this.horizontalAngle);
+
+    // Combine offsets to get the ideal position
+    const offset = right.multiplyScalar(horizontalOffset)
+                   .add(surfaceNormal.multiplyScalar(verticalOffset))
+                   .add(forward.multiplyScalar(depthOffset));
+
+    const idealCameraPos = characterWorldPos.clone().add(offset);
+    
+    // --- Ground Pinning ---
+    // Now, ensure this position is on the surface
+    const cameraToPlanetCenter = idealCameraPos.clone().sub(planetWorldPos);
+    const finalCamPos = planetWorldPos.clone().add(cameraToPlanetCenter.normalize().multiplyScalar(this.planetRadius + this.height));
+
+    this.camera.position.copy(finalCamPos);
+    
+    // --- Upright Orientation ---
+    const cameraUp = this.camera.position.clone().sub(planetWorldPos).normalize();
+    this.camera.up.copy(cameraUp);
 
     this.camera.lookAt(characterWorldPos);
   }
