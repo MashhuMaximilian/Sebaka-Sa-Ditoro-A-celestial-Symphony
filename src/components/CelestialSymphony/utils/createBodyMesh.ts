@@ -45,7 +45,7 @@ export const createGridTexture = (size = 1024, lines = 24) => {
 };
 
 export const texturePaths: { [key: string]: { [key: string]: string | undefined } } = {
-    Alpha: {
+    Alpha: { // GoldenGiver
         base: '/maps/goldenGiverTexture.jpg',
         ambient: '/maps/goldenGiver_ambient.png',
         displacement: '/maps/goldenGiver_displacement.png',
@@ -66,26 +66,19 @@ export const texturePaths: { [key: string]: { [key: string]: string | undefined 
         normal: '/maps/Beacon_normal.png',
         specular: '/maps/Beacon_specular.png',
     },
-    Aetheris: {
-        base: '/maps/AetherisTexture.png',
-        ambient: '/maps/AetherisTexture_ambient.png',
-        displacement: '/maps/AetherisTexture_displacement.png',
-        normal: '/maps/AetherisTexture_normal.png',
-        specular: '/maps/AetherisTexture_specular.png',
-    },
-    Gelidis: {
-        base: '/maps/GelidisTexture.png',
-        ambient: '/maps/GelidisTexture_ambient.png',
-        displacement: '/maps/GelidisTexture_displacement.png',
-        normal: '/maps/GelidisTexture_normal.png',
-        specular: '/maps/GelidisTexture_specular.png',
-    },
     Rutilus: {
         base: '/maps/RutiliusTexture.png',
         ambient: '/maps/RutiliusTexture_ambient.png',
         displacement: '/maps/RutiliusTexture_displacement.png',
         normal: '/maps/RutiliusTexture_normal.png',
         specular: '/maps/RutiliusTexture_specular.png',
+    },
+    Sebaka: {
+        base: '/maps/SebakaTexture.png',
+        ambient: '/maps/SebakaAmbientOcclusionMap.png',
+        displacement: '/maps/SebakaDisplacementMap.png',
+        normal: '/maps/SebakaNormalMap.png',
+        specular: '/maps/SebakaSpecularMap.png',
     },
     Spectris: {
         base: '/maps/SpectrisTexture.png',
@@ -101,19 +94,26 @@ export const texturePaths: { [key: string]: { [key: string]: string | undefined 
         normal: '/maps/ViridisTexture_normal.png',
         specular: '/maps/ViridisTexture_specular.png',
     },
-    Liminis: {
+    Aetheris: {
+        base: '/maps/AetherisTexture.png',
+        ambient: '/maps/AetherisTexture_ambient.png',
+        displacement: '/maps/AetherisTexture_displacement.png',
+        normal: '/maps/AetherisTexture_normal.png',
+        specular: '/maps/AetherisTexture_specular.png',
+    },
+    Gelidis: {
+        base: '/maps/GelidisTexture.png',
+        ambient: '/maps/GelidisTexture_ambient.png',
+        displacement: '/maps/GelidisTexture_displacement.png',
+        normal: '/maps/GelidisTexture_normal.png',
+        specular: '/maps/GelidisTexture_specular.png',
+    },
+    Liminis: { // Limni
         base: '/maps/LimnisTexture.png',
         ambient: '/maps/LimnisAmbientOcclusionMap.png',
         displacement: '/maps/LimnisDisplacementMap.png',
         normal: '/maps/LimnisNormalMap.png',
         specular: '/maps/LimnisSpecularMap.png',
-    },
-    Sebaka: {
-        base: '/maps/SebakaTexture.png',
-        ambient: '/maps/SebakaAmbientOcclusionMap.png',
-        displacement: '/maps/SebakaDisplacementMap.png',
-        normal: '/maps/SebakaNormalMap.png',
-        specular: '/maps/SebakaSpecularMap.png',
     }
 };
 
@@ -158,7 +158,7 @@ export const createBodyMesh = (
                 beaconColor: { value: new THREE.Color(0xD4E5FF) },
                 alphaIntensity: { value: 1.0 },
                 twilightIntensity: { value: 0.7 },
-                beaconIntensity: { value: 100.0 },
+                beaconIntensity: { value: 1000.0 },
                 emissiveIntensity: { value: initialProps.emissiveIntensity },
 
                 albedo: { value: initialProps.albedo },
@@ -167,11 +167,11 @@ export const createBodyMesh = (
                 useGrid: { value: false },
                 ambientLevel: { value: 0.02 },
 
-                useNormalMap: { value: !!normalMap },
+                useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
                 normalMap: { value: normalMap },
                 normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
 
-                useDisplacementMap: { value: !!displacementMap },
+                useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
                 displacementMap: { value: displacementMap },
                 displacementScale: { value: initialProps.displacementScale },
 
@@ -180,7 +180,7 @@ export const createBodyMesh = (
                 specularIntensity: { value: initialProps.specularIntensity },
                 shininess: { value: initialProps.shininess },
 
-                useAoMap: { value: !!aoMap },
+                useAoMap: { value: !!aoMap && initialProps.aoMapIntensity > 0 },
                 aoMap: { value: aoMap },
                 aoMapIntensity: { value: initialProps.aoMapIntensity },
             },

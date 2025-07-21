@@ -43,46 +43,44 @@ export const useUpdateBodyMaterials = ({
             if (!mesh) return;
 
             const props = materialProperties[mesh.name];
-            if (!props) return;
+            if (!props || !(mesh.material instanceof THREE.ShaderMaterial)) return;
             
-            if (mesh.material instanceof THREE.ShaderMaterial) {
-                const uniforms = mesh.material.uniforms;
-                
-                if (uniforms.useNormalMap && props.normalScale !== undefined) {
-                    uniforms.useNormalMap.value = props.normalScale > 0;
-                }
-                if (uniforms.normalScale && props.normalScale !== undefined && uniforms.normalScale.value.x !== props.normalScale) {
-                    uniforms.normalScale.value.set(props.normalScale, props.normalScale);
-                }
+            const uniforms = mesh.material.uniforms;
+            
+            if (uniforms.useNormalMap && props.normalScale !== undefined) {
+                uniforms.useNormalMap.value = props.normalScale > 0;
+            }
+            if (uniforms.normalScale && props.normalScale !== undefined && uniforms.normalScale.value.x !== props.normalScale) {
+                uniforms.normalScale.value.set(props.normalScale, props.normalScale);
+            }
 
-                if (uniforms.useDisplacementMap && props.displacementScale !== undefined) {
-                    uniforms.useDisplacementMap.value = props.displacementScale > 0;
-                }
-                if (uniforms.displacementScale && props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
-                    uniforms.displacementScale.value = props.displacementScale;
-                }
-                
-                if (uniforms.albedo && props.albedo !== undefined && uniforms.albedo.value !== props.albedo) {
-                    uniforms.albedo.value = props.albedo;
-                }
+            if (uniforms.useDisplacementMap && props.displacementScale !== undefined) {
+                uniforms.useDisplacementMap.value = props.displacementScale > 0;
+            }
+            if (uniforms.displacementScale && props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
+                uniforms.displacementScale.value = props.displacementScale;
+            }
+            
+            if (uniforms.albedo && props.albedo !== undefined && uniforms.albedo.value !== props.albedo) {
+                uniforms.albedo.value = props.albedo;
+            }
 
-                if (uniforms.useSpecularMap && uniforms.specularMap.value) {
-                    uniforms.useSpecularMap.value = true;
-                }
-                if (uniforms.specularIntensity && props.specularIntensity !== undefined && uniforms.specularIntensity.value !== props.specularIntensity) {
-                    uniforms.specularIntensity.value = props.specularIntensity;
-                }
+            if (uniforms.useSpecularMap && uniforms.specularMap.value) {
+                uniforms.useSpecularMap.value = true;
+            }
+            if (uniforms.specularIntensity && props.specularIntensity !== undefined && uniforms.specularIntensity.value !== props.specularIntensity) {
+                uniforms.specularIntensity.value = props.specularIntensity;
+            }
 
-                if (uniforms.shininess && props.shininess !== undefined && uniforms.shininess.value !== props.shininess) {
-                    uniforms.shininess.value = props.shininess;
-                }
+            if (uniforms.shininess && props.shininess !== undefined && uniforms.shininess.value !== props.shininess) {
+                uniforms.shininess.value = props.shininess;
+            }
 
-                if (uniforms.useAoMap && uniforms.aoMap.value) {
-                    uniforms.useAoMap.value = true;
-                }
-                if (uniforms.aoMapIntensity && props.aoMapIntensity !== undefined && uniforms.aoMapIntensity.value !== props.aoMapIntensity) {
-                    uniforms.aoMapIntensity.value = props.aoMapIntensity;
-                }
+            if (uniforms.useAoMap && uniforms.aoMap.value) {
+                uniforms.useAoMap.value = props.aoMapIntensity > 0;
+            }
+            if (uniforms.aoMapIntensity && props.aoMapIntensity !== undefined && uniforms.aoMapIntensity.value !== props.aoMapIntensity) {
+                uniforms.aoMapIntensity.value = props.aoMapIntensity;
             }
         });
     }, [materialProperties, planetMeshesRef]);
