@@ -65,13 +65,13 @@ const initialStars: StarData[] = [
       lore: 'Represents quiet strength and endurance in Hypodia’s Sky-Writing, a counterpoint to Alpha’s vibrancy.'
   },
   {
-      name: "Beacon", color: "#B4DCFF", size: 27.84, orbitPeriodDays: 126036, orbitRadius: 100 * AU_TO_UNITS,
+      name: "Beacon", color: "#B4DCFF", size: 27.84, orbitPeriodDays: 724464, orbitRadius: 200 * AU_TO_UNITS,
       type: 'Star', classification: 'B-type Blue-White Giant',
-      orbitalRole: 'Distant Companion (orbits common barycenter of Alpha-Twilight)', orbitalPeriod: '~1,201 Sebakan years (389 Earth years)', orbitalDistance: '100 AU',
-      radius: '~4 R☉', mass: '5.0 M☉', luminosity: 1200,
+      orbitalRole: 'Distant Companion (orbits common barycenter of Alpha-Twilight)', orbitalPeriod: '~2,236 Sebakan years', orbitalDistance: '200 AU',
+      radius: '~4 R☉', mass: '5.0 M☉', luminosity: 1000,
       surface: 'Brilliant blue-white giant, intensely luminous.',
-      characteristics: 'Significantly more luminous than Alpha and Twilight combined. Hosts its own planetary subsystem (Gelidis, Liminis). ~100x brighter than before.',
-      appearance: 'A brilliant, unblinking point of light (brighter than Sirius, ~mag -1 to 0), often visible during twilight and occasionally during the day. Its slow generational shift provides a marker for cultural ages.',
+      characteristics: 'Significantly more luminous than Alpha and Twilight combined. Hosts its own planetary subsystem (Gelidis, Liminis).',
+      appearance: 'A brilliant, unblinking point of light (brighter than Sirius), often visible during twilight and occasionally during the day. Its slow generational shift provides a marker for cultural ages.',
       lore: 'Marks long-term "Great Years." Symbolizes constancy and divine oversight in Hypodia’s Sky-Writing, a guiding star for navigation and major rituals.'
   },
 ];
@@ -138,14 +138,14 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 10,
   },
   {
-      name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 5163, eccentric: true, eccentricity: 0.1,
+      name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 9000, eccentric: true, eccentricity: 0.1,
       type: 'Planet', classification: 'Ice Giant',
-      orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '15.94 Sebakan years (5,163 days)', orbitalDistance: '5.7 AU from Beacon (periapsis 5.13 AU, apoapsis 6.27 AU)',
+      orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '27.75 Sebakan years (9,000 days)', orbitalDistance: '5.7 AU from Beacon (periapsis 5.13 AU, apoapsis 6.27 AU)',
       rotation: '16 hours', axialTilt: '28°', moons: '2-3 (small, telescopic only)',
       radius: '4.0 R⊕', mass: '~15 M⊕',
       surface: 'Vast atmosphere with swirling storm systems, faint icy cloud bands.',
       characteristics: 'Remote, dimly lit by Beacon’s light. Eccentricity (e=0.1).',
-      appearance: 'Faint point of light (telescopic only). Synodic Period tied to Beacon\'s orbit (~1,201 Sebakan years).',
+      appearance: 'Faint point of light (telescopic only). Synodic Period tied to Beacon\'s orbit.',
       lore: 'Known only through advanced astronomical calculations; a mysterious, remote world.',
       rotationPeriodHours: 16,
   },
@@ -157,7 +157,7 @@ const initialPlanets: PlanetData[] = [
       radius: '0.2 R⊕', mass: '~0.01 M⊕',
       surface: 'Frozen expanse of rock and ice, thin atmosphere.',
       characteristics: 'Furthest known planet. Eccentricity (e=0.2).',
-      appearance: 'Tiny point of light (telescopic only). Synodic Period tied to Beacon\'s orbit (~1,201 Sebakan years).',
+      appearance: 'Tiny point of light (telescopic only). Synodic Period tied to Beacon\'s orbit.',
       lore: 'Discovered through long-duration observations, represents the edge of the known system.',
       rotationPeriodHours: 48,
   },
@@ -266,6 +266,7 @@ export default function Home() {
   
   const handleResetView = () => {
     if (viewFromSebaka) {
+      setIsInitialized(false);
       setViewFromSebaka(false);
     }
     resetSpeed();
@@ -275,6 +276,7 @@ export default function Home() {
 
   const enterSebakaView = () => {
       if (!viewFromSebaka) {
+          setIsInitialized(false);
           setViewFromSebaka(true);
           setLongitude(0);
           setLatitude(0);
@@ -308,6 +310,7 @@ export default function Home() {
   
   const handleFocusTargetChange = (target: string) => {
     if (viewFromSebaka) {
+        setIsInitialized(false);
         setViewFromSebaka(false);
     }
     setCameraTarget(target);
@@ -467,7 +470,7 @@ export default function Home() {
                 </div>
             </>
         )
-    }
+    };
     
     return <div className="w-full space-y-2">{panels[activeSebakaPanel]}</div>;
   }
@@ -713,3 +716,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
