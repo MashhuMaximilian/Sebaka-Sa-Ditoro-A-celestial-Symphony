@@ -5,8 +5,8 @@ import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js
 import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 import type { BodyData } from "./useBodyData";
-import { SphericalCharacterCube } from "../utils/SphericalCharacterCube";
-import { ThirdPersonCameraController } from "../utils/ThirdPersonCameraController";
+import { SphericalCharacterCube } from '../utils/SphericalCharacterCube';
+import { ThirdPersonCameraController } from '../utils/ThirdPersonCameraController';
 
 interface AnimationLoopParams {
     speedMultiplier?: number;
@@ -75,14 +75,13 @@ export const useAnimationLoop = ({
   useEffect(() => {
     if (!scene || !camera || !bodyData.length || !isInitialized) return;
 
-    if (viewFromSebaka) {
-        const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
-        if (!sebakaMesh) return;
+    const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
+    if (viewFromSebaka && sebakaMesh) {
         
         const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current);
         characterRef.current = character;
 
-        const cameraController = new ThirdPersonCameraController(camera, character);
+        const cameraController = new ThirdPersonCameraController(camera, character, sebakaMesh);
         cameraControllerRef.current = cameraController;
 
     } else {
@@ -100,7 +99,7 @@ export const useAnimationLoop = ({
         }
         cameraControllerRef.current = null;
     };
-  }, [viewFromSebaka, scene, camera, bodyData, isInitialized, planetMeshesRef]);
+  }, [viewFromSebaka, scene, camera, bodyData, isInitialized, planetMeshesRef, sebakaRadiusRef]);
 
 
   useEffect(() => {

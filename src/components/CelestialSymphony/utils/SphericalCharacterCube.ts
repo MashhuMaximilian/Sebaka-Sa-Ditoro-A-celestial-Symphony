@@ -57,16 +57,18 @@ export class SphericalCharacterCube {
     // 2. Orient character to stand upright on the surface
     const upVector = localPosition.clone().normalize();
     
-    // Create a target to look at for orientation
-    const lookAtTarget = localPosition.clone().add(new THREE.Vector3(0, 1, 0)); // Arbitrary point to establish a forward
-    
-    // Use lookAt to align the character's 'up' with the surface normal
-    this.characterMesh.up.copy(upVector);
-    this.characterMesh.lookAt(lookAtTarget);
-
     // 3. Apply yaw rotation for character turning
     const yawRad = THREE.MathUtils.degToRad(this.yaw);
-    this.characterMesh.rotateOnAxis(upVector, yawRad);
+    const yawQuaternion = new THREE.Quaternion().setFromAxisAngle(upVector, yawRad);
+    
+    // Base look at target
+    const lookAtTarget = new THREE.Vector3(0,0,1).applyQuaternion(yawQuaternion);
+    
+    // Final look at in world space
+    const finalLookAt = this.characterMesh.position.clone().add(lookAtTarget);
+
+    this.characterMesh.up.copy(upVector);
+    this.characterMesh.lookAt(finalLookAt);
     
     // 4. Apply animation
     this.updateCharacterAnimation(deltaTime);
