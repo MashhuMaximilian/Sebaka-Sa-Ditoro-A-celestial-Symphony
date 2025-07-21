@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { MaterialProperties } from '@/types';
 import { planetShader } from '../shaders/planetShader';
+import { spiderStrandShader } from '../shaders/spiderStrandShader';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -117,7 +118,7 @@ export const createBodyMesh = (
             uniforms: uniforms,
             vertexShader: planetShader.vertexShader,
             fragmentShader: planetShader.fragmentShader,
-            transparent: body.name === 'Spectris', // For rings
+            transparent: body.name === 'Spectris' || body.name === 'Aetheris',
         });
     }
     
@@ -126,12 +127,14 @@ export const createBodyMesh = (
     mesh.castShadow = true;
     mesh.receiveShadow = true;
 
-    if (body.type === 'Planet' && body.name === "Spectris") {
+    if (body.type === 'Planet' && (body.name === "Spectris" || body.name === "Aetheris")) {
         const ringCount = Math.floor(Math.random() * 70) + 80;
-        const iridescentColors = [
-            0x4dd0e1, 0x81c784, 0xb39ddb, 0xef9a9a, 0xffcc80,
-            0xffee58, 0x90caf9, 0xf48fb1, 0x00bcd4, 0x80deea,
-            0x4db6ac, 0xce93d8
+        const ringBaseColors = [
+            new THREE.Color("#eeeaea"), new THREE.Color("#efc5f4"), new THREE.Color("#a0f9af"),
+            new THREE.Color("#b9a2e5"), new THREE.Color("#8c88fb"), new THREE.Color("#ff9ab8"),
+            new THREE.Color("#f3ffb2"), new THREE.Color("#8ff6fe"), new THREE.Color("#b9b1dc"),
+            new THREE.Color("#dbc1dc"), new THREE.Color("#ff0000"), new THREE.Color("#ffff00"),
+            new THREE.Color("#ff00ff")
         ];
 
         for (let i = 0; i < ringCount; i++) {
@@ -140,13 +143,29 @@ export const createBodyMesh = (
 
             const ringGeometry = new THREE.RingGeometry(innerRadius, outerRadius, 128, 1);
             
-            const ringMaterial = new THREE.MeshPhongMaterial({
-                color: iridescentColors[Math.floor(Math.random() * iridescentColors.length)],
-                transparent: true,
-                opacity: Math.random() * 0.4 + 0.1,
-                side: THREE.DoubleSide,
-                shininess: Math.random() * 30,
-            });
+            let ringMaterial: THREE.Material;
+            
+            if (Math.random() < 0.3) {
+                 const uniforms = THREE.UniformsUtils.clone(spiderStrandShader.uniforms);
+                 uniforms.baseColor.value = ringBaseColors[Math.floor(Math.random() * ringBaseColors.length)];
+
+                 ringMaterial = new THREE.ShaderMaterial({
+                    uniforms: uniforms,
+                    vertexShader: spiderStrandShader.vertexShader,
+                    fragmentShader: spiderStrandShader.fragmentShader,
+                    transparent: true,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending,
+                });
+            } else {
+                ringMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.1 + Math.random() * 0.2,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending,
+                });
+            }
 
             const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
             ringMesh.rotation.x = Math.PI / 2 + (Math.random() - 0.5) * 0.1;

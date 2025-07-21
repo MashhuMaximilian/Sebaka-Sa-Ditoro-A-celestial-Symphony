@@ -1,6 +1,7 @@
 
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
+import { spiderStrandShader } from '../shaders/spiderStrandShader';
 
 export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
     if ((body.type === 'Planet' || body.name === 'Beacon') && body.orbitRadius) {
@@ -31,8 +32,19 @@ export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
             orbitGeometry = new THREE.TorusGeometry(body.orbitRadius, tubeRadius, radialSegments, tubularSegments);
         }
 
-        const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x444444 });
-        const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
+        const shaderMaterial = new THREE.ShaderMaterial({
+            uniforms: THREE.UniformsUtils.clone(spiderStrandShader.uniforms),
+            vertexShader: spiderStrandShader.vertexShader,
+            fragmentShader: spiderStrandShader.fragmentShader,
+            transparent: true,
+            side: THREE.DoubleSide,
+            blending: THREE.AdditiveBlending,
+        });
+        
+        shaderMaterial.uniforms.iridescenceStrength.value = 1;
+        shaderMaterial.uniforms.opacity.value = 0.85;
+        
+        const orbit = new THREE.Mesh(orbitGeometry, shaderMaterial);
         orbit.rotation.x = Math.PI / 2;
         orbit.name = `${body.name}_orbit`;
 

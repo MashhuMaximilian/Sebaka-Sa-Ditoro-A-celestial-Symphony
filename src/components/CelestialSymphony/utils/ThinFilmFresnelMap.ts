@@ -55,8 +55,6 @@ function evalFilm(
 
   const C1 = r12;
   const C2 = t121 * r23 * t212;
-  const C3 = t121 * r23 * r21 * r23 * t212;
-  const C4 = t121 * r23 * r21 * r23 * r21 * r23 * t212;
 
   c0.set(
     I1 + I2 / (1.0 - R21 * R23),
@@ -66,12 +64,12 @@ function evalFilm(
 
   const cos_2phi = Math.cos(2.0 * phi);
   c1.set(cos_2phi, cos_2phi, cos_2phi);
-  c2.multiplyVectors(C1, C2).multiplyScalar(2.0);
+  c2.multiplyVectors(new THREE.Vector3(C1, C1, C1), new THREE.Vector3(C2, C2, C2)).multiplyScalar(2.0);
 
   const cos_4phi = Math.cos(4.0 * phi);
   c3.set(cos_4phi, cos_4phi, cos_4phi);
-  c4.multiplyVectors(C1, C3).multiplyScalar(2.0);
-  c5.multiplyVectors(C2, C2);
+  c4.multiplyVectors(new THREE.Vector3(C1, C1, C1), new THREE.Vector3(C2, C2, C2).multiplyScalar(C2)).multiplyScalar(2.0);
+  c5.multiplyVectors(new THREE.Vector3(C2, C2, C2), new THREE.Vector3(C2, C2, C2));
 
   let result = new THREE.Vector3();
   result.add(c2.multiply(c1));
