@@ -314,6 +314,22 @@ export default function Home() {
     setCurrentDay(Math.floor(totalDays % SEBAKA_YEAR_IN_DAYS) + 1);
   }
   
+  const handleFocusTargetChange = (target: string) => {
+    setCameraTarget(target);
+
+    const isSystem = target === 'Binary Stars' || target === 'Beacon System';
+    if (isSystem) {
+      resetSpeed();
+      if (!isSebakaRotating) {
+        setIsSebakaRotating(true);
+      }
+    } else {
+      setSpeedMultiplier(0);
+      setSpeedInput('0');
+      setIsSebakaRotating(false);
+    }
+  };
+  
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;
     
@@ -537,14 +553,14 @@ export default function Home() {
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                         <DropdownMenuLabel>Systems</DropdownMenuLabel>
-                        <DropdownMenuItem onSelect={() => setCameraTarget('Binary Stars')}>Binary Stars</DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setCameraTarget('Beacon System')}>Beacon System</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleFocusTargetChange('Binary Stars')}>Binary Stars</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => handleFocusTargetChange('Beacon System')}>Beacon System</DropdownMenuItem>
                     </DropdownMenuGroup>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                          <DropdownMenuLabel>Stars</DropdownMenuLabel>
                         {initialStars.map(star => (
-                            <DropdownMenuItem key={star.name} onSelect={() => setCameraTarget(star.name)}>
+                            <DropdownMenuItem key={star.name} onSelect={() => handleFocusTargetChange(star.name)}>
                                 {star.name}
                             </DropdownMenuItem>
                         ))}
@@ -553,7 +569,7 @@ export default function Home() {
                     <DropdownMenuGroup>
                         <DropdownMenuLabel>Planets</DropdownMenuLabel>
                         {initialPlanets.map(planet => (
-                            <DropdownMenuItem key={planet.name} onSelect={() => setCameraTarget(planet.name)}>
+                            <DropdownMenuItem key={planet.name} onSelect={() => handleFocusTargetChange(planet.name)}>
                                 {planet.name}
                             </DropdownMenuItem>
                         ))}
