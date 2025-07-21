@@ -103,4 +103,3 @@ export const useCameraControl = ({
         camera.updateProjectionMatrix();
     }, [viewFromSebaka, camera, controls, originalCameraPosRef]);
 };
-

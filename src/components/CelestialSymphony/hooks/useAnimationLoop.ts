@@ -5,7 +5,7 @@ import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js
 import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
 import type { BodyData } from "./useBodyData";
 import { SphericalCharacterController } from '../utils/SphericalCharacterController';
-import { ThirdPersonOrbitControls } from '../utils/ThirdPersonOrbitControls';
+import { CloseUpCharacterCamera } from '../utils/CloseUpCharacterCamera';
 
 interface AnimationLoopParams {
     speedMultiplier?: number;
@@ -58,7 +58,7 @@ export const useAnimationLoop = ({
   const isSebakaRotatingRef = useRef(isSebakaRotating);
   
   const characterControllerRef = useRef<SphericalCharacterController | null>(null);
-  const thirdPersonControlsRef = useRef<ThirdPersonOrbitControls | null>(null);
+  const thirdPersonCameraRef = useRef<CloseUpCharacterCamera | null>(null);
 
   useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
   useEffect(() => { isSebakaRotatingRef.current = isSebakaRotating; }, [isSebakaRotating]);
@@ -66,12 +66,11 @@ export const useAnimationLoop = ({
   useEffect(() => {
     if (!scene || !camera || !renderer || !controls || !bodyData.length || !isInitialized) return;
 
-    const sebakaBody = allBodiesRef.current.find(b => b.name === 'Sebaka');
-    const sebakaMesh = sebakaBody as THREE.Mesh | undefined;
+    const sebakaMesh = planetMeshesRef.current.find(b => b.name === 'Sebaka') as THREE.Mesh | undefined;
     
-    if (thirdPersonControlsRef.current) {
-        thirdPersonControlsRef.current.dispose();
-        thirdPersonControlsRef.current = null;
+    if (thirdPersonCameraRef.current) {
+        thirdPersonCameraRef.current.dispose();
+        thirdPersonCameraRef.current = null;
     }
     if (characterControllerRef.current) {
         characterControllerRef.current.dispose();
@@ -80,27 +79,16 @@ export const useAnimationLoop = ({
 
     if (viewFromSebaka && sebakaMesh) {
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
-      thirdPersonControlsRef.current = new ThirdPersonOrbitControls(camera, renderer.domElement, characterControllerRef.current, sebakaMesh);
+      thirdPersonCameraRef.current = new CloseUpCharacterCamera(camera, characterControllerRef.current.characterMesh, sebakaMesh, renderer.domElement);
       controls.enabled = false;
-
-      // Set initial camera position
-      const charPos = characterControllerRef.current.characterMesh.getWorldPosition(new THREE.Vector3());
-      const planetPos = sebakaMesh.getWorldPosition(new THREE.Vector3());
-      const upVector = charPos.clone().sub(planetPos).normalize();
-      
-      const initialCameraPos = charPos.clone().add(upVector.multiplyScalar(0.5));
-      camera.position.copy(initialCameraPos);
-      thirdPersonControlsRef.current.controls.target.copy(charPos);
-      camera.lookAt(charPos);
-      
     } else {
         controls.enabled = true;
     }
 
     return () => {
-       if (thirdPersonControlsRef.current) {
-        thirdPersonControlsRef.current.dispose();
-        thirdPersonControlsRef.current = null;
+       if (thirdPersonCameraRef.current) {
+        thirdPersonCameraRef.current.dispose();
+        thirdPersonCameraRef.current = null;
       }
        if (characterControllerRef.current) {
         characterControllerRef.current.dispose();
@@ -209,9 +197,9 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebaka && characterControllerRef.current && thirdPersonControlsRef.current) {
+      if (viewFromSebaka && characterControllerRef.current && thirdPersonCameraRef.current) {
           characterControllerRef.current.update(longitude, latitude);
-          thirdPersonControlsRef.current.update();
+          thirdPersonCameraRef.current.update();
           controls.enabled = false;
       } else {
         controls.enabled = true;
