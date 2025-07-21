@@ -282,11 +282,13 @@ export default function Home() {
   const handleGoToTime = () => {
     const year = Math.max(0, targetYear);
     const day = Math.max(1, Math.min(SEBAKA_YEAR_IN_DAYS, targetDay));
-    const newElapsedHours = (year * SEBAKA_YEAR_IN_DAYS + day) * HOURS_IN_SEBAKA_DAY;
-    setElapsedHours(newElapsedHours);
+    const newElapsedHours = (year * SEBAKA_YEAR_IN_DAYS + (day - 1)) * HOURS_IN_SEBAKA_DAY;
     setGoToTime(newElapsedHours);
     setCurrentYear(year);
     setCurrentDay(day);
+
+    // Reset goToTime after a short delay to allow it to be re-triggered
+    setTimeout(() => setGoToTime(null), 10);
   }
 
   const handleTimeUpdate = (hours: number) => {
@@ -295,6 +297,10 @@ export default function Home() {
     setCurrentYear(Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS));
     setCurrentDay(Math.floor(totalDays % SEBAKA_YEAR_IN_DAYS) + 1);
   }
+
+  const resetGoToTime = () => {
+    setGoToTime(null);
+  };
   
   const handleFocusTargetChange = (target: string) => {
     if (viewFromSebaka) {
@@ -483,6 +489,7 @@ export default function Home() {
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
+        onGoToTimeComplete={resetGoToTime}
         cameraTarget={cameraTarget}
         isInitialized={isInitialized}
         setIsInitialized={setIsInitialized}

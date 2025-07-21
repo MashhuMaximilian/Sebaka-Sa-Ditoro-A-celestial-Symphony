@@ -158,7 +158,7 @@ export const createBodyMesh = (
                 beaconColor: { value: new THREE.Color(0xD4E5FF) },
                 alphaIntensity: { value: 1.0 },
                 twilightIntensity: { value: 0.7 },
-                beaconIntensity: { value: 1000.0 },
+                beaconIntensity: { value: 100.0 },
                 emissiveIntensity: { value: initialProps.emissiveIntensity },
 
                 albedo: { value: initialProps.albedo },

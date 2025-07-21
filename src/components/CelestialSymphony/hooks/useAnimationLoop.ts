@@ -20,6 +20,7 @@ interface AnimationLoopParams {
     isViridisAnimationActive: boolean;
     onTimeUpdate: (elapsedHours: number) => void;
     goToTime: number | null;
+    onGoToTimeComplete: () => void;
     bodyData: BodyData[];
     scene: THREE.Scene | undefined;
     camera: THREE.PerspectiveCamera | undefined;
@@ -44,6 +45,7 @@ export const useAnimationLoop = ({
   cameraYaw,
   onTimeUpdate,
   goToTime,
+  onGoToTimeComplete,
   bodyData,
   scene,
   camera,
@@ -80,8 +82,9 @@ export const useAnimationLoop = ({
         updateAllBodyPositions(goToTime, bodyData, allBodiesRef.current, beaconPositionRef.current);
       }
       onTimeUpdate(goToTime);
+      onGoToTimeComplete(); // Signal that the time jump is complete
     }
-  }, [goToTime, bodyData, allBodiesRef, beaconPositionRef, onTimeUpdate, isInitialized]);
+  }, [goToTime, bodyData, allBodiesRef, beaconPositionRef, onTimeUpdate, isInitialized, onGoToTimeComplete]);
 
   useEffect(() => {
     if (!scene || !camera || !renderer || !controls || !isInitialized) return;

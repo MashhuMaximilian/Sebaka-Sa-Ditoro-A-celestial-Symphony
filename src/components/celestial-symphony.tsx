@@ -25,6 +25,7 @@ export interface CelestialSymphonyProps {
   isViridisAnimationActive: boolean;
   onTimeUpdate: (elapsedHours: number) => void;
   goToTime: number | null;
+  onGoToTimeComplete: () => void;
   cameraTarget: string | null;
   isInitialized: boolean;
   setIsInitialized: (isInitialized: boolean) => void;
