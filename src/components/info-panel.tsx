@@ -18,7 +18,7 @@ import { Button } from "./ui/button";
 interface InfoPanelProps {
   data: PlanetData | StarData;
   materialProperties: MaterialProperties;
-  onPropertiesChange: (newProperties: MaterialProperties) => void;
+  onPropertiesChange: React.Dispatch<React.SetStateAction<MaterialProperties>>;
   onReset: () => void;
 }
 
@@ -30,14 +30,13 @@ const bodiesWithSettings = [
 const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: InfoPanelProps) => {
 
   const handleSliderChange = (bodyName: string, propName: keyof MaterialProperties[string], value: number[]) => {
-    const newProps = {
-      ...materialProperties,
+    onPropertiesChange(prevProps => ({
+      ...prevProps,
       [bodyName]: {
-        ...materialProperties[bodyName],
+        ...prevProps[bodyName],
         [propName]: value[0]
       }
-    };
-    onPropertiesChange(newProps);
+    }));
   };
   
   const renderMaterialSettings = () => {

@@ -8,7 +8,6 @@ import { useCameraControl } from "./CelestialSymphony/hooks/useCameraControl";
 import { useInitializeScene } from "./CelestialSymphony/hooks/useInitializeScene";
 import { useUpdateBodyMaterials } from "./CelestialSymphony/hooks/useUpdateBodyMaterials";
 import { useBodyData } from "./CelestialSymphony/hooks/useBodyData";
-import type * as THREE from 'three';
 
 export interface CelestialSymphonyProps {
   stars: StarData[];
@@ -22,7 +21,6 @@ export interface CelestialSymphonyProps {
   cameraPitch: number;
   cameraYaw: number;
   cameraFov: number;
-  resetViewToggle: boolean;
   isViridisAnimationActive: boolean;
   onTimeUpdate: (elapsedHours: number) => void;
   goToTime: number | null;
@@ -69,7 +67,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     cameraTarget: props.cameraTarget,
     viewFromSebaka: props.viewFromSebaka,
     cameraFov: props.cameraFov,
-    resetViewToggle: props.resetViewToggle,
     allBodiesRef,
     bodyData,
     beaconPositionRef,
@@ -98,7 +95,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     orbitMeshesRef,
     beaconPositionRef,
     sebakaRadiusRef,
-    isInitialized: props.isInitialized,
   });
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;

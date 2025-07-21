@@ -38,6 +38,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         if (!mountRef.current || !bodyData.length) return;
         if(viewFromSebaka && !sebakaGridTexture) return;
 
+        setIsInitialized(false);
         const currentMount = mountRef.current;
         const scene = new THREE.Scene();
         sceneRef.current = scene;
@@ -55,6 +56,11 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         rendererRef.current = renderer;
+        
+        // Clean up previous renderer if it exists
+        while (currentMount.firstChild) {
+            currentMount.removeChild(currentMount.firstChild);
+        }
         currentMount.appendChild(renderer.domElement);
         
         const controls = new OrbitControls(camera, renderer.domElement);
@@ -68,9 +74,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         
         // Lighting is now handled by custom shaders per-planet. No scene-wide lights needed.
         
-        // Clear previous objects if any
-        allBodiesRef.current.forEach(obj => scene.remove(obj));
-        orbitMeshesRef.current.forEach(obj => scene.remove(obj));
         allBodiesRef.current = [];
         planetMeshesRef.current = [];
         orbitMeshesRef.current = [];
@@ -103,6 +106,16 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
             }
         });
 
+        if (viewFromSebaka) {
+            const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+            if (sebakaMesh) {
+                const radius = sebakaRadiusRef.current + 0.1;
+                camera.position.set(sebakaMesh.position.x, sebakaMesh.position.y, sebakaMesh.position.z + radius);
+                controls.target.copy(sebakaMesh.position);
+            }
+        }
+
+
         setIsInitialized(true);
 
         const handleResize = () => {
@@ -114,65 +127,20 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         };
         window.addEventListener("resize", handleResize);
 
-        let animationFrameId: number;
-        const animate = () => {
-            animationFrameId = requestAnimationFrame(animate);
-        }
-        animate();
-
         return () => {
-            cancelAnimationFrame(animationFrameId);
             window.removeEventListener("resize", handleResize);
-
+            setIsInitialized(false);
             if (controlsRef.current) {
                 controlsRef.current.dispose();
             }
-
-            if (sceneRef.current) {
-                // Proper cleanup of all objects in the scene
-                sceneRef.current.traverse(object => {
-                    if (object instanceof THREE.Mesh) {
-                        if (object.geometry) {
-                            object.geometry.dispose();
-                        }
-                        if (object.material) {
-                            if (Array.isArray(object.material)) {
-                                object.material.forEach(material => {
-                                    if(material.map) material.map.dispose();
-                                    material.dispose();
-                                });
-                            } else {
-                                if (object.material.map) object.material.map.dispose();
-                                object.material.dispose();
-                            }
-                        }
-                    }
-                });
-                 // Clear all children from the scene
-                while(sceneRef.current.children.length > 0){ 
-                    sceneRef.current.remove(sceneRef.current.children[0]); 
-                }
-            }
-            
             if (rendererRef.current) {
-                // Ensure the WebGL context is lost
-                rendererRef.current.forceContextLoss();
                 rendererRef.current.dispose();
-                // Remove the canvas from the DOM
-                if (mountRef.current && rendererRef.current.domElement.parentNode === mountRef.current) {
-                    mountRef.current.removeChild(rendererRef.current.domElement);
-                }
             }
-            
-            // Explicitly set refs to undefined
-            rendererRef.current = undefined;
-            sceneRef.current = undefined;
-            cameraRef.current = undefined;
-            controlsRef.current = undefined;
-
-            setIsInitialized(false);
+            if (mountRef.current && rendererRef.current?.domElement) {
+                mountRef.current.removeChild(rendererRef.current.domElement);
+            }
         };
-    }, [bodyData, setIsInitialized, viewFromSebaka, sebakaGridTexture, usePlainOrbits]);
+    }, [bodyData, viewFromSebaka, usePlainOrbits, sebakaGridTexture]);
 
     return {
         mountRef,

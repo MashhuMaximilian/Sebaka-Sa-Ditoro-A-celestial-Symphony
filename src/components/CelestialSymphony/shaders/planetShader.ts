@@ -45,7 +45,7 @@ export const planetShader = {
     void main() {
       vUv = uv;
       
-      // Calculate TBN matrix in world space
+      // Calculate TBN matrix in world space for normal mapping
       vec3 T = normalize( mat3(modelMatrix) * tangent.xyz );
       vec3 N = normalize( mat3(modelMatrix) * normal );
       vec3 B = cross( N, T );
@@ -53,16 +53,13 @@ export const planetShader = {
       
       // Apply displacement mapping
       vec3 displacedPosition = position;
-      if (useDisplacementMap && displacementScale > 0.0 && texture2D(displacementMap, uv).r > 0.0) {
+      if (useDisplacementMap) {
         displacedPosition += normal * texture2D(displacementMap, uv).r * displacementScale;
       }
 
       // Calculate world position
       vWorldPosition = (modelMatrix * vec4(displacedPosition, 1.0)).xyz;
       
-      // The world-space normal is passed to the fragment shader. 
-      // For accurate lighting on a displaced surface, the normal should also be perturbed.
-      // We pass the TBN and let the fragment shader handle it with the normal map.
       vNormal = N;
 
       gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPosition, 1.0);
@@ -108,7 +105,7 @@ export const planetShader = {
       
       // Get normal from normal map
       vec3 normal = normalize(vNormal);
-      if (useNormalMap && texture2D(normalMap, vUv).r > 0.0) { // Check if normal map exists
+      if (useNormalMap) {
           vec3 mapN = texture2D(normalMap, vUv).xyz * 2.0 - 1.0;
           mapN.xy *= normalScale;
           normal = normalize(vTBN * mapN);

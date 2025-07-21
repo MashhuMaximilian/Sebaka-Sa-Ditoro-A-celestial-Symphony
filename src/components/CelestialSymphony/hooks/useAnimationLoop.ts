@@ -76,12 +76,12 @@ export const useAnimationLoop = ({
   useEffect(() => {
     if (goToTime !== null) {
       elapsedHoursRef.current = goToTime;
-      if (allBodiesRef.current.length > 0) {
+      if (allBodiesRef.current.length > 0 && isInitialized) {
         updateAllBodyPositions(goToTime, bodyData, allBodiesRef.current, beaconPositionRef.current);
       }
       onTimeUpdate(goToTime);
     }
-  }, [goToTime, bodyData, allBodiesRef, beaconPositionRef, onTimeUpdate]);
+  }, [goToTime, bodyData, allBodiesRef, beaconPositionRef, onTimeUpdate, isInitialized]);
 
   useEffect(() => {
     if (!scene || !camera || !renderer || !controls || !isInitialized) return;
@@ -158,9 +158,8 @@ export const useAnimationLoop = ({
                     
                     // Create quaternions for spin and tilt
                     const spinQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), spinAngle);
-                    const tiltQuat = planetMesh.userData.tiltQuaternion || new THREE.Quaternion();
-
-                    // Apply spin to the current rotation, then re-apply tilt
+                    
+                    // Apply spin to the current rotation
                     planetMesh.quaternion.premultiply(spinQuat);
                 }
             }

@@ -186,14 +186,13 @@ export default function Home() {
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
   const [isSebakaRotating, setIsSebakaRotating] = useState(true);
-  const [resetViewToggle, setResetViewToggle] = useState(false);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [longitude, setLongitude] = useState(0);
   const [latitude, setLatitude] = useState(0);
   const [cameraPitch, setCameraPitch] = useState(0);
   const [cameraYaw, setCameraYaw] = useState(0);
   const [cameraFov, setCameraFov] = useState(75);
-  const [cameraTarget, setCameraTarget] = useState<string | null>(null);
+  const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [materialProperties, setMaterialProperties] = useState(initialMaterialProperties);
   const [usePlainOrbits, setUsePlainOrbits] = useState(false);
@@ -274,21 +273,16 @@ export default function Home() {
     setCameraTarget('Binary Stars');
   }
 
-  const toggleSebakaView = () => {
-      setViewFromSebaka(prev => {
-          const newView = !prev;
-          if (newView) {
-            setLongitude(0);
-            setLatitude(0);
-            setCameraPitch(0);
-            setCameraYaw(0);
-            setCameraFov(75);
-            setActiveSebakaPanel(null);
-          } else {
-            handleResetView();
-          }
-          return newView;
-      })
+  const enterSebakaView = () => {
+      if (!viewFromSebaka) {
+          setViewFromSebaka(true);
+          setLongitude(0);
+          setLatitude(0);
+          setCameraPitch(0);
+          setCameraYaw(0);
+          setCameraFov(75);
+          setActiveSebakaPanel(null);
+      }
   }
   
   const handleSebakaPanelToggle = (panel: ActiveSebakaPanel | null) => {
@@ -493,7 +487,6 @@ export default function Home() {
         cameraPitch={cameraPitch}
         cameraYaw={cameraYaw}
         cameraFov={cameraFov}
-        resetViewToggle={resetViewToggle}
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
@@ -593,13 +586,13 @@ export default function Home() {
                 </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm" onClick={toggleSebakaView}>
+                        <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm" onClick={enterSebakaView}>
                             <PersonStanding className="h-5 w-5" />
-                            <span className="sr-only">Toggle View from Sebaka</span>
+                            <span className="sr-only">View from Sebaka</span>
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>{viewFromSebaka ? 'Exit Sebaka View' : 'View from Sebaka'}</p>
+                        <p>View from Sebaka</p>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>

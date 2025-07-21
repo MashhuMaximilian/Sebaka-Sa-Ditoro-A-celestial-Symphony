@@ -10,7 +10,6 @@ interface CameraControlProps {
     cameraTarget: string | null;
     viewFromSebaka: boolean;
     cameraFov: number;
-    resetViewToggle: boolean;
     allBodiesRef: React.MutableRefObject<THREE.Mesh[]>;
     bodyData: BodyData[];
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -24,7 +23,6 @@ export const useCameraControl = ({
     cameraTarget,
     viewFromSebaka,
     cameraFov,
-    resetViewToggle,
     allBodiesRef,
     bodyData,
     beaconPositionRef,
@@ -58,14 +56,14 @@ export const useCameraControl = ({
     }, [cameraTarget, viewFromSebaka, allBodiesRef, camera, controls, beaconPositionRef]);
 
     useEffect(() => {
-        if (!camera || !controls) return;
+        if (!camera || !controls || viewFromSebaka) return;
         
         let targetPosition = new THREE.Vector3(0, 0, 0);
         let desiredCameraPosition: THREE.Vector3 | null = null;
         
         if (cameraTarget === 'Binary Stars') {
             targetPosition.set(0, 0, 0);
-            desiredCameraPosition = new THREE.Vector3(0, 200, 400);
+            desiredCameraPosition = originalCameraPosRef.current.clone();
         } else if (cameraTarget === 'Beacon System') {
             targetPosition.copy(beaconPositionRef.current);
             desiredCameraPosition = new THREE.Vector3(targetPosition.x, targetPosition.y + 1000, targetPosition.z + 2000);
@@ -84,7 +82,7 @@ export const useCameraControl = ({
           controls.target.copy(targetPosition);
           controls.update();
         }
-      }, [cameraTarget, bodyData, viewFromSebaka, allBodiesRef, beaconPositionRef, camera, controls]);
+      }, [cameraTarget, bodyData, viewFromSebaka, allBodiesRef, beaconPositionRef, camera, controls, originalCameraPosRef]);
 
     useEffect(() => {
         if (!camera || !controls) return;
@@ -99,17 +97,8 @@ export const useCameraControl = ({
             controls.enabled = true;
         }
         camera.updateProjectionMatrix();
-    }, [viewFromSebaka, resetViewToggle, camera, controls, orbitMeshesRef]);
+    }, [viewFromSebaka, camera, controls, orbitMeshesRef]);
 
-    useEffect(() => {
-        if (!camera || !controls) return;
-
-        if (!viewFromSebaka && !cameraTarget) {
-            camera.position.lerp(originalCameraPosRef.current, 0.05);
-            controls.target.lerp(new THREE.Vector3(0, 0, 0), 0.05);
-        }
-        controls.update();
-    }, [cameraTarget, resetViewToggle, viewFromSebaka, camera, controls, originalCameraPosRef]);
 
     useEffect(() => {
         if (camera && camera.fov !== cameraFov) {
