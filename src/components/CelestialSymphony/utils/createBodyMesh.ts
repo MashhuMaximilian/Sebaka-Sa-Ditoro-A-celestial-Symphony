@@ -248,13 +248,13 @@ export const createBodyMesh = (
         }
     }
     
-    if (body.axialTilt) {
-        const tiltDegrees = parseFloat(body.axialTilt.replace('°', ''));
-        if (!isNaN(tiltDegrees)) {
-            const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
-            tiltAxis.rotation.set(0, 0, tiltRadians, 'XYZ');
-        }
-    }
+    // if (body.axialTilt) {
+    //     const tiltDegrees = parseFloat(body.axialTilt.replace('°', ''));
+    //     if (!isNaN(tiltDegrees)) {
+    //         const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
+    //         tiltAxis.rotation.set(0, 0, tiltRadians, 'XYZ');
+    //     }
+    // }
 
     tiltAxis.add(mesh);
     return tiltAxis;
