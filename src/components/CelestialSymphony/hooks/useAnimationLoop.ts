@@ -168,6 +168,8 @@ export const useAnimationLoop = ({
 
       const sebakaBody = allBodiesRef.current.find(p => p.name === 'Sebaka');
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+      const sebakaTiltAxis = scene.getObjectByName('Sebaka_tilt_axis');
+
 
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.name === 'Gelidis_orbit');
       const liminisOrbit = orbitMeshesRef.current.find(o => o.name === 'Liminis_orbit');
@@ -184,22 +186,27 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebakaRef.current && sebakaMesh && sebakaBody) {
+      if (viewFromSebakaRef.current && sebakaMesh && sebakaBody && sebakaTiltAxis) {
           const lat = playerInputsRef.current.latitude;
           const lon = playerInputsRef.current.longitude;
           const pitch = playerInputsRef.current.pitch;
           const yaw = playerInputsRef.current.yaw;
-
-          // Position camera based on lat/lon
-          const cameraLocalPosition = new THREE.Vector3();
-          cameraLocalPosition.setFromSphericalCoords(
-              sebakaRadiusRef.current + eyeHeight,
+          
+          // Position the "body" (tiltAxis) on the planet's surface
+          const bodyPosition = new THREE.Vector3();
+          bodyPosition.setFromSphericalCoords(
+              sebakaRadiusRef.current,
               THREE.MathUtils.degToRad(90 - lat),
               THREE.MathUtils.degToRad(lon)
           );
-          camera.position.copy(cameraLocalPosition);
+          sebakaTiltAxis.position.copy(bodyPosition);
 
-          // Apply look controls (pitch and yaw)
+          // Point the body up, away from the planet's center
+          sebakaTiltAxis.lookAt(sebakaMesh.position);
+          sebakaTiltAxis.rotateX(Math.PI / 2); // Correct for lookAt orientation
+          
+          // Apply look controls to the camera (the "head")
+          // We use Euler angles for simplicity. YXZ order is good for FPS-style controls.
           const euler = new THREE.Euler(0, 0, 0, 'YXZ');
           euler.x = THREE.MathUtils.degToRad(pitch);
           euler.y = THREE.MathUtils.degToRad(yaw);

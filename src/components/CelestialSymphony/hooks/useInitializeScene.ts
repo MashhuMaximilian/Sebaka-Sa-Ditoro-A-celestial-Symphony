@@ -109,11 +109,20 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
 
         if (viewFromSebaka) {
             const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-            if (sebakaMesh) {
-                // Parent the camera to the rotating Sebaka mesh
-                sebakaMesh.add(camera);
-                camera.position.set(0, 0, sebakaRadiusRef.current + eyeHeight);
-                camera.lookAt(0,0,0);
+            const sebakaData = bodyData.find(d => d.name === 'Sebaka');
+            if (sebakaMesh && sebakaData) {
+                // The "body" of our robot character
+                const tiltAxis = new THREE.Object3D();
+                tiltAxis.name = "Sebaka_tilt_axis";
+                
+                // Get the planet's axial tilt and apply it
+                const tiltDegrees = parseFloat(sebakaData.axialTilt?.replace('°', '') || '0');
+                const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
+                tiltAxis.rotation.set(0, 0, tiltRadians, 'XYZ');
+
+                sebakaMesh.add(tiltAxis);
+                tiltAxis.add(camera);
+                camera.position.set(0, eyeHeight, 0);
             }
         } else {
              camera.position.copy(originalCameraPosRef.current);
@@ -143,10 +152,10 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
             }
             if (mountRef.current && rendererRef.current?.domElement) {
                 // Ensure camera is removed from Sebaka mesh before cleaning up
-                const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-                 if(sebakaMesh && cameraRef.current) {
-                    sebakaMesh.remove(cameraRef.current);
-                 }
+                const sebakaTiltAxis = scene.getObjectByName('Sebaka_tilt_axis');
+                if (sebakaTiltAxis && cameraRef.current) {
+                    sebakaTiltAxis.remove(cameraRef.current);
+                }
                 mountRef.current.removeChild(rendererRef.current.domElement);
             }
         };
