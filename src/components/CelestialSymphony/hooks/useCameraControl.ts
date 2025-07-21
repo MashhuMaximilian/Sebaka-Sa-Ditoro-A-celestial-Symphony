@@ -10,6 +10,7 @@ interface CameraControlProps {
     cameraTarget: string | null;
     viewFromSebaka: boolean;
     allBodiesRef: React.MutableRefObject<THREE.Object3D[]>;
+    planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     bodyData: BodyData[];
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     originalCameraPosRef: React.MutableRefObject<THREE.Vector3>;
@@ -22,6 +23,7 @@ export const useCameraControl = ({
     cameraTarget,
     viewFromSebaka,
     allBodiesRef,
+    planetMeshesRef,
     bodyData,
     beaconPositionRef,
     originalCameraPosRef,
@@ -87,27 +89,32 @@ export const useCameraControl = ({
     useEffect(() => {
         if (!camera || !controls) return;
         
-        // Hide planets and stars when in Sebaka view, except for the character cube
-        // The character cube is managed separately and added/removed from the scene
-        allBodiesRef.current.forEach(body => {
-            body.visible = !viewFromSebaka;
-        });
-        orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
+        const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
         
         if (viewFromSebaka) {
             camera.near = 0.01;
             camera.far = 100000;
             controls.enabled = false;
+            // Hide all planets and stars when in Sebaka view, except for Sebaka itself
+            allBodiesRef.current.forEach(body => {
+                body.visible = false;
+            });
+            orbitMeshesRef.current.forEach(orbit => orbit.visible = false);
+            if (sebakaMesh) {
+                sebakaMesh.parent!.visible = true; // The parent (tiltAxis) should be visible
+            }
+
         } else {
             camera.near = 0.001;
             camera.far = 200000;
             controls.enabled = true;
             controls.target.set(0, 0, 0);
+            // Show all bodies when not in Sebaka view
             allBodiesRef.current.forEach(body => body.visible = true);
             orbitMeshesRef.current.forEach(orbit => orbit.visible = true);
         }
         camera.updateProjectionMatrix();
-    }, [viewFromSebaka, camera, controls, allBodiesRef, orbitMeshesRef]);
+    }, [viewFromSebaka, camera, controls, allBodiesRef, orbitMeshesRef, planetMeshesRef]);
 
     useEffect(() => {
         if (camera && !viewFromSebaka) {

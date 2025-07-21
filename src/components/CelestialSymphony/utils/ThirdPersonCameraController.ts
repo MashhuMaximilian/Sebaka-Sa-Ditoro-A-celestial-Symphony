@@ -41,10 +41,11 @@ export class ThirdPersonCameraController {
     const desiredPosition = characterWorldPosition.clone().add(offset);
     
     // Smoothly interpolate camera position
-    this.camera.position.lerp(desiredPosition, this.lerpFactor * (deltaTime * 60)); // Normalize lerp to 60fps
+    this.camera.position.lerp(desiredPosition, this.lerpFactor / (deltaTime || 1/60)); // Normalize lerp to 60fps
 
     // Set camera to look at the character
-    this.camera.lookAt(characterWorldPosition);
+    const lookAtTarget = characterWorldPosition.clone().add(up.multiplyScalar(0.1));
+    this.camera.lookAt(lookAtTarget);
   }
 
   // Slider integration methods

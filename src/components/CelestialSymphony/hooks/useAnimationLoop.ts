@@ -58,7 +58,6 @@ export const useAnimationLoop = ({
   beaconPositionRef,
   sebakaRadiusRef,
   isInitialized,
-  cameraTarget,
 }: AnimationLoopParams) => {
   const clockRef = useRef(new THREE.Clock());
   const elapsedHoursRef = useRef(0);
@@ -66,7 +65,6 @@ export const useAnimationLoop = ({
 
   const speedMultiplierRef = useRef(speedMultiplier);
   const isSebakaRotatingRef = useRef(isSebakaRotating);
-  const cameraTargetRef = useRef(cameraTarget);
   
   const characterControllerRef = useRef<{
     character: SphericalCharacterCube;
@@ -75,7 +73,6 @@ export const useAnimationLoop = ({
 
   useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
   useEffect(() => { isSebakaRotatingRef.current = isSebakaRotating; }, [isSebakaRotating]);
-  useEffect(() => { cameraTargetRef.current = cameraTarget; }, [cameraTarget]);
   
   useEffect(() => {
     if (!scene || !camera || !bodyData.length || !isInitialized) return;
@@ -85,7 +82,7 @@ export const useAnimationLoop = ({
         if (!sebakaMesh) return;
         
         const character = new SphericalCharacterCube(
-            sebakaMesh, // Parent the character directly to the planet mesh
+            sebakaMesh,
             sebakaRadiusRef.current
         );
 
