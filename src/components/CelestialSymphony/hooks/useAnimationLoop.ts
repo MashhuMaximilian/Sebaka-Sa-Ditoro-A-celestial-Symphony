@@ -189,35 +189,28 @@ export const useAnimationLoop = ({
         const latRad = THREE.MathUtils.degToRad(90 - lat);
         const lonRad = THREE.MathUtils.degToRad(lon);
         const pitchRad = THREE.MathUtils.degToRad(pitch);
-        const yawRad = THREE.MathUtils.degToRad(yaw);
+        const yawRad = THREE.MathUtils.degToRad(-yaw);
         
         const radius = sebakaRadiusRef.current + 0.1;
         
         const sebakaMesh = sebakaBody.children[0] as THREE.Mesh;
         
-        // 1. Calculate Camera Position
-        const cameraLocalPosition = new THREE.Vector3();
-        cameraLocalPosition.setFromSphericalCoords(radius, latRad, lonRad);
-
-        // Apply planet's rotation to the camera position
-        cameraLocalPosition.applyQuaternion(sebakaMesh.quaternion);
-
-        // Set final camera position relative to the planet's world position
-        camera.position.copy(sebakaBody.position).add(cameraLocalPosition);
+        // 1. Calculate Camera Position in World Space
+        const cameraLocalPosition = new THREE.Vector3().setFromSphericalCoords(radius, latRad, lonRad);
+        const cameraWorldPosition = cameraLocalPosition.clone().applyQuaternion(sebakaMesh.quaternion).add(sebakaBody.position);
+        camera.position.copy(cameraWorldPosition);
         
-        // 2. Establish a Stable Local Coordinate System for the Camera
+        // 2. Establish a Stable Local Coordinate System on the Planet's Surface
         // The "down" vector points towards the planet's center. "Up" is the opposite.
         const localDown = new THREE.Vector3().subVectors(sebakaBody.position, camera.position).normalize();
         const localUp = localDown.clone().negate();
         camera.up.copy(localUp);
 
-        // To get a stable "forward" (horizon), we use a global up vector as a reference.
-        // Cross localUp with global up to get a stable "right" vector.
+        // Use a global up vector to establish a stable "right" vector, creating a horizon.
         const globalUp = new THREE.Vector3(0, 1, 0);
         const localRight = new THREE.Vector3().crossVectors(localUp, globalUp).normalize();
         
-        // If localUp and globalUp are parallel (at the poles), localRight will be zero.
-        // In this case, we use a global forward vector as a fallback.
+        // If we're at the poles, the cross product will be zero. Use a fallback.
         if (localRight.lengthSq() === 0) {
             localRight.crossVectors(localUp, new THREE.Vector3(0, 0, -1)).normalize();
         }
@@ -225,18 +218,16 @@ export const useAnimationLoop = ({
         // The stable "forward" vector is perpendicular to "up" and "right".
         const localForward = new THREE.Vector3().crossVectors(localRight, localUp).normalize();
 
-        // 3. Apply Pitch and Yaw Rotations
-        // Create quaternions for pitch (around local right) and yaw (around local up).
+        // 3. Apply Pitch and Yaw Rotations to the Stable Frame
         const pitchQuat = new THREE.Quaternion().setFromAxisAngle(localRight, -pitchRad);
-        const yawQuat = new THREE.Quaternion().setFromAxisAngle(localUp, -yawRad);
+        const yawQuat = new THREE.Quaternion().setFromAxisAngle(localUp, yawRad);
 
-        // Combine rotations: yaw is applied to the base frame, then pitch.
+        // Combine rotations: yaw first, then pitch.
         const combinedQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
         
         // Apply the combined rotation to our stable "forward" vector to get the final look direction.
         const lookDirection = localForward.clone().applyQuaternion(combinedQuat);
         
-        // The point to look at is simply the camera's position plus the new look direction.
         const lookAtTarget = camera.position.clone().add(lookDirection);
         
         camera.lookAt(lookAtTarget);
