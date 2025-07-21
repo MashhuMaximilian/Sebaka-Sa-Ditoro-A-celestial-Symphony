@@ -7,6 +7,7 @@ import { createOrbitMesh } from "../utils/createOrbitMesh";
 import type { BodyData } from "./useBodyData";
 import { createStarfield } from "../utils/createStarfield";
 import { MaterialProperties } from "@/types";
+import { eyeHeight } from "../constants/config";
 
 interface InitializeSceneProps {
     bodyData: BodyData[];
@@ -49,7 +50,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         createStarfield(scene);
 
         const camera = new THREE.PerspectiveCamera(75, currentMount.clientWidth / currentMount.clientHeight, 0.001, 200000);
-        camera.position.copy(originalCameraPosRef.current);
         cameraRef.current = camera;
         
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
@@ -71,7 +71,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         controls.screenSpacePanning = true; 
         controls.minDistance = 1;
         controls.maxDistance = 200000;
-        controls.target.set(0, 0, 0);
         controlsRef.current = controls;
         
         allBodiesRef.current = [];
@@ -109,12 +108,16 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         });
 
         if (viewFromSebaka) {
-            const sebakaTiltAxis = allBodiesRef.current.find(p => p.name === 'Sebaka');
-            if (sebakaTiltAxis) {
-                const radius = sebakaRadiusRef.current + 0.1;
-                camera.position.set(sebakaTiltAxis.position.x, sebakaTiltAxis.position.y, sebakaTiltAxis.position.z + radius);
-                controls.target.copy(sebakaTiltAxis.position);
+            const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+            if (sebakaMesh) {
+                // Parent the camera to the rotating Sebaka mesh
+                sebakaMesh.add(camera);
+                camera.position.set(0, 0, sebakaRadiusRef.current + eyeHeight);
+                camera.lookAt(0,0,0);
             }
+        } else {
+             camera.position.copy(originalCameraPosRef.current);
+             controls.target.set(0, 0, 0);
         }
 
 
@@ -139,6 +142,11 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 rendererRef.current.dispose();
             }
             if (mountRef.current && rendererRef.current?.domElement) {
+                // Ensure camera is removed from Sebaka mesh before cleaning up
+                const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+                 if(sebakaMesh && cameraRef.current) {
+                    sebakaMesh.remove(cameraRef.current);
+                 }
                 mountRef.current.removeChild(rendererRef.current.domElement);
             }
         };

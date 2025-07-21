@@ -190,36 +190,20 @@ export const useAnimationLoop = ({
           const pitch = playerInputsRef.current.pitch;
           const yaw = playerInputsRef.current.yaw;
 
-          // 1. Calculate camera's position on the rotating surface
+          // Position camera based on lat/lon
           const cameraLocalPosition = new THREE.Vector3();
-          cameraLocalPosition.setFromSphericalCoords(sebakaRadiusRef.current + eyeHeight, THREE.MathUtils.degToRad(90 - lat), THREE.MathUtils.degToRad(lon));
-          const cameraWorldPosition = sebakaMesh.localToWorld(cameraLocalPosition.clone());
-          camera.position.copy(cameraWorldPosition);
+          cameraLocalPosition.setFromSphericalCoords(
+              sebakaRadiusRef.current + eyeHeight,
+              THREE.MathUtils.degToRad(90 - lat),
+              THREE.MathUtils.degToRad(lon)
+          );
+          camera.position.copy(cameraLocalPosition);
 
-          // 2. Establish a stable orientation (the "tripod")
-          // Get the vector pointing from the planet's core to the camera
-          const planetUp = new THREE.Vector3().subVectors(camera.position, sebakaMesh.position).normalize();
-          camera.up.copy(planetUp);
-
-          // Create a quaternion that represents the camera's base orientation on the surface
-          // We look towards the planet's world-space "forward" (positive Z) to start
-          const tempLookAt = new THREE.Vector3(sebakaMesh.position.x, sebakaMesh.position.y, sebakaMesh.position.z + 1);
-          const baseOrientation = new THREE.Matrix4();
-          baseOrientation.lookAt(camera.position, tempLookAt, planetUp);
-          camera.quaternion.setFromRotationMatrix(baseOrientation);
-
-          // 3. Apply look controls (the "robot head") relative to the stable tripod
-          const yawRad = THREE.MathUtils.degToRad(-yaw);
-          const pitchRad = THREE.MathUtils.degToRad(pitch);
-
-          // Create quaternions for pitch and yaw rotations
-          const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawRad);
-          const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRad);
-
-          // Combine the rotations and apply them to the camera's base quaternion
-          // The order is important: first the base orientation, then yaw, then pitch.
-          camera.quaternion.multiply(yawQuat);
-          camera.quaternion.multiply(pitchQuat);
+          // Apply look controls (pitch and yaw)
+          const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+          euler.x = THREE.MathUtils.degToRad(pitch);
+          euler.y = THREE.MathUtils.degToRad(yaw);
+          camera.quaternion.setFromEuler(euler);
 
       } else {
         controls.update();
