@@ -12,7 +12,7 @@ export const planetShader = {
     beaconColor: { value: new THREE.Color(0xaaccff) },
     alphaIntensity: { value: 1.0 },
     twilightIntensity: { value: 0.7 },
-    beaconIntensity: { value: 500.0 },
+    beaconIntensity: { value: 200.0 },
     emissiveIntensity: { value: 0.0 },
     
     // Planet properties
@@ -66,7 +66,8 @@ export const planetShader = {
       // Apply displacement mapping
       vec3 displacedPosition = position;
       if (useDisplacementMap) {
-        displacedPosition += normal * texture2D(displacementMap, uv).r * displacementScale;
+        float displacementValue = texture2D(displacementMap, uv).r;
+        displacedPosition += normal * pow(displacementValue, 2.0) * displacementScale;
       }
 
       // Calculate world position

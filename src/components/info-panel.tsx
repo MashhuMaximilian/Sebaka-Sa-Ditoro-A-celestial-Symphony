@@ -76,7 +76,7 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                       <Slider
                         id={`${data.name}-displacement`}
                         min={0}
-                        max={15}
+                        max={25}
                         step={0.01}
                         value={[bodyProps.displacementScale]}
                         onValueChange={(value) => handleSliderChange(data.name, 'displacementScale', value)}
