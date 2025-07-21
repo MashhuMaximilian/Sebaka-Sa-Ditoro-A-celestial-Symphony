@@ -88,7 +88,7 @@ export class CloseUpCharacterCamera {
   
   private _onWheel(event: WheelEvent) {
     this.distance = THREE.MathUtils.clamp(
-      this.distance + event.deltaY * 0.01,
+      this.distance + event.deltaY * 0.001,
       0.15,  // Min zoom (point blank)
       40     // Max zoom
     );

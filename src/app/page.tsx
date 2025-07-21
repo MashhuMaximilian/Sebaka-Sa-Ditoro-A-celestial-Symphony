@@ -229,6 +229,7 @@ export default function Home() {
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [materialProperties, setMaterialProperties] = useState(initialMaterialProperties);
   const [usePlainOrbits, setUsePlainOrbits] = useState(false);
+  const [showOrbits, setShowOrbits] = useState(true);
 
   const [currentYear, setCurrentYear] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
@@ -293,6 +294,7 @@ export default function Home() {
     resetSpeed();
     setIsSebakaRotating(true);
     setCameraTarget('Binary Stars');
+    setShowOrbits(true);
   }
 
   const enterSebakaView = () => {
@@ -302,6 +304,9 @@ export default function Home() {
           setLongitude(0);
           setLatitude(0);
           setActiveSebakaPanel(null);
+          setSpeedMultiplier(4);
+          setSpeedInput('4');
+          setShowOrbits(false);
       }
   }
   
@@ -336,6 +341,7 @@ export default function Home() {
     if (viewFromSebaka) {
         setIsInitialized(false);
         setViewFromSebaka(false);
+        setShowOrbits(true);
     }
     setCameraTarget(target);
 
@@ -455,7 +461,7 @@ export default function Home() {
   return (
     <main className="relative h-screen w-screen overflow-hidden">
       <CelestialSymphony 
-        key={String(viewFromSebaka) + String(usePlainOrbits)}
+        key={String(viewFromSebaka) + String(usePlainOrbits) + String(showOrbits)}
         stars={initialStars} 
         planets={planets} 
         speedMultiplier={speedMultiplier} 
@@ -473,6 +479,7 @@ export default function Home() {
         setIsInitialized={setIsInitialized}
         materialProperties={materialProperties}
         usePlainOrbits={usePlainOrbits}
+        showOrbits={showOrbits}
       />
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
@@ -693,3 +700,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

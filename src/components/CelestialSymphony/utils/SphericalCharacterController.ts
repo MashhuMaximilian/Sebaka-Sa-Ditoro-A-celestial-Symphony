@@ -23,7 +23,8 @@ export class SphericalCharacterController {
     }
     
     const geometry = new THREE.BoxGeometry(0.02, 0.02, 0.02);
-    const material = new THREE.MeshStandardMaterial({ color: 0x00ff88 });
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    
     this.characterMesh = new THREE.Mesh(geometry, material);
     this.characterMesh.name = "Character";
 
@@ -41,11 +42,8 @@ export class SphericalCharacterController {
     );
     this.characterMesh.position.copy(localPosition);
     
-    // The character's "up" is always pointing away from the planet center.
-    // The rest of its orientation is inherited from the parent planet's rotation.
-    // We no longer call lookAt() here, which was causing the wiggle.
-    const upVector = localPosition.clone().normalize();
-    // this.characterMesh.up.copy(upVector); // REMOVED: This was causing instability.
+    // The character's orientation is inherited from the parent planet's rotation.
+    // It does not have its own orientation logic, making it a stable "rock" on the surface.
   }
 
   public dispose() {

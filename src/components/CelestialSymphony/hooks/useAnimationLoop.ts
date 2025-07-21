@@ -80,7 +80,6 @@ export const useAnimationLoop = ({
     if (viewFromSebaka && sebakaMesh) {
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
       thirdPersonCameraRef.current = new CloseUpCharacterCamera(camera, characterControllerRef.current.characterMesh, sebakaMesh, renderer.domElement);
-      thirdPersonCameraRef.current.distance = 2; // Start closer
       controls.enabled = false;
     } else {
         controls.enabled = true;
@@ -159,12 +158,9 @@ export const useAnimationLoop = ({
           const updateSpiderStrandMaterial = (material: THREE.Material | THREE.Material[]) => {
             const materials = Array.isArray(material) ? material : [material];
             materials.forEach(mat => {
-              if (mat instanceof THREE.ShaderMaterial && mat.uniforms.hasOwnProperty('alphaStarPos')) {
+              if (mat instanceof THREE.ShaderMaterial && mat.uniforms.hasOwnProperty('time')) {
                   const uniforms = mat.uniforms;
                   uniforms.time.value = elapsedHoursRef.current * 0.001;
-                  uniforms.alphaStarPos.value.copy(alphaStarBody.position);
-                  uniforms.twilightStarPos.value.copy(twilightStarBody.position);
-                  uniforms.beaconStarPos.value.copy(beaconStarBody.position);
               }
             });
           };
@@ -237,3 +233,5 @@ export const useAnimationLoop = ({
     longitude, 
   ]);
 };
+
+    

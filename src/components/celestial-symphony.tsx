@@ -27,6 +27,7 @@ export interface CelestialSymphonyProps {
   setIsInitialized: (isInitialized: boolean) => void;
   materialProperties: MaterialProperties;
   usePlainOrbits: boolean;
+  showOrbits: boolean;
 }
 
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
@@ -49,6 +50,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     setIsInitialized: props.setIsInitialized,
     viewFromSebaka: props.viewFromSebaka,
     usePlainOrbits: props.usePlainOrbits,
+    showOrbits: props.showOrbits,
     materialProperties: props.materialProperties,
   });
 
@@ -92,10 +94,11 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     planetMeshesRef,
     orbitMeshesRef,
     beaconPositionRef,
-    sebakaRadiusRef,
   });
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
 };
 
 export default CelestialSymphony;
+
+    

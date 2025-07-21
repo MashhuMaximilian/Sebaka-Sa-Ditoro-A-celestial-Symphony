@@ -13,10 +13,11 @@ interface InitializeSceneProps {
     setIsInitialized: (isInitialized: boolean) => void;
     viewFromSebaka: boolean;
     usePlainOrbits: boolean;
+    showOrbits: boolean;
     materialProperties: MaterialProperties;
 }
 
-export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka, usePlainOrbits, materialProperties }: InitializeSceneProps) => {
+export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka, usePlainOrbits, showOrbits, materialProperties }: InitializeSceneProps) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer>();
     const sceneRef = useRef<THREE.Scene>();
@@ -87,10 +88,12 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
             allBodiesRef.current.push(bodyObject);
             if (mesh && body.type !== 'Star') planetMeshesRef.current.push(mesh);
             
-            const orbit = createOrbitMesh(body, usePlainOrbits);
-            if (orbit) {
-                scene.add(orbit);
-                orbitMeshesRef.current.push(orbit);
+            if (showOrbits) {
+                const orbit = createOrbitMesh(body, usePlainOrbits);
+                if (orbit) {
+                    scene.add(orbit);
+                    orbitMeshesRef.current.push(orbit);
+                }
             }
         });
 
@@ -133,7 +136,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 mountRef.current.removeChild(rendererRef.current.domElement);
             }
         };
-    }, [bodyData, viewFromSebaka, usePlainOrbits, sebakaGridTexture]);
+    }, [bodyData, viewFromSebaka, usePlainOrbits, showOrbits, sebakaGridTexture]);
 
     return {
         mountRef,
@@ -149,3 +152,5 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         originalCameraPosRef,
     };
 };
+
+    
