@@ -87,10 +87,10 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                           min={0}
                           max={5}
                           step={0.01}
-                          value={[bodyProps.albedo || 1]}
+                          value={[bodyProps.albedo ?? 1]}
                           onValueChange={(value) => handleSliderChange(data.name, 'albedo', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{(bodyProps.albedo || 1).toFixed(2)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(bodyProps.albedo ?? 1).toFixed(2)}</span>
                   </div>
               </div>
                {data.type === 'Star' && (
@@ -102,10 +102,10 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                       min={0}
                       max={20}
                       step={0.1}
-                      value={[bodyProps.emissiveIntensity || 1]}
+                      value={[bodyProps.emissiveIntensity ?? 1]}
                       onValueChange={(value) => handleSliderChange(data.name, 'emissiveIntensity', value)}
                     />
-                    <span className="text-xs font-mono w-12 text-center">{(bodyProps.emissiveIntensity || 1).toFixed(1)}</span>
+                    <span className="text-xs font-mono w-12 text-center">{(bodyProps.emissiveIntensity ?? 1).toFixed(1)}</span>
                   </div>
                 </div>
               )}
