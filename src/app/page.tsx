@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers } from "lucide-react";
+import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera } from "lucide-react";
 
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
@@ -225,7 +225,7 @@ export default function Home() {
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [longitude, setLongitude] = useState(0);
   const [latitude, setLatitude] = useState(0);
-  const [sebakaCamera, setSebakaCamera] = useState({ pitch: 0, yaw: 0, fov: 75 });
+  const [sebakaCamera, setSebakaCamera] = useState({ pitch: -20, yaw: 0, fov: 75 });
   const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [materialProperties, setMaterialProperties] = useState(initialMaterialProperties);
@@ -306,7 +306,7 @@ export default function Home() {
           setViewFromSebaka(true);
           setLongitude(0);
           setLatitude(0);
-          setSebakaCamera({ pitch: 0, yaw: 0, fov: 75 });
+          setSebakaCamera({ pitch: -20, yaw: 0, fov: 75 });
           setActiveSebakaPanel(null);
       }
   }
@@ -419,7 +419,22 @@ export default function Home() {
             <>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-angle-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Look Up/Down
+                      Turn Character
+                    </Label>
+                    <Slider
+                        id="look-yaw-slider"
+                        min={0}
+                        max={360}
+                        step={1}
+                        value={[sebakaCamera.yaw]}
+                        onValueChange={(val) => handleSebakaCameraChange('yaw', val[0])}
+                        className="w-full"
+                    />
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.yaw.toFixed(0)}°</span>
+                </div>
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                    <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
+                      Camera Angle
                     </Label>
                     <Slider
                         id="look-angle-slider"
@@ -433,34 +448,19 @@ export default function Home() {
                     <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.pitch.toFixed(0)}°</span>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Look Left/Right
-                    </Label>
-                    <Slider
-                        id="look-yaw-slider"
-                        min={-180}
-                        max={180}
-                        step={1}
-                        value={[sebakaCamera.yaw]}
-                        onValueChange={(val) => handleSebakaCameraChange('yaw', val[0])}
-                        className="w-full"
-                    />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.yaw.toFixed(0)}°</span>
-                </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="fov-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Field of View
+                      Camera Distance
                     </Label>
                     <Slider
                         id="fov-slider"
-                        min={10}
-                        max={140}
-                        step={1}
+                        min={0.5}
+                        max={5}
+                        step={0.1}
                         value={[sebakaCamera.fov]}
                         onValueChange={(val) => handleSebakaCameraChange('fov', val[0])}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.fov.toFixed(0)}°</span>
+                     <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.fov.toFixed(1)}</span>
                 </div>
             </>
         ),
@@ -468,7 +468,7 @@ export default function Home() {
             <>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="latitude-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Latitude
+                      Move North/South
                     </Label>
                     <Slider
                         id="latitude-slider"
@@ -483,7 +483,7 @@ export default function Home() {
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="longitude-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Longitude
+                      Move East/West
                     </Label>
                     <Slider
                         id="longitude-slider"
@@ -684,6 +684,9 @@ export default function Home() {
                               variant={activeSebakaPanel === panelId ? "secondary" : "default"}
                               className="backdrop-blur-sm p-4 rounded-lg shadow-lg text-foreground flex-1 basis-1/3 capitalize"
                           >
+                              {panelId === 'look' ? <Camera className="mr-2 h-4 w-4"/> : null}
+                              {panelId === 'move' ? <PersonStanding className="mr-2 h-4 w-4"/> : null}
+                              {panelId === 'time' ? <History className="mr-2 h-4 w-4"/> : null}
                               {panelId}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>

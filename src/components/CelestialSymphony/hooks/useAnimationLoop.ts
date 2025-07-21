@@ -5,9 +5,9 @@ import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js
 import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 import type { BodyData } from "./useBodyData";
-import { useCharacterController } from "./useCharacterController";
+import { SphericalCharacterCube } from "../utils/SphericalCharacterCube";
+import { ThirdPersonCameraController } from "../utils/ThirdPersonCameraController";
 
-// Define props directly to avoid circular dependency
 interface AnimationLoopParams {
     speedMultiplier?: number;
     viewFromSebaka: boolean;
@@ -66,23 +66,54 @@ export const useAnimationLoop = ({
   const isSebakaRotatingRef = useRef(isSebakaRotating);
   const cameraTargetRef = useRef(cameraTarget);
   
-  const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-  const sebakaBody = allBodiesRef.current.find(b => b.name === 'Sebaka');
-
-  const characterController = useCharacterController({
-    camera,
-    planetMesh: sebakaMesh,
-    planetBody: sebakaBody,
-    planetRadius: sebakaRadiusRef.current,
-    enabled: viewFromSebaka,
-  });
+  const characterCubeRef = useRef<SphericalCharacterCube | null>(null);
+  const thirdPersonCameraRef = useRef<ThirdPersonCameraController | null>(null);
 
   useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
   useEffect(() => { isSebakaRotatingRef.current = isSebakaRotating; }, [isSebakaRotating]);
   useEffect(() => { cameraTargetRef.current = cameraTarget; }, [cameraTarget]);
+
   useEffect(() => {
-    characterController?.updateInputs({ pitch: cameraPitch, yaw: cameraYaw, lat: latitude, lon: longitude });
-  }, [characterController, cameraPitch, cameraYaw, latitude, longitude]);
+    if (!scene || !camera || !bodyData.length || !isInitialized) return;
+
+    if (viewFromSebaka) {
+        const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
+        if (!sebakaMesh) return;
+
+        // Create character cube
+        const character = new SphericalCharacterCube(
+            scene,
+            sebakaRadiusRef.current,
+            sebakaMesh
+        );
+        characterCubeRef.current = character;
+
+        // Create third-person camera controller
+        const thirdPersonCam = new ThirdPersonCameraController(camera, character);
+        thirdPersonCameraRef.current = thirdPersonCam;
+
+        // Initialize position
+        character.setLatitude(latitude);
+        character.setLongitude(longitude);
+        character.setYaw(cameraYaw);
+        thirdPersonCam.setPitch(cameraPitch); // Use pitch for camera angle
+        thirdPersonCam.updateCamera();
+
+    } else {
+        // Cleanup when exiting view
+        if (characterCubeRef.current) {
+            scene.remove(characterCubeRef.current.characterMesh);
+            characterCubeRef.current = null;
+        }
+        thirdPersonCameraRef.current = null;
+    }
+
+    return () => {
+        if (characterCubeRef.current && scene) {
+            scene.remove(characterCubeRef.current.characterMesh);
+        }
+    };
+  }, [viewFromSebaka, scene, camera, bodyData, isInitialized, planetMeshesRef, sebakaRadiusRef]);
 
 
   useEffect(() => {
@@ -92,7 +123,7 @@ export const useAnimationLoop = ({
         updateAllBodyPositions(goToTime, bodyData, allBodiesRef.current, beaconPositionRef.current);
       }
       onTimeUpdate(goToTime);
-      onGoToTimeComplete(); // Signal that the time jump is complete
+      onGoToTimeComplete();
     }
   }, [goToTime, bodyData, allBodiesRef, beaconPositionRef, onTimeUpdate, isInitialized, onGoToTimeComplete]);
 
@@ -110,15 +141,16 @@ export const useAnimationLoop = ({
       const hoursPassedThisFrame = deltaTime * speedMultiplierRef.current;
       elapsedHoursRef.current += hoursPassedThisFrame;
       
-      onTimeUpdate(elapsedHoursRef.current);
-      updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
+      if (!viewFromSebaka) {
+        onTimeUpdate(elapsedHoursRef.current);
+        updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
+      }
 
       const alphaStarBody = allBodiesRef.current.find(b => b.name === 'Alpha');
       const twilightStarBody = allBodiesRef.current.find(b => b.name === 'Twilight');
       const beaconStarBody = allBodiesRef.current.find(b => b.name === 'Beacon');
       
       if (alphaStarBody && twilightStarBody && beaconStarBody) {
-          // Update shader uniforms for all planets
           planetMeshesRef.current.forEach(planetMesh => {
               if (planetMesh.material instanceof THREE.ShaderMaterial) {
                   planetMesh.material.uniforms.alphaStarPos.value.copy(alphaStarBody.position);
@@ -127,7 +159,6 @@ export const useAnimationLoop = ({
               }
           });
           
-          // Update spider strand shader uniforms (orbits and rings)
           const updateSpiderStrandMaterial = (material: THREE.Material | THREE.Material[]) => {
             const materials = Array.isArray(material) ? material : [material];
             materials.forEach(mat => {
@@ -155,7 +186,6 @@ export const useAnimationLoop = ({
           }
       }
       
-      // Auto-pause rotation when speed is 0 and focused on a planet
       const isFocusedOnPlanet = cameraTargetRef.current && !cameraTargetRef.current.endsWith('System') && cameraTargetRef.current !== 'Binary Stars';
       const shouldPauseRotation = speedMultiplierRef.current === 0 && isFocusedOnPlanet;
 
@@ -191,9 +221,19 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebaka && characterController) {
-          characterController.update();
-          controls.update();
+      if (viewFromSebaka && characterCubeRef.current && thirdPersonCameraRef.current) {
+          characterCubeRef.current.setLatitude(latitude);
+          characterCubeRef.current.setLongitude(longitude);
+          characterCubeRef.current.setYaw(cameraYaw);
+          thirdPersonCameraRef.current.setPitch(cameraPitch);
+
+          const character = characterCubeRef.current;
+          character.planetMesh.getWorldPosition(character.characterMesh.position);
+          character.planetMesh.getWorldQuaternion(character.characterMesh.quaternion);
+          
+          character.updateCharacterPosition(deltaTime);
+
+          thirdPersonCameraRef.current.updateCamera(deltaTime);
       } else {
         controls.update();
       }
@@ -223,7 +263,10 @@ export const useAnimationLoop = ({
     beaconPositionRef, 
     onTimeUpdate,
     isInitialized,
-    characterController,
     viewFromSebaka,
+    latitude, 
+    longitude, 
+    cameraPitch, 
+    cameraYaw
   ]);
 };

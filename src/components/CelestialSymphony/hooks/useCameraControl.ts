@@ -47,7 +47,6 @@ export const useCameraControl = ({
         };
 
         const animationId = requestAnimationFrame(function animate() {
-            // Only follow target if not in Sebaka view, as character controller will handle camera
             if (!viewFromSebaka) {
                 followTarget();
             }
@@ -90,24 +89,33 @@ export const useCameraControl = ({
     useEffect(() => {
         if (!camera || !controls) return;
         
+        allBodiesRef.current.forEach(body => {
+            const isPlanetOrStarMesh = body.children[0] instanceof THREE.Mesh;
+            if (isPlanetOrStarMesh) {
+                // Hide planets and stars when in Sebaka view, except for the character cube
+                body.visible = !viewFromSebaka;
+            }
+        });
         orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
         
         if (viewFromSebaka) {
             camera.near = 0.01;
+            camera.far = 100000;
             controls.enabled = false;
         } else {
             camera.near = 0.001;
+            camera.far = 200000;
             controls.enabled = true;
-            controls.target.set(0, 0, 0); // Reset target when exiting view
+            controls.target.set(0, 0, 0);
+            allBodiesRef.current.forEach(body => body.visible = true);
         }
         camera.updateProjectionMatrix();
-    }, [viewFromSebaka, camera, controls, orbitMeshesRef]);
-
+    }, [viewFromSebaka, camera, controls, allBodiesRef, orbitMeshesRef]);
 
     useEffect(() => {
-        if (camera && camera.fov !== cameraFov) {
-            camera.fov = cameraFov;
+        if (camera && !viewFromSebaka) {
+            camera.fov = 75; // Reset FOV for orbital view
             camera.updateProjectionMatrix();
         }
-    }, [camera, cameraFov]);
+    }, [camera, viewFromSebaka]);
 };

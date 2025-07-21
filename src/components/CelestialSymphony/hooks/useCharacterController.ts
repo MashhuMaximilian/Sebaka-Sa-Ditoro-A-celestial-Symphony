@@ -34,18 +34,13 @@ export const useCharacterController = ({
             return null;
         }
 
-        // Create the player object, which acts as the character's body/root.
         const player = new THREE.Object3D();
         player.name = 'SebakaPlayer';
         
-        // Add the camera to the player object. The camera is the "head".
-        player.add(camera);
-        // Position the camera slightly above the player's origin (feet) to simulate eye level.
-        camera.position.set(0, eyeHeight, 0);
-
-        // Add the player to the scene graph, but not as a child of the planet mesh.
-        // This is important to avoid inheriting the planet's self-rotation directly.
         planetMesh.parent?.add(player);
+        player.add(camera);
+        camera.position.set(0, eyeHeight, 0);
+        
         playerRef.current = player;
         
         const update = () => {
@@ -53,8 +48,6 @@ export const useCharacterController = ({
             const { lat, lon, pitch, yaw } = inputsRef.current;
             if (!player || !planetMesh || !planetBody) return;
 
-            // 1. Calculate player's position on the sphere (The "Legs")
-            // This is the same spherical coordinate math as before.
             const playerLocalPosition = new THREE.Vector3();
             playerLocalPosition.setFromSphericalCoords(
                 planetRadius,
@@ -62,27 +55,17 @@ export const useCharacterController = ({
                 THREE.MathUtils.degToRad(lon)
             );
 
-            // 2. Apply the planet's axial tilt to the local position.
-            // This ensures the player is on the correctly tilted surface.
             const tiltQuaternion = new THREE.Quaternion().setFromEuler(planetMesh.rotation);
             playerLocalPosition.applyQuaternion(tiltQuaternion);
 
-            // 3. Set the player's world position.
-            // We add the local position to the planet's orbital position.
-            // This makes the player stick to the surface as it orbits, but NOT as it self-rotates.
             player.position.copy(planetBody.position).add(playerLocalPosition);
 
-            // 4. Orient the player to stand upright on the surface (The "Body").
-            // The "up" vector points from the planet's center to the player.
             const up = player.position.clone().sub(planetBody.position).normalize();
             player.up.copy(up);
 
-            // Create a look-at target slightly ahead of the player along the surface.
             const lookAtTarget = player.position.clone().add(new THREE.Vector3(0,0,-1).applyQuaternion(player.quaternion));
             player.lookAt(lookAtTarget);
 
-            // 5. Rotate the camera (The "Head")
-            // We reset the camera's rotation and then apply pitch and yaw.
             camera.rotation.set(0, 0, 0, 'YXZ');
             camera.rotateX(THREE.MathUtils.degToRad(pitch));
             camera.rotateY(THREE.MathUtils.degToRad(yaw));
@@ -96,7 +79,7 @@ export const useCharacterController = ({
             const player = playerRef.current;
             if (player && player.parent) {
                 player.parent.remove(player);
-                player.remove(camera); // Detach camera
+                player.remove(camera); 
             }
         };
 
