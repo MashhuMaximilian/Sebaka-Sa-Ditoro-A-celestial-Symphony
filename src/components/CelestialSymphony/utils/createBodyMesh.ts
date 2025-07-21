@@ -44,6 +44,19 @@ export const createGridTexture = (size = 1024, lines = 24) => {
     return texture;
 };
 
+export const texturePaths: { [key: string]: { [key: string]: string | undefined } } = {
+    Alpha:      { base: '/maps/goldenGiverTexture.jpg', ambient: '/maps/goldenGiver_ambient.png', displacement: '/maps/goldenGiver_displacement.png', specular: '/maps/goldenGiver_specular.png', normal: undefined },
+    Twilight:   { base: '/maps/TwilightTexture.jpg', ambient: '/maps/Twilight_ambient.png', displacement: '/maps/Twilight_displacement.png', normal: '/maps/Twilight_normal.png', specular: '/maps/Twilight_specular.png' },
+    Beacon:     { base: '/maps/BeaconTexture.png', ambient: '/maps/Beacon_ambient.png', displacement: '/maps/Beacon_displacement.png', normal: '/maps/Beacon_normal.png', specular: '/maps/Beacon_specular.png' },
+    Aetheris:   { base: '/maps/AetherisTexture.png', ambient: '/maps/AetherisTexture_ambient.png', displacement: '/maps/AetherisTexture_displacement.png', normal: '/maps/AetherisTexture_normal.png', specular: '/maps/AetherisTexture_specular.png' },
+    Gelidis:    { base: '/maps/GelidisTexture.png', ambient: '/maps/GelidisTexture_ambient.png', displacement: '/maps/GelidisTexture_displacement.png', normal: '/maps/GelidisTexture_normal.png', specular: '/maps/GelidisTexture_specular.png' },
+    Rutilus:    { base: '/maps/RutiliusTexture.png', ambient: '/maps/RutiliusTexture_ambient.png', displacement: '/maps/RutiliusTexture_displacement.png', normal: '/maps/RutiliusTexture_normal.png', specular: '/maps/RutiliusTexture_specular.png' },
+    Spectris:   { base: '/maps/SpectrisTexture.png', ambient: '/maps/SpectrisTexture_ambient.png', displacement: '/maps/SpectrisTexture_displacement.png', normal: '/maps/SpectrisTexture_normal.png', specular: '/maps/SpectrisTexture_specular.png' },
+    Viridis:    { base: '/maps/ViridisTexture.png', ambient: '/maps/ViridisTexture_ambient.png', displacement: '/maps/ViridisTexture_displacement.png', normal: '/maps/ViridisTexture_normal.png', specular: '/maps/ViridisTexture_specular.png' },
+    Liminis:    { base: '/maps/LimnisTexture.png', ambient: '/maps/LimnisAmbientOcclusionMap.png', displacement: '/maps/LimnisDisplacementMap.png', normal: '/maps/LimnisNormalMap.png', specular: '/maps/LimnisSpecularMap.png' },
+    Sebaka:     { base: '/maps/SebakaTexture.png', ambient: '/maps/SebakaAmbientOcclusionMap.png', displacement: '/maps/SebakaDisplacementMap.png', normal: '/maps/SebakaNormalMap.png', specular: '/maps/SebakaSpecularMap.png' },
+};
+
 export const createBodyMesh = (
     body: BodyData,
     viewFromSebaka: boolean,
@@ -59,16 +72,10 @@ export const createBodyMesh = (
     tiltAxis.name = body.name;
 
     let mesh: THREE.Mesh;
+    const paths = texturePaths[body.name];
 
     if (body.type === 'Star') {
-        const texturePaths: { [key: string]: { [key: string]: string } } = {
-            Alpha: { base: '/maps/goldenGiverTexture.jpg', normal: '/maps/goldenGiver_normal.png', displacement: '/maps/goldenGiver_displacement.png', ambient: '/maps/goldenGiver_ambient.png', specular: '/maps/goldenGiver_specular.png'},
-            Twilight: { base: '/maps/TwilightTexture.jpg', normal: '/maps/Twilight_normal.png', displacement: '/maps/Twilight_displacement.png', ambient: '/maps/Twilight_ambient.png', specular: '/maps/Twilight_specular.png'},
-            Beacon: { base: '/maps/BeaconTexture.png', normal: '/maps/Beacon_normal.png', displacement: '/maps/Beacon_displacement.png', ambient: '/maps/Beacon_ambient.png', specular: '/maps/Beacon_specular.png' },
-        };
-        
-        const paths = texturePaths[body.name];
-        
+        // Stars use a simpler material for glowing
         material = new THREE.MeshPhongMaterial({
             emissive: body.color,
             emissiveIntensity: initialProps.emissiveIntensity,
@@ -85,17 +92,7 @@ export const createBodyMesh = (
         mesh = new THREE.Mesh(geometry, material);
         mesh.name = body.name;
     } else { // It's a planet
-        const texturePaths: { [key: string]: { [key: string]: string } } = {
-            Aetheris: { base: '/maps/AetherisTexture.png', specular: '/maps/AetherisTexture_specular.png', ambient: '/maps/AetherisTexture_ambient.png', displacement: '/maps/AetherisTexture_displacement.png', normal: '/maps/AetherisTexture_normal.png' },
-            Gelidis: { base: '/maps/GelidisTexture.png', ambient: '/maps/GelidisTexture_ambient.png', displacement: '/maps/GelidisTexture_displacement.png', normal: '/maps/GelidisTexture_normal.png', specular: '/maps/GelidisTexture_specular.png' },
-            Rutilus: { base: '/maps/RutiliusTexture.png', ambient: '/maps/RutiliusTexture_ambient.png', displacement: '/maps/RutiliusTexture_displacement.png', normal: '/maps/RutiliusTexture_normal.png', specular: '/maps/RutiliusTexture_specular.png' },
-            Spectris: { base: '/maps/SpectrisTexture.png', ambient: '/maps/SpectrisTexture_ambient.png', displacement: '/maps/SpectrisTexture_displacement.png', normal: '/maps/SpectrisTexture_normal.png', specular: '/maps/SpectrisTexture_specular.png' },
-            Viridis: { base: '/maps/ViridisTexture.png', ambient: '/maps/ViridisTexture_ambient.png', displacement: '/maps/ViridisTexture_displacement.png', normal: '/maps/ViridisTexture_normal.png', specular: '/maps/ViridisTexture_specular.png' },
-            Liminis: { base: '/maps/LimnisTexture.png', ambient: '/maps/LimnisAmbientOcclusionMap.png', displacement: '/maps/LimnisDisplacementMap.png', normal: '/maps/LimnisNormalMap.png', specular: '/maps/LimnisSpecularMap.png' },
-            Sebaka: { base: '/maps/SebakaTexture.png', ambient: '/maps/SebakaAmbientOcclusionMap.png', displacement: '/maps/SebakaDisplacementMap.png', normal: '/maps/SebakaNormalMap.png', specular: '/maps/SebakaSpecularMap.png' },
-        };
-        
-        const paths = texturePaths[body.name];
+        const baseTexture = paths?.base ? textureLoader.load(paths.base) : null;
         const normalMap = paths?.normal ? textureLoader.load(paths.normal) : null;
         const displacementMap = paths?.displacement ? textureLoader.load(paths.displacement) : null;
         const specularMap = paths?.specular ? textureLoader.load(paths.specular) : null;
@@ -113,7 +110,7 @@ export const createBodyMesh = (
                 twilightIntensity: { value: 0.7 },
                 beaconIntensity: { value: 500.0 },
                 albedo: { value: initialProps.albedo },
-                planetTexture: { value: paths?.base ? textureLoader.load(paths.base) : null },
+                planetTexture: { value: baseTexture },
                 gridTexture: { value: null as THREE.CanvasTexture | null },
                 useGrid: { value: false },
                 ambientLevel: { value: 0.02 },
@@ -195,8 +192,7 @@ export const createBodyMesh = (
     }
     
     if (body.type === 'Planet' && body.axialTilt) {
-        const planetBody = body as PlanetData;
-        const tiltDegrees = parseFloat(planetBody.axialTilt.replace('°', ''));
+        const tiltDegrees = parseFloat(body.axialTilt.replace('°', ''));
         if (!isNaN(tiltDegrees)) {
             const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
             tiltAxis.rotation.set(0, 0, tiltRadians, 'XYZ');

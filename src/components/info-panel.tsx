@@ -14,6 +14,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "./ui/button";
+import { texturePaths } from "./CelestialSymphony/utils/createBodyMesh";
 
 interface InfoPanelProps {
   data: PlanetData | StarData;
@@ -38,10 +39,11 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
     const bodyProps = materialProperties[data.name];
     if (!bodyProps) return null;
 
-    // Check if the specific maps exist by checking if their corresponding intensity properties are defined in the initial defaults.
-    const initialProps = initialMaterialProperties[data.name];
-    const hasSpecular = initialProps?.specularIntensity !== undefined;
-    const hasAo = initialProps?.aoMapIntensity !== undefined;
+    const bodyTexturePaths = texturePaths[data.name];
+    const hasNormalMap = !!bodyTexturePaths?.normal;
+    const hasDisplacementMap = !!bodyTexturePaths?.displacement;
+    const hasSpecularMap = !!bodyTexturePaths?.specular;
+    const hasAoMap = !!bodyTexturePaths?.ambient;
     
     return (
        <Accordion type="single" collapsible className="w-full">
@@ -51,48 +53,54 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
           </AccordionTrigger>
           <AccordionContent>
             <div className="space-y-4 pt-2">
-               <div className="grid gap-2">
-                <Label htmlFor={`${data.name}-normal`}>Normal Map Strength</Label>
-                <div className="flex items-center gap-2">
-                  <Slider
-                    id={`${data.name}-normal`}
-                    min={0}
-                    max={15}
-                    step={0.01}
-                    value={[bodyProps.normalScale]}
-                    onValueChange={(value) => handleSliderChange(data.name, 'normalScale', value)}
-                  />
-                  <span className="text-xs font-mono w-12 text-center">{bodyProps.normalScale.toFixed(2)}</span>
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor={`${data.name}-displacement`}>Displacement Scale</Label>
-                 <div className="flex items-center gap-2">
+               {hasNormalMap && (
+                 <div className="grid gap-2">
+                  <Label htmlFor={`${data.name}-normal`}>Normal Map Strength</Label>
+                  <div className="flex items-center gap-2">
                     <Slider
-                      id={`${data.name}-displacement`}
+                      id={`${data.name}-normal`}
                       min={0}
                       max={15}
                       step={0.01}
-                      value={[bodyProps.displacementScale]}
-                      onValueChange={(value) => handleSliderChange(data.name, 'displacementScale', value)}
+                      value={[bodyProps.normalScale]}
+                      onValueChange={(value) => handleSliderChange(data.name, 'normalScale', value)}
                     />
-                    <span className="text-xs font-mono w-12 text-center">{bodyProps.displacementScale.toFixed(2)}</span>
+                    <span className="text-xs font-mono w-12 text-center">{bodyProps.normalScale.toFixed(2)}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="grid gap-2">
-                  <Label htmlFor={`${data.name}-albedo`}>Albedo (Brightness)</Label>
+               )}
+              {hasDisplacementMap && (
+                <div className="grid gap-2">
+                  <Label htmlFor={`${data.name}-displacement`}>Displacement Scale</Label>
                   <div className="flex items-center gap-2">
                       <Slider
-                          id={`${data.name}-albedo`}
-                          min={0}
-                          max={5}
-                          step={0.01}
-                          value={[bodyProps.albedo ?? 1]}
-                          onValueChange={(value) => handleSliderChange(data.name, 'albedo', value)}
+                        id={`${data.name}-displacement`}
+                        min={0}
+                        max={15}
+                        step={0.01}
+                        value={[bodyProps.displacementScale]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'displacementScale', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{(bodyProps.albedo ?? 1).toFixed(2)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{bodyProps.displacementScale.toFixed(2)}</span>
                   </div>
-              </div>
+                </div>
+              )}
+              {data.type === 'Planet' && (
+                <div className="grid gap-2">
+                    <Label htmlFor={`${data.name}-albedo`}>Albedo (Brightness)</Label>
+                    <div className="flex items-center gap-2">
+                        <Slider
+                            id={`${data.name}-albedo`}
+                            min={0}
+                            max={5}
+                            step={0.01}
+                            value={[bodyProps.albedo ?? 1]}
+                            onValueChange={(value) => handleSliderChange(data.name, 'albedo', value)}
+                        />
+                        <span className="text-xs font-mono w-12 text-center">{(bodyProps.albedo ?? 1).toFixed(2)}</span>
+                    </div>
+                </div>
+              )}
                {data.type === 'Star' && (
                 <div className="grid gap-2">
                   <Label htmlFor={`${data.name}-emissive`}>Emissive Intensity</Label>
@@ -109,7 +117,7 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                   </div>
                 </div>
               )}
-               {hasSpecular && (
+               {hasSpecularMap && (
                 <>
                   <div className="grid gap-2">
                     <Label htmlFor={`${data.name}-specular`}>Specular Intensity</Label>
@@ -141,7 +149,7 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                   </div>
                 </>
               )}
-              {hasAo && (
+              {hasAoMap && (
                 <div className="grid gap-2">
                   <Label htmlFor={`${data.name}-ao`}>Ambient Occlusion Intensity</Label>
                   <div className="flex items-center gap-2">
@@ -212,20 +220,6 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
       </div>
     </ScrollArea>
   );
-};
-
-// We need a copy of the initial properties to check if a map exists
-const initialMaterialProperties: MaterialProperties = {
-  Alpha: { albedo: 1.0, normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
-  Twilight: { albedo: 1.0, normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
-  Beacon: { albedo: 1.0, normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
-  Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, shininess: 32, specularIntensity: 0, aoMapIntensity: 1 },
-  Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
-  Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },
-  Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },
-  Aetheris: { albedo: 2.0, normalScale: 0, displacementScale: 0, shininess: 14, specularIntensity: 1, aoMapIntensity: 0 },
-  Gelidis: { albedo: 0.5, normalScale: 0, displacementScale: 0, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
-  Liminis: { albedo: 1.0, normalScale: 1, displacementScale: 0.1, shininess: 32, specularIntensity: 1, aoMapIntensity: 1 },
 };
 
 export default InfoPanel;
