@@ -10,7 +10,7 @@ interface CameraControlProps {
     cameraTarget: string | null;
     viewFromSebaka: boolean;
     cameraFov: number;
-    allBodiesRef: React.MutableRefObject<THREE.Mesh[]>;
+    allBodiesRef: React.MutableRefObject<THREE.Object3D[]>;
     bodyData: BodyData[];
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     originalCameraPosRef: React.MutableRefObject<THREE.Vector3>;
@@ -35,9 +35,9 @@ export const useCameraControl = ({
 
         const followTarget = () => {
             if (cameraTarget && !viewFromSebaka) {
-                const targetBodyMesh = allBodiesRef.current.find(b => b.name === cameraTarget);
-                if (targetBodyMesh) {
-                    controls.target.copy(targetBodyMesh.position);
+                const targetBodyObject = allBodiesRef.current.find(b => b.name === cameraTarget);
+                if (targetBodyObject) {
+                    controls.target.copy(targetBodyObject.position);
                 } else if (cameraTarget === 'Binary Stars') {
                     controls.target.set(0,0,0);
                 } else if (cameraTarget === 'Beacon System') {
@@ -68,10 +68,10 @@ export const useCameraControl = ({
             targetPosition.copy(beaconPositionRef.current);
             desiredCameraPosition = new THREE.Vector3(targetPosition.x, targetPosition.y + 1000, targetPosition.z + 2000);
         } else {
-            const targetBodyMesh = allBodiesRef.current.find(b => b.name === cameraTarget);
+            const targetBodyObject = allBodiesRef.current.find(b => b.name === cameraTarget);
             const targetData = bodyData.find(b => b.name === cameraTarget);
-            if (targetBodyMesh && targetData) {
-                targetPosition.copy(targetBodyMesh.position);
+            if (targetBodyObject && targetData) {
+                targetPosition.copy(targetBodyObject.position);
                 const offset = targetData.size * 4;
                 desiredCameraPosition = new THREE.Vector3(targetPosition.x, targetPosition.y + offset / 2, targetPosition.z + offset);
             }

@@ -79,12 +79,14 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         orbitMeshesRef.current = [];
         
         bodyData.forEach(body => {
-            const mesh = createBodyMesh(body, viewFromSebaka, sebakaGridTexture);
+            const bodyObject = createBodyMesh(body, viewFromSebaka, sebakaGridTexture);
+            const mesh = bodyObject.getObjectByProperty('isMesh', true) as THREE.Mesh;
+            
             if (body.name === 'Sebaka') {
                 sebakaRadiusRef.current = body.size;
             }
-            scene.add(mesh);
-            allBodiesRef.current.push(mesh);
+            scene.add(bodyObject);
+            allBodiesRef.current.push(bodyObject);
             if (body.type === 'Planet') planetMeshesRef.current.push(mesh);
             
             const orbit = createOrbitMesh(body, usePlainOrbits);
@@ -99,19 +101,19 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
             beaconPositionRef.current.set(initialBeaconData.orbitRadius, 0, 0);
         }
         
-        allBodiesRef.current.forEach(mesh => {
-            const data = bodyData.find(d => d.name === mesh.name);
+        allBodiesRef.current.forEach(bodyObject => {
+            const data = bodyData.find(d => d.name === bodyObject.name);
             if (data?.orbitRadius) {
-                mesh.position.set(data.orbitRadius, 0, 0);
+                bodyObject.position.set(data.orbitRadius, 0, 0);
             }
         });
 
         if (viewFromSebaka) {
-            const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-            if (sebakaMesh) {
+            const sebakaTiltAxis = allBodiesRef.current.find(p => p.name === 'Sebaka');
+            if (sebakaTiltAxis) {
                 const radius = sebakaRadiusRef.current + 0.1;
-                camera.position.set(sebakaMesh.position.x, sebakaMesh.position.y, sebakaMesh.position.z + radius);
-                controls.target.copy(sebakaMesh.position);
+                camera.position.set(sebakaTiltAxis.position.x, sebakaTiltAxis.position.y, sebakaTiltAxis.position.z + radius);
+                controls.target.copy(sebakaTiltAxis.position);
             }
         }
 

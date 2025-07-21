@@ -154,24 +154,15 @@ export const useAnimationLoop = ({
                     // Do nothing, rotation is paused
                 } else {
                     const rotationPerHour = (2 * Math.PI) / planetData.rotationPeriodHours;
-                    const spinAngle = rotationPerHour * hoursPassedThisFrame;
-                    
-                    const spinQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), spinAngle);
-                    
-                    // Combine spin with axial tilt
-                    if (planetMesh.userData.tiltQuaternion) {
-                        planetMesh.quaternion.premultiply(spinQuat);
-                        planetMesh.quaternion.multiply(planetMesh.userData.tiltQuaternion).normalize();
-                    } else {
-                        planetMesh.quaternion.premultiply(spinQuat);
-                    }
+                    planetMesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
                 }
             }
         });
       }
 
       const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-      
+      const sebakaTiltAxis = sebakaMesh?.parent as THREE.Object3D | undefined;
+
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.name === 'Gelidis_orbit');
       const liminisOrbit = orbitMeshesRef.current.find(o => o.name === 'Liminis_orbit');
       if(gelidisOrbit) gelidisOrbit.position.copy(beaconPositionRef.current);
@@ -187,7 +178,7 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebakaRef.current && sebakaMesh) {
+      if (viewFromSebakaRef.current && sebakaMesh && sebakaTiltAxis) {
         const lat = playerInputsRef.current.latitude;
         const lon = playerInputsRef.current.longitude;
         const pitch = playerInputsRef.current.pitch;
@@ -208,7 +199,7 @@ export const useAnimationLoop = ({
         sebakaMesh.getWorldQuaternion(sebakaWorldQuaternion);
         cameraLocalPosition.applyQuaternion(sebakaWorldQuaternion);
 
-        camera.position.copy(sebakaMesh.position).add(cameraLocalPosition);
+        camera.position.copy(sebakaTiltAxis.position).add(cameraLocalPosition);
         
         const up = cameraLocalPosition.clone().normalize();
         camera.up.copy(up);
@@ -260,5 +251,3 @@ export const useAnimationLoop = ({
     isInitialized,
   ]);
 };
-
-    

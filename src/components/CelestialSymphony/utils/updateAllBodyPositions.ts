@@ -5,12 +5,12 @@ import type { BodyData } from '../hooks/useBodyData';
 export const updateAllBodyPositions = (
     currentHours: number,
     bodyData: BodyData[],
-    allBodies: THREE.Mesh[],
+    allBodies: THREE.Object3D[],
     beaconPosition: THREE.Vector3
 ) => {
    bodyData.forEach(data => {
-      const bodyMesh = allBodies.find(m => m.name === data.name);
-      if (!bodyMesh) return;
+      const bodyObject = allBodies.find(m => m.name === data.name);
+      if (!bodyObject) return;
 
       let orbitCenter = new THREE.Vector3(0,0,0);
       
@@ -23,7 +23,7 @@ export const updateAllBodyPositions = (
       }
 
       if (data.name === 'Beacon') {
-          bodyMesh.position.copy(beaconPosition);
+          bodyObject.position.copy(beaconPosition);
           return;
       }
 
@@ -53,6 +53,6 @@ export const updateAllBodyPositions = (
       }
 
       const y = orbitCenter.y;
-      bodyMesh.position.set(x, y, z);
+      bodyObject.position.set(x, y, z);
   });
 };

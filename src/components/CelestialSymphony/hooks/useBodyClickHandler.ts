@@ -5,14 +5,14 @@ import * as THREE from "three";
 interface BodyClickHandlerProps {
     renderer: THREE.WebGLRenderer | undefined;
     camera: THREE.PerspectiveCamera | undefined;
-    allBodies: THREE.Mesh[];
+    allBodies: THREE.Object3D[];
     onBodyClick: (name: string) => void;
     viewFromSebaka: boolean;
 }
 
 export const useBodyClickHandler = ({ renderer, camera, allBodies, onBodyClick, viewFromSebaka }: BodyClickHandlerProps) => {
     useEffect(() => {
-        if (!renderer || !camera) return;
+        if (!renderer || !camera || allBodies.length === 0) return;
 
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
@@ -30,7 +30,13 @@ export const useBodyClickHandler = ({ renderer, camera, allBodies, onBodyClick, 
             const intersects = raycaster.intersectObjects(allBodies, true);
             if (intersects.length > 0) {
                 let currentObject = intersects[0].object;
-                while(currentObject.parent && !currentObject.name) currentObject = currentObject.parent;
+                while(currentObject.parent && !currentObject.name) {
+                    if (currentObject.parent.name) {
+                        currentObject = currentObject.parent;
+                        break;
+                    }
+                    currentObject = currentObject.parent;
+                }
                 if (currentObject.name) onBodyClick(currentObject.name);
             }
         };

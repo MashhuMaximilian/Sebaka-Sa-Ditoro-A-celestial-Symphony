@@ -6,7 +6,7 @@ import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 
 interface UpdateBodyMaterialsProps {
     planets: PlanetData[];
-    allBodiesRef: React.MutableRefObject<THREE.Mesh[]>;
+    allBodiesRef: React.MutableRefObject<THREE.Object3D[]>;
     planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     isViridisAnimationActive: boolean;
     viewFromSebaka: boolean;
@@ -35,7 +35,10 @@ export const useUpdateBodyMaterials = ({
     }, [planets, planetMeshesRef]);
 
     useEffect(() => {
-        allBodiesRef.current.forEach((mesh) => {
+        allBodiesRef.current.forEach((bodyObject) => {
+            const mesh = bodyObject.getObjectByProperty('isMesh', true) as THREE.Mesh;
+            if (!mesh) return;
+
             const props = materialProperties[mesh.name];
             if (!props) return;
             
