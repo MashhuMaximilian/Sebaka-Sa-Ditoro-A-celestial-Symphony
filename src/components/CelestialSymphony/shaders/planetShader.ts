@@ -21,6 +21,7 @@ export const planetShader = {
     gridTexture: { value: null as THREE.CanvasTexture | null },
     useGrid: { value: false },
     ambientLevel: { value: 0.02 },
+    isBeaconPlanet: { value: false },
 
     // Normal and displacement maps
     useNormalMap: { value: false },
@@ -95,6 +96,7 @@ export const planetShader = {
     uniform bool useGrid;
 
     uniform float ambientLevel;
+    uniform bool isBeaconPlanet;
 
     uniform bool useNormalMap;
     uniform sampler2D normalMap;
@@ -115,10 +117,14 @@ export const planetShader = {
     varying mat3 vTBN;
     
     // Function to calculate lighting and specular contribution from a single star
-    vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir) {
+    vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir, bool skipAttenuation) {
         vec3 lightDir = normalize(starPos - vWorldPosition);
-        float dist = length(starPos - vWorldPosition);
-        float attenuation = 1.0 / (1.0 + dist * dist * 0.000005);
+        
+        float attenuation = 1.0;
+        if (!skipAttenuation) {
+            float dist = length(starPos - vWorldPosition);
+            attenuation = 1.0 / (1.0 + dist * dist * 0.000005);
+        }
         
         // Diffuse
         float diff = max(dot(normal, lightDir), 0.0);
@@ -158,9 +164,9 @@ export const planetShader = {
       
       // Combine illumination from all stars
       vec3 lighting = vec3(0.0);
-      lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, normal, viewDir);
-      lighting += getStarContribution(twilightStarPos, twilightColor, twilightIntensity, normal, viewDir);
-      lighting += getStarContribution(beaconStarPos, beaconColor, beaconIntensity, normal, viewDir);
+      lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, normal, viewDir, false);
+      lighting += getStarContribution(twilightStarPos, twilightColor, twilightIntensity, normal, viewDir, false);
+      lighting += getStarContribution(beaconStarPos, beaconColor, beaconIntensity, normal, viewDir, isBeaconPlanet);
       
       // Ambient Occlusion
       float ao = 1.0;

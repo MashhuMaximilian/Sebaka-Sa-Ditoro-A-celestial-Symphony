@@ -109,11 +109,11 @@ export const texturePaths: { [key: string]: { [key: string]: string | undefined 
         specular: '/maps/GelidisTexture_specular.png',
     },
     Liminis: {
-        base: '/maps/LimnisTexture.png',
-        ambient: '/maps/LimnisAmbientOcclusionMap.png',
-        displacement: '/maps/LimnisDisplacementMap.png',
-        normal: '/maps/LimnisNormalMap.png',
-        specular: '/maps/LimnisSpecularMap.png',
+        base: '/maps/LiminisTexture.png',
+        ambient: '/maps/LiminisAmbientOcclusionMap.png',
+        displacement: '/maps/LiminisDisplacementMap.png',
+        normal: '/maps/LiminisNormalMap.png',
+        specular: '/maps/LiminisSpecularMap.png',
     }
 };
 
@@ -166,6 +166,7 @@ export const createBodyMesh = (
                 gridTexture: { value: null as THREE.CanvasTexture | null },
                 useGrid: { value: false },
                 ambientLevel: { value: 0.02 },
+                isBeaconPlanet: { value: body.name === 'Gelidis' || body.name === 'Liminis' },
 
                 useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
                 normalMap: { value: normalMap },
@@ -175,7 +176,7 @@ export const createBodyMesh = (
                 displacementMap: { value: displacementMap },
                 displacementScale: { value: initialProps.displacementScale },
 
-                useSpecularMap: { value: !!specularMap },
+                useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
                 specularMap: { value: specularMap },
                 specularIntensity: { value: initialProps.specularIntensity },
                 shininess: { value: initialProps.shininess },

@@ -138,9 +138,9 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 10,
   },
   {
-      name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 5.7 * AU_TO_UNITS, orbitPeriodDays: 9000, eccentric: true, eccentricity: 0.1,
+      name: "Gelidis", color: "#1E90FF", size: 25.484, orbitRadius: 10 * AU_TO_UNITS, orbitPeriodDays: 8991, eccentric: true, eccentricity: 0.1,
       type: 'Planet', classification: 'Ice Giant',
-      orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '27.78 Sebakan years (9,000 days)', orbitalDistance: '5.7 AU from Beacon (periapsis 5.13 AU, apoapsis 6.27 AU)',
+      orbitalRole: 'First planet orbiting Beacon', orbitalPeriod: '~27.75 Sebakan years (8,991 days)', orbitalDistance: '10 AU from Beacon (periapsis 9 AU, apoapsis 11 AU)',
       rotation: '16 hours', axialTilt: '28°', moons: '2-3 (small, telescopic only)',
       radius: '4.0 R⊕', mass: '~15 M⊕',
       surface: 'Vast atmosphere with swirling storm systems, faint icy cloud bands.',
@@ -152,7 +152,7 @@ const initialPlanets: PlanetData[] = [
   {
       name: "Liminis", color: "#F5F5F5", size: 1.274, orbitRadius: 18.9 * AU_TO_UNITS, orbitPeriodDays: 26820, eccentric: true, eccentricity: 0.2,
       type: 'Planet', classification: 'Ice Dwarf',
-      orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '82.78 Sebakan years (26,820 days)', orbitalDistance: '18.9 AU from Beacon (periapsis 15.12 AU, apoapsis 22.68 AU)',
+      orbitalRole: 'Second planet orbiting Beacon', orbitalPeriod: '~82.78 Sebakan years (26,820 days)', orbitalDistance: '18.9 AU from Beacon (periapsis 15.12 AU, apoapsis 22.68 AU)',
       rotation: '48 hours', axialTilt: '5°', moons: 'None',
       radius: '0.2 R⊕', mass: '~0.01 M⊕',
       surface: 'Frozen expanse of rock and ice, thin atmosphere.',
