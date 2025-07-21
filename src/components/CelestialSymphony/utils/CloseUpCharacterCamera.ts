@@ -107,6 +107,11 @@ export class CloseUpCharacterCamera {
     const finalCameraPos = planetWorldPos.clone().add(finalCameraDirection.multiplyScalar(this.planetRadius + this.height));
     
     this.camera.position.copy(finalCameraPos);
+    
+    // THIS IS THE FIX: Set the camera's UP vector to point away from the planet's center.
+    const surfaceNormal = this.camera.position.clone().sub(planetWorldPos).normalize();
+    this.camera.up.copy(surfaceNormal);
+
     this.camera.lookAt(characterWorldPos);
   }
 }
