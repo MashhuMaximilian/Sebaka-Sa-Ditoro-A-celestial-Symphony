@@ -3,7 +3,7 @@ import * as THREE from 'three';
 
 export class SphericalCharacterCube {
   public characterMesh: THREE.Mesh;
-  public parentMesh: THREE.Mesh;
+  public planetMesh: THREE.Mesh;
   public planetRadius: number;
   private surfaceHeight: number;
   
@@ -15,8 +15,8 @@ export class SphericalCharacterCube {
   // Animation state
   private walkAnimation: { time: number; bobAmount: number; };
 
-  constructor(parentMesh: THREE.Mesh, planetRadius: number) {
-    this.parentMesh = parentMesh;
+  constructor(planetMesh: THREE.Mesh, planetRadius: number) {
+    this.planetMesh = planetMesh;
     this.planetRadius = planetRadius;
     this.surfaceHeight = 0.1; // Height above planet surface
     
@@ -38,7 +38,7 @@ export class SphericalCharacterCube {
     faceMesh.position.set(0, 0, 0.01); // Front face indicator
     this.characterMesh.add(faceMesh);
     
-    this.parentMesh.add(this.characterMesh);
+    this.planetMesh.add(this.characterMesh);
     this.updateCharacterPosition(0);
   }
   

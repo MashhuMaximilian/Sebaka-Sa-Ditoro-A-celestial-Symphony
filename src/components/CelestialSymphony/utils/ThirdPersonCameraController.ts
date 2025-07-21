@@ -6,7 +6,7 @@ export class ThirdPersonCameraController {
     public camera: THREE.PerspectiveCamera;
     public character: SphericalCharacterCube;
     
-    public distance: number = 5.0;
+    public distance: number = 2.0;
     public pitch: number = 20; // Degrees
     private lerpFactor: number = 0.05;
 
@@ -36,9 +36,11 @@ export class ThirdPersonCameraController {
         // 2. Calculate the ideal camera position
         // Start behind the character, move back by distance, and up by pitch
         const pitchRad = THREE.MathUtils.degToRad(this.pitch);
-        const offset = forward.clone().multiplyScalar(-this.distance);
-        offset.addScaledVector(up, this.distance * Math.sin(pitchRad));
-        offset.normalize().multiplyScalar(this.distance); // Maintain consistent distance
+        const horizontalDistance = this.distance * Math.cos(pitchRad);
+        const verticalDistance = this.distance * Math.sin(pitchRad);
+
+        const offset = forward.clone().multiplyScalar(-horizontalDistance);
+        offset.addScaledVector(up, verticalDistance);
         
         const desiredPosition = characterWorldPosition.clone().add(offset);
         

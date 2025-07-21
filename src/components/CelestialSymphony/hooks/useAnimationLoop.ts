@@ -79,7 +79,7 @@ export const useAnimationLoop = ({
         const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
         if (!sebakaMesh) return;
         
-        const character = new SphericalCharacterCube(sebakaMesh);
+        const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current);
         characterRef.current = character;
 
         const cameraController = new ThirdPersonCameraController(camera, character);
@@ -206,8 +206,8 @@ export const useAnimationLoop = ({
           const character = characterRef.current;
           const cameraController = cameraControllerRef.current;
           
-          character.latitude = latitude;
           character.longitude = longitude;
+          character.latitude = latitude;
           character.yaw = cameraYaw;
           character.updateCharacterPosition(deltaTime);
 
