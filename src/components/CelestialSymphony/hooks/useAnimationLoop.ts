@@ -74,9 +74,24 @@ export const useAnimationLoop = ({
     if (viewFromSebaka && sebakaMesh) {
       if (!characterControllerRef.current) {
         characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
+        scene.add(characterControllerRef.current.characterMesh);
       }
       if (!thirdPersonControlsRef.current) {
         thirdPersonControlsRef.current = new ThirdPersonOrbitControls(camera, renderer.domElement, characterControllerRef.current.characterMesh, sebakaMesh);
+        
+        // Set initial camera position to be directly above the character
+        const charPos = new THREE.Vector3();
+        characterControllerRef.current.characterMesh.getWorldPosition(charPos);
+        
+        const planetPos = new THREE.Vector3();
+        sebakaMesh.getWorldPosition(planetPos);
+
+        const upVector = charPos.clone().sub(planetPos).normalize();
+        const cameraPos = charPos.clone().add(upVector.multiplyScalar(5)); // 5 units above
+        
+        camera.position.copy(cameraPos);
+        camera.lookAt(charPos);
+        thirdPersonControlsRef.current.controls.target.copy(charPos);
       }
     } else {
       if (thirdPersonControlsRef.current) {
