@@ -10,9 +10,9 @@ export class SphericalCharacterCube {
   // Character state
   public longitude: number = 0;
   public latitude: number = 0;
-  private yaw: number = 0; // Character facing direction (0-360) - kept private for now
+  private yaw: number = 0;
 
-  constructor(planetMesh: THREE.Mesh, planetRadius: number) {
+  constructor(planetMesh: THREE.Mesh, planetRadius: number, scene: THREE.Scene) {
     this.planetMesh = planetMesh;
     this.planetRadius = planetRadius;
     this.surfaceHeight = 0.1; // Height above planet surface
@@ -34,13 +34,19 @@ export class SphericalCharacterCube {
     faceMesh.position.set(0, 0, 0.01); // Front face indicator
     this.characterMesh.add(faceMesh);
     
-    // Add character to the planet mesh as a child
-    this.planetMesh.add(this.characterMesh);
+    // Add character to the scene root
+    scene.add(this.characterMesh);
   }
   
-  // Update character's local position and orientation on the parent sphere
+  // Update character's world position and orientation based on planet's transform
   updateCharacterPosition() {
-    // 1. Calculate local position on sphere from lat/lon
+    // 1. Get planet's current world transformation
+    const planetWorldPosition = new THREE.Vector3();
+    this.planetMesh.getWorldPosition(planetWorldPosition);
+    const planetWorldQuaternion = new THREE.Quaternion();
+    this.planetMesh.getWorldQuaternion(planetWorldQuaternion);
+    
+    // 2. Calculate character's local position on the sphere surface
     const latRad = THREE.MathUtils.degToRad(90 - this.latitude);
     const lonRad = THREE.MathUtils.degToRad(this.longitude);
     const localPosition = new THREE.Vector3().setFromSphericalCoords(
@@ -48,15 +54,23 @@ export class SphericalCharacterCube {
       latRad,
       lonRad
     );
-    this.characterMesh.position.copy(localPosition);
+    
+    // 3. Transform the local position by the planet's world orientation
+    localPosition.applyQuaternion(planetWorldQuaternion);
+    
+    // 4. Set the character's final world position
+    this.characterMesh.position.copy(planetWorldPosition).add(localPosition);
 
-    // 2. Orient character to stand upright on the surface
-    const upVector = localPosition.clone().normalize();
-    const lookAtTarget = this.characterMesh.position.clone().add(upVector);
+    // 5. Orient character to stand upright on the surface
+    const upVector = localPosition.normalize();
     this.characterMesh.up.copy(upVector);
+
+    const forward = new THREE.Vector3(0,0,-1);
+    forward.applyQuaternion(this.characterMesh.quaternion); // initial forward
+    
+    const lookAtTarget = this.characterMesh.position.clone().add(forward);
     this.characterMesh.lookAt(lookAtTarget);
 
-    // 3. Apply yaw rotation for character facing direction (currently unused but ready)
     const yawRad = THREE.MathUtils.degToRad(this.yaw);
     const yawQuaternion = new THREE.Quaternion().setFromAxisAngle(upVector, yawRad);
     this.characterMesh.quaternion.multiply(yawQuaternion);

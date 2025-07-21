@@ -63,13 +63,13 @@ export class ThirdPersonCameraController {
         // 3. Perform collision detection
         const characterHeadPosition = characterPosition.clone().add(new THREE.Vector3(0, 0.05, 0).applyQuaternion(characterQuaternion));
         this._raycaster.set(characterHeadPosition, idealCameraPosition.clone().sub(characterHeadPosition).normalize());
+        this._raycaster.far = this.distance; // Only check up to the ideal distance
         
         const intersects = this._raycaster.intersectObject(this.planetMesh);
-        const rayLength = characterHeadPosition.distanceTo(idealCameraPosition);
-
+        
         let finalCameraPosition = idealCameraPosition;
 
-        if (intersects.length > 0 && intersects[0].distance < rayLength) {
+        if (intersects.length > 0) {
             // Collision detected, move camera to the intersection point (with a small buffer)
             finalCameraPosition = intersects[0].point.clone().addScaledVector(
                 idealCameraPosition.clone().sub(characterHeadPosition).normalize(),

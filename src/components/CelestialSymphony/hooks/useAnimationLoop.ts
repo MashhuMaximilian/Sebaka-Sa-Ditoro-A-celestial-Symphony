@@ -79,7 +79,7 @@ export const useAnimationLoop = ({
 
     if (viewFromSebaka && sebakaMesh) {
         if (!characterRef.current) {
-            const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current);
+            const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current, scene);
             characterRef.current = character;
         }
         if (!cameraControllerRef.current) {
