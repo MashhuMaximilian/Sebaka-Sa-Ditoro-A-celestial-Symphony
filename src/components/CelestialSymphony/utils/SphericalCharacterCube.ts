@@ -81,8 +81,10 @@ export class SphericalCharacterCube {
     }
   }
 
-  // Slider integration methods
-  setLongitude(value: number) { this.longitude = value; }
-  setLatitude(value: number) { this.latitude = THREE.MathUtils.clamp(value, -90, 90); }
-  setYaw(value: number) { this.yaw = value; }
+  // Method to remove character from scene
+  removeFromScene() {
+    if (this.characterMesh.parent) {
+      this.characterMesh.parent.remove(this.characterMesh);
+    }
+  }
 }
