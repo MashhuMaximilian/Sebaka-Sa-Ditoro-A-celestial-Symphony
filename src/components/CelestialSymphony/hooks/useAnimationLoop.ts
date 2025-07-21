@@ -81,10 +81,11 @@ export const useAnimationLoop = ({
         if (!characterRef.current) {
             const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current);
             characterRef.current = character;
-
+        }
+        if (!cameraControllerRef.current) {
             const cameraController = new ThirdPersonCameraController({
               camera: camera,
-              character: character,
+              character: characterRef.current,
               planetMesh: sebakaMesh,
             });
             cameraControllerRef.current = cameraController;
