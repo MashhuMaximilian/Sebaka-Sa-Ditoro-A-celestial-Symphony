@@ -66,10 +66,8 @@ export const useAnimationLoop = ({
   const speedMultiplierRef = useRef(speedMultiplier);
   const isSebakaRotatingRef = useRef(isSebakaRotating);
   
-  const characterControllerRef = useRef<{
-    character: SphericalCharacterCube;
-    cameraController: ThirdPersonCameraController;
-  } | null>(null);
+  const characterRef = useRef<SphericalCharacterCube | null>(null);
+  const cameraControllerRef = useRef<ThirdPersonCameraController | null>(null);
 
   useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
   useEffect(() => { isSebakaRotatingRef.current = isSebakaRotating; }, [isSebakaRotating]);
@@ -81,35 +79,28 @@ export const useAnimationLoop = ({
         const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
         if (!sebakaMesh) return;
         
-        const character = new SphericalCharacterCube(
-            sebakaMesh,
-            sebakaRadiusRef.current
-        );
+        const character = new SphericalCharacterCube(sebakaMesh);
+        characterRef.current = character;
 
         const cameraController = new ThirdPersonCameraController(camera, character);
-        
-        characterControllerRef.current = { character, cameraController };
+        cameraControllerRef.current = cameraController;
 
     } else {
-        if (characterControllerRef.current) {
-            const { character } = characterControllerRef.current;
-            if (character.characterMesh.parent) {
-                character.characterMesh.parent.remove(character.characterMesh);
-            }
-            characterControllerRef.current = null;
+        if (characterRef.current) {
+            characterRef.current.removeFromScene();
+            characterRef.current = null;
         }
+        cameraControllerRef.current = null;
     }
 
     return () => {
-        if (characterControllerRef.current) {
-            const { character } = characterControllerRef.current;
-            if (character.characterMesh.parent) {
-                character.characterMesh.parent.remove(character.characterMesh);
-            }
-            characterControllerRef.current = null;
+        if (characterRef.current) {
+            characterRef.current.removeFromScene();
+            characterRef.current = null;
         }
+        cameraControllerRef.current = null;
     };
-  }, [viewFromSebaka, scene, camera, bodyData, isInitialized, planetMeshesRef, sebakaRadiusRef]);
+  }, [viewFromSebaka, scene, camera, bodyData, isInitialized, planetMeshesRef]);
 
 
   useEffect(() => {
@@ -211,16 +202,17 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebaka && characterControllerRef.current) {
-          const { character, cameraController } = characterControllerRef.current;
+      if (viewFromSebaka && characterRef.current && cameraControllerRef.current) {
+          const character = characterRef.current;
+          const cameraController = cameraControllerRef.current;
           
-          character.setLatitude(latitude);
-          character.setLongitude(longitude);
-          character.setYaw(cameraYaw);
+          character.latitude = latitude;
+          character.longitude = longitude;
+          character.yaw = cameraYaw;
           character.updateCharacterPosition(deltaTime);
 
-          cameraController.setPitch(cameraPitch);
-          cameraController.setCameraDistance(cameraFov);
+          cameraController.pitch = cameraPitch;
+          cameraController.distance = cameraFov;
           cameraController.updateCamera(deltaTime);
       } else {
         controls.update();
