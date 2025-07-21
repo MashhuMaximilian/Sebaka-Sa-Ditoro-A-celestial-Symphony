@@ -151,14 +151,14 @@ export const useAnimationLoop = ({
 
       if (isSebakaRotatingRef.current) {
         allBodiesRef.current.forEach(bodyObject => {
-          const bodyData = bodyData.find(d => d.name === bodyObject.name) as PlanetData | undefined;
-          if (bodyData?.type === 'Planet' && bodyData?.rotationPeriodHours) {
+          const currentBodyData = bodyData.find(d => d.name === bodyObject.name) as PlanetData | undefined;
+          if (currentBodyData?.type === 'Planet' && currentBodyData?.rotationPeriodHours) {
             const mesh = bodyObject.children[0] as THREE.Mesh | undefined;
             if (mesh) {
                 if(shouldPauseRotation && mesh.name === cameraTargetRef.current) {
                     // Do nothing, rotation is paused
                 } else {
-                    const rotationPerHour = (2 * Math.PI) / bodyData.rotationPeriodHours;
+                    const rotationPerHour = (2 * Math.PI) / currentBodyData.rotationPeriodHours;
                     mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
                 }
             }
