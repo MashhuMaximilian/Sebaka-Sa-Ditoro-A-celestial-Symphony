@@ -269,11 +269,9 @@ export default function Home() {
     if (viewFromSebaka) {
       setViewFromSebaka(false);
     }
-    if (!isSebakaRotating) {
-        setIsSebakaRotating(true);
-    }
-    setCameraTarget(null);
-    setResetViewToggle(prev => !prev);
+    resetSpeed();
+    setIsSebakaRotating(true);
+    setCameraTarget('Binary Stars');
   }
 
   const toggleSebakaView = () => {
@@ -287,7 +285,7 @@ export default function Home() {
             setCameraFov(75);
             setActiveSebakaPanel(null);
           } else {
-            if(isInfoPanelOpen) setInfoPanelOpen(false);
+            handleResetView();
           }
           return newView;
       })
@@ -315,6 +313,9 @@ export default function Home() {
   }
   
   const handleFocusTargetChange = (target: string) => {
+    if (viewFromSebaka) {
+        setViewFromSebaka(false);
+    }
     setCameraTarget(target);
 
     const isSystem = target === 'Binary Stars' || target === 'Beacon System';

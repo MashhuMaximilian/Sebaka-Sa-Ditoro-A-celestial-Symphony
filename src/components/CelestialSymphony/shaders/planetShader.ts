@@ -22,8 +22,10 @@ export const planetShader = {
     ambientLevel: { value: 0.02 },
 
     // Normal and displacement maps
+    useNormalMap: { value: false },
     normalMap: { value: null },
     normalScale: { value: new THREE.Vector2(1, 1) },
+    useDisplacementMap: { value: false },
     displacementMap: { value: null },
     displacementScale: { value: 1.0 },
   },
@@ -34,6 +36,7 @@ export const planetShader = {
     varying vec2 vUv;
     varying mat3 vTBN;
 
+    uniform bool useDisplacementMap;
     uniform sampler2D displacementMap;
     uniform float displacementScale;
 
@@ -50,7 +53,7 @@ export const planetShader = {
       
       // Apply displacement mapping
       vec3 displacedPosition = position;
-      if (displacementScale > 0.0 && texture2D(displacementMap, uv).r > 0.0) {
+      if (useDisplacementMap && displacementScale > 0.0 && texture2D(displacementMap, uv).r > 0.0) {
         displacedPosition += normal * texture2D(displacementMap, uv).r * displacementScale;
       }
 
@@ -84,6 +87,7 @@ export const planetShader = {
 
     uniform float ambientLevel;
 
+    uniform bool useNormalMap;
     uniform sampler2D normalMap;
     uniform vec2 normalScale;
     
@@ -104,7 +108,7 @@ export const planetShader = {
       
       // Get normal from normal map
       vec3 normal = normalize(vNormal);
-      if (texture2D(normalMap, vUv).r > 0.0) { // Check if normal map exists
+      if (useNormalMap && texture2D(normalMap, vUv).r > 0.0) { // Check if normal map exists
           vec3 mapN = texture2D(normalMap, vUv).xyz * 2.0 - 1.0;
           mapN.xy *= normalScale;
           normal = normalize(vTBN * mapN);

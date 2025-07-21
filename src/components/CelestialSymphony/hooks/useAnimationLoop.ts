@@ -89,7 +89,7 @@ export const useAnimationLoop = ({
     let isCancelled = false;
     
     const animate = () => {
-      if (isCancelled) return;
+      if (isCancelled || !isInitialized) return;
       
       animationFrameId.current = requestAnimationFrame(animate);
       
@@ -115,14 +115,17 @@ export const useAnimationLoop = ({
           });
           
           // Update spider strand shader uniforms (orbits and rings)
-          const updateSpiderStrandMaterial = (material: THREE.Material) => {
-              if (material instanceof THREE.ShaderMaterial && material.uniforms.hasOwnProperty('alphaStarPos')) {
-                  const uniforms = material.uniforms;
+          const updateSpiderStrandMaterial = (material: THREE.Material | THREE.Material[]) => {
+            const materials = Array.isArray(material) ? material : [material];
+            materials.forEach(mat => {
+              if (mat instanceof THREE.ShaderMaterial && mat.uniforms.hasOwnProperty('alphaStarPos')) {
+                  const uniforms = mat.uniforms;
                   uniforms.time.value = elapsedHoursRef.current * 0.001;
                   uniforms.alphaStarPos.value.copy(alphaStarMesh.position);
                   uniforms.twilightStarPos.value.copy(twilightStarMesh.position);
                   uniforms.beaconStarPos.value.copy(beaconStarMesh.position);
               }
+            });
           };
 
           orbitMeshesRef.current.forEach(orbitMesh => {

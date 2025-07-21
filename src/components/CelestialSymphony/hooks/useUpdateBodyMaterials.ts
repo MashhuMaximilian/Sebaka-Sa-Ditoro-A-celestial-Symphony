@@ -41,12 +41,21 @@ export const useUpdateBodyMaterials = ({
             
             if (mesh.material instanceof THREE.ShaderMaterial) {
                 const uniforms = mesh.material.uniforms;
+                
+                if (uniforms.useNormalMap && props.normalScale !== undefined) {
+                    uniforms.useNormalMap.value = props.normalScale > 0;
+                }
                 if (uniforms.normalScale && props.normalScale !== undefined && uniforms.normalScale.value.x !== props.normalScale) {
                     uniforms.normalScale.value.set(props.normalScale, props.normalScale);
+                }
+
+                if (uniforms.useDisplacementMap && props.displacementScale !== undefined) {
+                    uniforms.useDisplacementMap.value = props.displacementScale > 0;
                 }
                 if (uniforms.displacementScale && props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
                     uniforms.displacementScale.value = props.displacementScale;
                 }
+
                 if (uniforms.albedo && props.albedo !== undefined && uniforms.albedo.value !== props.albedo) {
                     uniforms.albedo.value = props.albedo;
                 }
