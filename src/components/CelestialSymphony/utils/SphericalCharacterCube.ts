@@ -10,17 +10,11 @@ export class SphericalCharacterCube {
   // Character state
   public longitude: number = 0;
   public latitude: number = 0;
-  public yaw: number = 0;
-
-  // Animation state
-  private walkAnimation: { time: number; bobAmount: number; };
 
   constructor(planetMesh: THREE.Mesh, planetRadius: number) {
     this.planetMesh = planetMesh;
     this.planetRadius = planetRadius;
     this.surfaceHeight = 0.1; // Height above planet surface
-    
-    this.walkAnimation = { time: 0, bobAmount: 0.01 };
     
     // Create character cube
     const geometry = new THREE.BoxGeometry(0.02, 0.02, 0.02);
@@ -30,6 +24,7 @@ export class SphericalCharacterCube {
       metalness: 0.1,
     });
     this.characterMesh = new THREE.Mesh(geometry, material);
+    this.characterMesh.name = "CharacterCube";
     
     // Add simple face or direction indicator
     const faceGeometry = new THREE.BoxGeometry(0.005, 0.005, 0.005);
@@ -39,11 +34,10 @@ export class SphericalCharacterCube {
     this.characterMesh.add(faceMesh);
     
     this.planetMesh.add(this.characterMesh);
-    this.updateCharacterPosition(0);
   }
   
   // Update character's local position and orientation on the parent sphere
-  updateCharacterPosition(deltaTime: number) {
+  updateCharacterPosition(camera: THREE.PerspectiveCamera) {
     // 1. Calculate local position on sphere from lat/lon
     const latRad = THREE.MathUtils.degToRad(90 - this.latitude);
     const lonRad = THREE.MathUtils.degToRad(this.longitude);
@@ -57,36 +51,26 @@ export class SphericalCharacterCube {
     // 2. Orient character to stand upright on the surface
     const upVector = localPosition.clone().normalize();
     
-    // 3. Apply yaw rotation for character turning
-    const yawRad = THREE.MathUtils.degToRad(this.yaw);
-    const yawQuaternion = new THREE.Quaternion().setFromAxisAngle(upVector, yawRad);
-    
-    // Base look at target
-    const lookAtTarget = new THREE.Vector3(0,0,1).applyQuaternion(yawQuaternion);
-    
-    // Final look at in world space
-    const finalLookAt = this.characterMesh.position.clone().add(lookAtTarget);
+    // Base look at target (just look away from the center)
+    const lookAtTarget = this.characterMesh.position.clone().add(upVector);
 
     this.characterMesh.up.copy(upVector);
-    this.characterMesh.lookAt(finalLookAt);
-    
-    // 4. Apply animation
-    this.updateCharacterAnimation(deltaTime);
-  }
-  
-  private updateCharacterAnimation(deltaTime: number) {
-    if (deltaTime > 0) {
-      this.walkAnimation.time += deltaTime * 5;
-      const bob = Math.sin(this.walkAnimation.time) * this.walkAnimation.bobAmount;
-      const up = this.characterMesh.position.clone().normalize();
-      this.characterMesh.position.addScaledVector(up, bob);
+    this.characterMesh.lookAt(lookAtTarget);
+
+    // Add camera as a child of the character mesh if it's not already
+    if (camera.parent !== this.characterMesh) {
+      this.characterMesh.add(camera);
     }
   }
 
   // Method to remove character from scene
-  removeFromScene() {
+  removeFromScene(camera: THREE.PerspectiveCamera) {
     if (this.characterMesh.parent) {
       this.characterMesh.parent.remove(this.characterMesh);
+    }
+    // Also remove camera from character
+    if (camera.parent === this.characterMesh) {
+        this.characterMesh.remove(camera);
     }
   }
 }

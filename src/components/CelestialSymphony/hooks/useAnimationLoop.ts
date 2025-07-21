@@ -87,7 +87,7 @@ export const useAnimationLoop = ({
         }
     } else {
         if (characterRef.current) {
-            characterRef.current.removeFromScene();
+            characterRef.current.removeFromScene(camera);
             characterRef.current = null;
         }
         cameraControllerRef.current = null;
@@ -95,7 +95,7 @@ export const useAnimationLoop = ({
 
     return () => {
         if (characterRef.current) {
-            characterRef.current.removeFromScene();
+            characterRef.current.removeFromScene(camera);
             characterRef.current = null;
         }
         cameraControllerRef.current = null;
@@ -206,17 +206,15 @@ export const useAnimationLoop = ({
           const character = characterRef.current;
           const cameraController = cameraControllerRef.current;
           
-          // Update character from sliders
           character.longitude = longitude;
           character.latitude = latitude;
-          character.yaw = cameraYaw;
-          character.updateCharacterPosition(deltaTime);
+          
+          character.updateCharacterPosition(camera);
 
-          // Update camera from sliders
           cameraController.distance = cameraFov;
           cameraController.pitch = cameraPitch;
           cameraController.yaw = cameraYaw;
-          cameraController.updateCamera(deltaTime);
+          cameraController.updateCamera();
 
       } else {
         controls.update();
