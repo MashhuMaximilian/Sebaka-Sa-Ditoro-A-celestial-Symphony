@@ -150,16 +150,19 @@ export const useAnimationLoop = ({
       const shouldPauseRotation = speedMultiplierRef.current === 0 && isFocusedOnPlanet;
 
       if (isSebakaRotatingRef.current) {
-        planetMeshesRef.current.forEach(planetMesh => {
-            const planetData = bodyData.find(d => d.name === planetMesh.name) as PlanetData | undefined;
-            if (planetData?.rotationPeriodHours) {
-                if(shouldPauseRotation && planetMesh.name === cameraTargetRef.current) {
+        allBodiesRef.current.forEach(bodyObject => {
+          const bodyData = bodyData.find(d => d.name === bodyObject.name) as PlanetData | undefined;
+          if (bodyData?.type === 'Planet' && bodyData?.rotationPeriodHours) {
+            const mesh = bodyObject.children[0] as THREE.Mesh | undefined;
+            if (mesh) {
+                if(shouldPauseRotation && mesh.name === cameraTargetRef.current) {
                     // Do nothing, rotation is paused
                 } else {
-                    const rotationPerHour = (2 * Math.PI) / planetData.rotationPeriodHours;
-                    planetMesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
+                    const rotationPerHour = (2 * Math.PI) / bodyData.rotationPeriodHours;
+                    mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
                 }
             }
+          }
         });
       }
 
@@ -193,43 +196,42 @@ export const useAnimationLoop = ({
         
         const radius = sebakaRadiusRef.current + 0.1;
         
-        const sebakaMesh = sebakaBody.children[0] as THREE.Mesh;
-        
-        // 1. Calculate Camera Position in World Space
+        // 1. Calculate Camera Position independent of planet's self-rotation
+        // Start with local position on a non-rotated sphere
         const cameraLocalPosition = new THREE.Vector3().setFromSphericalCoords(radius, latRad, lonRad);
-        const cameraWorldPosition = cameraLocalPosition.clone().applyQuaternion(sebakaMesh.quaternion).add(sebakaBody.position);
-        camera.position.copy(cameraWorldPosition);
         
+        // Apply the planet's axial tilt (from the parent Object3D) to the local position
+        cameraLocalPosition.applyQuaternion(sebakaBody.quaternion);
+
+        // Add the planet's orbital position to get the final world position
+        const cameraWorldPosition = new THREE.Vector3().addVectors(sebakaBody.position, cameraLocalPosition);
+        camera.position.copy(cameraWorldPosition);
+
         // 2. Establish a Stable Local Coordinate System on the Planet's Surface
-        // The "down" vector points towards the planet's center. "Up" is the opposite.
         const localDown = new THREE.Vector3().subVectors(sebakaBody.position, camera.position).normalize();
         const localUp = localDown.clone().negate();
-        camera.up.copy(localUp);
-
+        
         // Use a global up vector to establish a stable "right" vector, creating a horizon.
         const globalUp = new THREE.Vector3(0, 1, 0);
         const localRight = new THREE.Vector3().crossVectors(localUp, globalUp).normalize();
         
-        // If we're at the poles, the cross product will be zero. Use a fallback.
         if (localRight.lengthSq() === 0) {
             localRight.crossVectors(localUp, new THREE.Vector3(0, 0, -1)).normalize();
         }
 
-        // The stable "forward" vector is perpendicular to "up" and "right".
         const localForward = new THREE.Vector3().crossVectors(localRight, localUp).normalize();
 
         // 3. Apply Pitch and Yaw Rotations to the Stable Frame
         const pitchQuat = new THREE.Quaternion().setFromAxisAngle(localRight, -pitchRad);
         const yawQuat = new THREE.Quaternion().setFromAxisAngle(localUp, yawRad);
 
-        // Combine rotations: yaw first, then pitch.
         const combinedQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
         
-        // Apply the combined rotation to our stable "forward" vector to get the final look direction.
         const lookDirection = localForward.clone().applyQuaternion(combinedQuat);
         
         const lookAtTarget = camera.position.clone().add(lookDirection);
         
+        camera.up.copy(localUp);
         camera.lookAt(lookAtTarget);
 
         controls.update();
