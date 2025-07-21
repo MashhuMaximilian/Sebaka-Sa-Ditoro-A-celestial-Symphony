@@ -118,13 +118,18 @@ export const planetShader = {
     varying mat3 vTBN;
     
     // Function to calculate lighting and specular contribution from a single star
-    vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir, bool skipAttenuation) {
+    vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir, bool isDistantSource) {
         vec3 lightDir = normalize(starPos - vWorldPosition);
         
         float attenuation = 1.0;
-        if (!skipAttenuation) {
-            float dist = length(starPos - vWorldPosition);
+        float dist = length(starPos - vWorldPosition);
+        
+        // Use a much gentler falloff for distant stars lighting distant planets
+        if (isDistantSource) {
             attenuation = 1.0 / (1.0 + dist * dist * 0.000005);
+        } else {
+            // A more standard falloff for the inner system
+            attenuation = 1.0 / (1.0 + dist * dist * 0.0001);
         }
         
         // Diffuse
