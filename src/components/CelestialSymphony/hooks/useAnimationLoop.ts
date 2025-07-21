@@ -151,7 +151,14 @@ export const useAnimationLoop = ({
                     // Do nothing, rotation is paused
                 } else {
                     const rotationPerHour = (2 * Math.PI) / planetData.rotationPeriodHours;
-                    planetMesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
+                    const spinAngle = rotationPerHour * hoursPassedThisFrame;
+                    
+                    // Create quaternions for spin and tilt
+                    const spinQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), spinAngle);
+                    const tiltQuat = planetMesh.userData.tiltQuaternion || new THREE.Quaternion();
+
+                    // Apply spin to the current rotation, then re-apply tilt
+                    planetMesh.quaternion.premultiply(spinQuat);
                 }
             }
         });
@@ -190,7 +197,11 @@ export const useAnimationLoop = ({
         const cameraLocalPosition = new THREE.Vector3();
         cameraLocalPosition.setFromSphericalCoords(radius, latRad, lonRad);
         
-        cameraLocalPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), sebakaMesh.rotation.y);
+        // Apply Sebaka's rotation to the camera's local position
+        const sebakaWorldQuaternion = new THREE.Quaternion();
+        sebakaMesh.getWorldQuaternion(sebakaWorldQuaternion);
+        cameraLocalPosition.applyQuaternion(sebakaWorldQuaternion);
+
         camera.position.copy(sebakaMesh.position).add(cameraLocalPosition);
         
         const up = cameraLocalPosition.clone().normalize();

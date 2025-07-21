@@ -49,16 +49,10 @@ export const updateAllBodyPositions = (
           z = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.sin(binaryAngle);
       } else {
           x = orbitCenter.x + semiMajorAxis * Math.cos(angle);
-          z = orbitCenter.z + semiMinorAxis * Math.sin(angle);
+          z = orbitCenter.z + semiMajorAxis * Math.sin(angle);
       }
 
       const y = orbitCenter.y;
       bodyMesh.position.set(x, y, z);
-
-      // Reset inherent rotation before applying axial spin + tilt
-      bodyMesh.quaternion.identity();
-      if (bodyMesh.userData.tiltQuaternion) {
-        bodyMesh.quaternion.multiply(bodyMesh.userData.tiltQuaternion);
-      }
   });
 };

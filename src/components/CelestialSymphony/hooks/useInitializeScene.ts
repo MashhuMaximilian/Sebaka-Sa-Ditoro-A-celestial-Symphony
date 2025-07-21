@@ -123,7 +123,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         animate();
 
         return () => {
-            setIsInitialized(false);
             cancelAnimationFrame(animationFrameId);
             window.removeEventListener("resize", handleResize);
 
@@ -132,40 +131,48 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
             }
 
             if (sceneRef.current) {
+                // Proper cleanup of all objects in the scene
                 sceneRef.current.traverse(object => {
                     if (object instanceof THREE.Mesh) {
-                        if (object.geometry) object.geometry.dispose();
+                        if (object.geometry) {
+                            object.geometry.dispose();
+                        }
                         if (object.material) {
                             if (Array.isArray(object.material)) {
                                 object.material.forEach(material => {
-                                    Object.values(material).forEach(prop => {
-                                        if (prop instanceof THREE.Texture) {
-                                            prop.dispose();
-                                        }
-                                    });
-                                    material.dispose()
+                                    if(material.map) material.map.dispose();
+                                    material.dispose();
                                 });
-                            } else if (object.material instanceof THREE.Material) {
-                                Object.values(object.material).forEach(prop => {
-                                    if (prop instanceof THREE.Texture) {
-                                        prop.dispose();
-                                    }
-                                });
+                            } else {
+                                if (object.material.map) object.material.map.dispose();
                                 object.material.dispose();
                             }
                         }
                     }
                 });
-                sceneRef.current.clear();
+                 // Clear all children from the scene
+                while(sceneRef.current.children.length > 0){ 
+                    sceneRef.current.remove(sceneRef.current.children[0]); 
+                }
             }
             
             if (rendererRef.current) {
+                // Ensure the WebGL context is lost
                 rendererRef.current.forceContextLoss();
                 rendererRef.current.dispose();
+                // Remove the canvas from the DOM
                 if (mountRef.current && rendererRef.current.domElement.parentNode === mountRef.current) {
                     mountRef.current.removeChild(rendererRef.current.domElement);
                 }
             }
+            
+            // Explicitly set refs to undefined
+            rendererRef.current = undefined;
+            sceneRef.current = undefined;
+            cameraRef.current = undefined;
+            controlsRef.current = undefined;
+
+            setIsInitialized(false);
         };
     }, [bodyData, setIsInitialized, materialProperties, viewFromSebaka, sebakaGridTexture, usePlainOrbits]);
 
