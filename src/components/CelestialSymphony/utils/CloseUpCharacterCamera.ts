@@ -74,9 +74,9 @@ export class CloseUpCharacterCamera {
   
   private _onWheel(event: WheelEvent) {
     this.distance = THREE.MathUtils.clamp(
-      this.distance + event.deltaY * 0.01, // Slower zoom
-      2,   // Minimum distance
-      40   // Maximum distance
+      this.distance + event.deltaY * 0.01,
+      0.2, // Minimum distance - very close
+      10   // Maximum distance - still close
     );
   }
   
@@ -108,7 +108,7 @@ export class CloseUpCharacterCamera {
     
     this.camera.position.copy(finalCameraPos);
     
-    // THIS IS THE FIX: Set the camera's UP vector to point away from the planet's center.
+    // Set the camera's UP vector to point away from the planet's center.
     const surfaceNormal = this.camera.position.clone().sub(planetWorldPos).normalize();
     this.camera.up.copy(surfaceNormal);
 
