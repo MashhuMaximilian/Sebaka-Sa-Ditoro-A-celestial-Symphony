@@ -167,6 +167,7 @@ export const useAnimationLoop = ({
       }
 
       const sebakaBody = allBodiesRef.current.find(p => p.name === 'Sebaka');
+      const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
 
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.name === 'Gelidis_orbit');
       const liminisOrbit = orbitMeshesRef.current.find(o => o.name === 'Liminis_orbit');
@@ -183,58 +184,52 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebakaRef.current && sebakaBody) {
-        const lat = playerInputsRef.current.latitude;
-        const lon = playerInputsRef.current.longitude;
-        const pitch = playerInputsRef.current.pitch;
-        const yaw = playerInputsRef.current.yaw;
+      if (viewFromSebakaRef.current && sebakaMesh && sebakaBody) {
+          const lat = playerInputsRef.current.latitude;
+          const lon = playerInputsRef.current.longitude;
+          const pitch = playerInputsRef.current.pitch;
+          const yaw = playerInputsRef.current.yaw;
+  
+          // 1. Calculate camera position on the sphere's surface (in local space)
+          const latRad = THREE.MathUtils.degToRad(90 - lat);
+          const lonRad = THREE.MathUtils.degToRad(lon);
+          const radius = sebakaRadiusRef.current + 0.1;
+          
+          const cameraLocalPosition = new THREE.Vector3();
+          cameraLocalPosition.setFromSphericalCoords(radius, latRad, lonRad);
+  
+          // 2. Get world position of the camera by transforming local position by planet's matrix
+          // This ensures the camera moves WITH the planet's rotation
+          const cameraWorldPosition = sebakaMesh.localToWorld(cameraLocalPosition.clone());
+          camera.position.copy(cameraWorldPosition);
+          
+          // 3. Establish a stable "up" vector pointing from planet center to camera
+          const planetUp = cameraWorldPosition.clone().sub(sebakaMesh.position).normalize();
+          camera.up.copy(planetUp);
+          
+          // 4. Create a stable reference frame on the planet's surface
+          // A "forward" vector pointing towards the planet's north pole along the surface
+          const worldNorthPole = sebakaMesh.localToWorld(new THREE.Vector3(0, radius, 0));
+          let planetForward = worldNorthPole.sub(cameraWorldPosition).normalize();
+          
+          const planetRight = new THREE.Vector3().crossVectors(planetUp, planetForward).normalize();
+          // Re-calculate forward to ensure it's orthogonal to up and right
+          const correctedForward = new THREE.Vector3().crossVectors(planetRight, planetUp).normalize();
 
-        const latRad = THREE.MathUtils.degToRad(90 - lat);
-        const lonRad = THREE.MathUtils.degToRad(lon);
-        const pitchRad = THREE.MathUtils.degToRad(pitch);
-        const yawRad = THREE.MathUtils.degToRad(-yaw);
-        
-        const radius = sebakaRadiusRef.current + 0.1;
-        
-        // 1. Calculate Camera Position independent of planet's self-rotation
-        // Start with local position on a non-rotated sphere
-        const cameraLocalPosition = new THREE.Vector3().setFromSphericalCoords(radius, latRad, lonRad);
-        
-        // Apply the planet's axial tilt (from the parent Object3D) to the local position
-        cameraLocalPosition.applyQuaternion(sebakaBody.quaternion);
-
-        // Add the planet's orbital position to get the final world position
-        const cameraWorldPosition = new THREE.Vector3().addVectors(sebakaBody.position, cameraLocalPosition);
-        camera.position.copy(cameraWorldPosition);
-
-        // 2. Establish a Stable Local Coordinate System on the Planet's Surface
-        const localDown = new THREE.Vector3().subVectors(sebakaBody.position, camera.position).normalize();
-        const localUp = localDown.clone().negate();
-        
-        // Use a global up vector to establish a stable "right" vector, creating a horizon.
-        const globalUp = new THREE.Vector3(0, 1, 0);
-        const localRight = new THREE.Vector3().crossVectors(localUp, globalUp).normalize();
-        
-        if (localRight.lengthSq() === 0) {
-            localRight.crossVectors(localUp, new THREE.Vector3(0, 0, -1)).normalize();
-        }
-
-        const localForward = new THREE.Vector3().crossVectors(localRight, localUp).normalize();
-
-        // 3. Apply Pitch and Yaw Rotations to the Stable Frame
-        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(localRight, -pitchRad);
-        const yawQuat = new THREE.Quaternion().setFromAxisAngle(localUp, yawRad);
-
-        const combinedQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
-        
-        const lookDirection = localForward.clone().applyQuaternion(combinedQuat);
-        
-        const lookAtTarget = camera.position.clone().add(lookDirection);
-        
-        camera.up.copy(localUp);
-        camera.lookAt(lookAtTarget);
-
-        controls.update();
+          // 5. Apply player look controls relative to the stable frame
+          const yawRad = THREE.MathUtils.degToRad(-yaw); // Negative to match user expectation (drag right -> look right)
+          const pitchRad = THREE.MathUtils.degToRad(pitch);
+  
+          // Create quaternions for pitch and yaw rotations
+          const yawQuat = new THREE.Quaternion().setFromAxisAngle(planetUp, yawRad);
+          const pitchQuat = new THREE.Quaternion().setFromAxisAngle(planetRight, pitchRad);
+          
+          // Combine rotations and apply to the stable forward vector
+          const finalLookDirection = correctedForward.clone().applyQuaternion(yawQuat).applyQuaternion(pitchQuat);
+            
+          // Set the camera to look at a point in the calculated direction
+          const lookAtTarget = camera.position.clone().add(finalLookDirection);
+          camera.lookAt(lookAtTarget);
 
       } else {
         controls.update();
