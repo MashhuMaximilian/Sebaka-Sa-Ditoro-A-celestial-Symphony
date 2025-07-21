@@ -60,35 +60,24 @@ export const createBodyMesh = (
     let mesh: THREE.Mesh;
 
     if (body.type === 'Star') {
-        const uniforms = THREE.UniformsUtils.clone(planetShader.uniforms);
-        
-        const texturePaths: { [key: string]: { [key: string]: string } } = {
-             Alpha: { base: '/maps/goldenGiverTexture.jpg', ambient: '/maps/goldenGiver_ambient.png', displacement: '/maps/goldenGiver_displacement.png', normal: '/maps/goldenGiver_normal.png', specular: '/maps/goldenGiver_specular.png' },
-             Twilight: { base: '/maps/TwilightTexture.jpg', ambient: '/maps/Twilight_ambient.png', displacement: '/maps/Twilight_displacement.png', normal: '/maps/Twilight_normal.png', specular: '/maps/Twilight_specular.png' },
-             Beacon: { base: '/maps/BeaconTexture.png', ambient: '/maps/Beacon_ambient.png', displacement: '/maps/Beacon_displacement.png', normal: '/maps/Beacon_normal.png', specular: '/maps/Beacon_specular.png' },
+         const texturePaths: { [key: string]: { [key: string]: string } } = {
+             Alpha: { base: '/maps/goldenGiverTexture.jpg' },
+             Twilight: { base: '/maps/TwilightTexture.jpg' },
+             Beacon: { base: '/maps/BeaconTexture.png' },
         };
         
         const paths = texturePaths[body.name];
-        if (paths) {
-            if(paths.base) uniforms.planetTexture.value = textureLoader.load(paths.base);
-            if(paths.normal) uniforms.normalMap.value = textureLoader.load(paths.normal);
-            if(paths.displacement) uniforms.displacementMap.value = textureLoader.load(paths.displacement);
-            if(paths.specular) uniforms.specularMap.value = textureLoader.load(paths.specular);
-            if(paths.ambient) uniforms.aoMap.value = textureLoader.load(paths.ambient);
-        }
-
+        
         material = new THREE.MeshPhongMaterial({
             emissive: body.color,
             emissiveIntensity: 1,
             shininess: 10,
-            map: uniforms.planetTexture.value,
+            map: paths?.base ? textureLoader.load(paths.base) : undefined,
         });
 
         mesh = new THREE.Mesh(geometry, material);
         mesh.name = body.name;
     } else { // It's a planet
-        const uniforms = THREE.UniformsUtils.clone(planetShader.uniforms);
-
         const texturePaths: { [key: string]: { [key: string]: string } } = {
             Aetheris: { base: '/maps/AetherisTexture.png', specular: '/maps/AetherisTexture_specular.png', ambient: '/maps/AetherisTexture_ambient.png', displacement: '/maps/AetherisTexture_displacement.png', normal: '/maps/AetherisTexture_normal.png' },
             Gelidis: { base: '/maps/GelidisTexture.png', ambient: '/maps/GelidisTexture_ambient.png', displacement: '/maps/GelidisTexture_displacement.png', normal: '/maps/GelidisTexture_normal.png', specular: '/maps/GelidisTexture_specular.png' },
@@ -100,26 +89,52 @@ export const createBodyMesh = (
         };
         
         const paths = texturePaths[body.name];
-        if (paths) {
-            if(paths.base) uniforms.planetTexture.value = textureLoader.load(paths.base);
-            if(paths.normal) uniforms.normalMap.value = textureLoader.load(paths.normal);
-            if(paths.displacement) uniforms.displacementMap.value = textureLoader.load(paths.displacement);
-            if(paths.specular) uniforms.specularMap.value = textureLoader.load(paths.specular);
-            if(paths.ambient) uniforms.aoMap.value = textureLoader.load(paths.ambient);
-        }
-
-        if(body.name === 'Sebaka'){
-            uniforms.gridTexture.value = sebakaGridTexture;
-            uniforms.useGrid.value = viewFromSebaka;
-        }
+        const normalMap = paths?.normal ? textureLoader.load(paths.normal) : null;
+        const displacementMap = paths?.displacement ? textureLoader.load(paths.displacement) : null;
+        const specularMap = paths?.specular ? textureLoader.load(paths.specular) : null;
+        const aoMap = paths?.ambient ? textureLoader.load(paths.ambient) : null;
         
+        // Create a completely new material object for each planet
         material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
+            uniforms: {
+                alphaStarPos: { value: new THREE.Vector3() },
+                twilightStarPos: { value: new THREE.Vector3() },
+                beaconStarPos: { value: new THREE.Vector3() },
+                alphaColor: { value: new THREE.Color(0xfff8e7) },
+                twilightColor: { value: new THREE.Color(0xfff0d4) },
+                beaconColor: { value: new THREE.Color(0xaaccff) },
+                alphaIntensity: { value: 1.0 },
+                twilightIntensity: { value: 0.7 },
+                beaconIntensity: { value: 500.0 },
+                albedo: { value: 1.0 },
+                planetTexture: { value: paths?.base ? textureLoader.load(paths.base) : null },
+                gridTexture: { value: null },
+                useGrid: { value: false },
+                ambientLevel: { value: 0.02 },
+                useNormalMap: { value: !!normalMap },
+                normalMap: { value: normalMap },
+                normalScale: { value: new THREE.Vector2(1, 1) },
+                useDisplacementMap: { value: !!displacementMap },
+                displacementMap: { value: displacementMap },
+                displacementScale: { value: 1.0 },
+                useSpecularMap: { value: !!specularMap },
+                specularMap: { value: specularMap },
+                specularIntensity: { value: 1.0 },
+                shininess: { value: 30.0 },
+                useAoMap: { value: !!aoMap },
+                aoMap: { value: aoMap },
+                aoMapIntensity: { value: 1.0 },
+            },
             vertexShader: planetShader.vertexShader,
             fragmentShader: planetShader.fragmentShader,
             transparent: body.name === 'Spectris' || body.name === 'Aetheris',
         });
-
+        
+        if(body.name === 'Sebaka' && (material instanceof THREE.ShaderMaterial)){
+            material.uniforms.gridTexture.value = sebakaGridTexture;
+            material.uniforms.useGrid.value = viewFromSebaka;
+        }
+        
         mesh = new THREE.Mesh(geometry, material);
         mesh.name = body.name;
         mesh.castShadow = true;
