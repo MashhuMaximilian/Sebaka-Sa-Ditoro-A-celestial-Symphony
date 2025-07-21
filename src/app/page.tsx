@@ -304,8 +304,8 @@ export default function Home() {
           setLongitude(0);
           setLatitude(0);
           setActiveSebakaPanel(null);
-          setSpeedMultiplier(4);
-          setSpeedInput('4');
+          setSpeedMultiplier(2);
+          setSpeedInput('2');
           setShowOrbits(false);
       }
   }
