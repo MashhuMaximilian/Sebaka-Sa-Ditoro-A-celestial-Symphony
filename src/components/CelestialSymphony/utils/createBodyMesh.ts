@@ -61,10 +61,10 @@ export const createBodyMesh = (
     let mesh: THREE.Mesh;
 
     if (body.type === 'Star') {
-         const texturePaths: { [key: string]: { [key: string]: string } } = {
-            Alpha: { base: '/maps/goldenGiverTexture.jpg', normal: '/maps/goldenGiver_normal.png', displacement: '/maps/goldenGiver_displacement.png' },
-            Twilight: { base: '/maps/TwilightTexture.jpg', normal: '/maps/Twilight_normal.png', displacement: '/maps/Twilight_displacement.png' },
-            Beacon: { base: '/maps/BeaconTexture.png', normal: '/maps/Beacon_normal.png', displacement: '/maps/Beacon_displacement.png' },
+        const texturePaths: { [key: string]: { [key: string]: string } } = {
+            Alpha: { base: '/maps/goldenGiverTexture.jpg', normal: '/maps/goldenGiver_normal.png', displacement: '/maps/goldenGiver_displacement.png', ambient: '/maps/goldenGiver_ambient.png', specular: '/maps/goldenGiver_specular.png'},
+            Twilight: { base: '/maps/TwilightTexture.jpg', normal: '/maps/Twilight_normal.png', displacement: '/maps/Twilight_displacement.png', ambient: '/maps/Twilight_ambient.png', specular: '/maps/Twilight_specular.png'},
+            Beacon: { base: '/maps/BeaconTexture.png', normal: '/maps/Beacon_normal.png', displacement: '/maps/Beacon_displacement.png', ambient: '/maps/Beacon_ambient.png', specular: '/maps/Beacon_specular.png' },
         };
         
         const paths = texturePaths[body.name];
@@ -78,6 +78,8 @@ export const createBodyMesh = (
             normalScale: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale),
             displacementMap: paths?.displacement ? textureLoader.load(paths.displacement) : undefined,
             displacementScale: initialProps.displacementScale,
+            specularMap: paths?.specular ? textureLoader.load(paths.specular) : undefined,
+            aoMap: paths?.ambient ? textureLoader.load(paths.ambient) : undefined,
         });
 
         mesh = new THREE.Mesh(geometry, material);
@@ -86,10 +88,10 @@ export const createBodyMesh = (
         const texturePaths: { [key: string]: { [key: string]: string } } = {
             Aetheris: { base: '/maps/AetherisTexture.png', specular: '/maps/AetherisTexture_specular.png', ambient: '/maps/AetherisTexture_ambient.png', displacement: '/maps/AetherisTexture_displacement.png', normal: '/maps/AetherisTexture_normal.png' },
             Gelidis: { base: '/maps/GelidisTexture.png', ambient: '/maps/GelidisTexture_ambient.png', displacement: '/maps/GelidisTexture_displacement.png', normal: '/maps/GelidisTexture_normal.png', specular: '/maps/GelidisTexture_specular.png' },
-            Rutilus: { base: '/maps/RutiliusTexture.png', ambient: '/maps/RutiliusTexture_ambient.png', displacement: '/maps/RutiliusTexture_displacement.png', normal: '/maps/RutiliusTexture_normal.png' },
+            Rutilus: { base: '/maps/RutiliusTexture.png', ambient: '/maps/RutiliusTexture_ambient.png', displacement: '/maps/RutiliusTexture_displacement.png', normal: '/maps/RutiliusTexture_normal.png', specular: '/maps/RutiliusTexture_specular.png' },
             Spectris: { base: '/maps/SpectrisTexture.png', ambient: '/maps/SpectrisTexture_ambient.png', displacement: '/maps/SpectrisTexture_displacement.png', normal: '/maps/SpectrisTexture_normal.png', specular: '/maps/SpectrisTexture_specular.png' },
             Viridis: { base: '/maps/ViridisTexture.png', ambient: '/maps/ViridisTexture_ambient.png', displacement: '/maps/ViridisTexture_displacement.png', normal: '/maps/ViridisTexture_normal.png', specular: '/maps/ViridisTexture_specular.png' },
-            Liminis: { base: '/maps/LiminisTexture.png', ambient: '/maps/LiminiAmbientOcclusionMap.png', displacement: '/maps/LiminiDisplacementMap.png', normal: '/maps/LiminiNormalMap.png', specular: '/maps/LiminiSpecularMap.png' },
+            Liminis: { base: '/maps/LimnisTexture.png', ambient: '/maps/LimnisAmbientOcclusionMap.png', displacement: '/maps/LimnisDisplacementMap.png', normal: '/maps/LimnisNormalMap.png', specular: '/maps/LimnisSpecularMap.png' },
             Sebaka: { base: '/maps/SebakaTexture.png', ambient: '/maps/SebakaAmbientOcclusionMap.png', displacement: '/maps/SebakaDisplacementMap.png', normal: '/maps/SebakaNormalMap.png', specular: '/maps/SebakaSpecularMap.png' },
         };
         
@@ -99,7 +101,6 @@ export const createBodyMesh = (
         const specularMap = paths?.specular ? textureLoader.load(paths.specular) : null;
         const aoMap = paths?.ambient ? textureLoader.load(paths.ambient) : null;
         
-        // Create a completely new material object for each planet
         material = new THREE.ShaderMaterial({
             uniforms: {
                 alphaStarPos: { value: new THREE.Vector3() },
@@ -113,7 +114,7 @@ export const createBodyMesh = (
                 beaconIntensity: { value: 500.0 },
                 albedo: { value: initialProps.albedo },
                 planetTexture: { value: paths?.base ? textureLoader.load(paths.base) : null },
-                gridTexture: { value: null },
+                gridTexture: { value: null as THREE.CanvasTexture | null },
                 useGrid: { value: false },
                 ambientLevel: { value: 0.02 },
                 useNormalMap: { value: !!normalMap },
@@ -193,7 +194,6 @@ export const createBodyMesh = (
         }
     }
     
-    // Apply axial tilt to the container object. The mesh inside will then rotate on this tilted axis.
     if (body.type === 'Planet' && body.axialTilt) {
         const planetBody = body as PlanetData;
         const tiltDegrees = parseFloat(planetBody.axialTilt.replace('°', ''));

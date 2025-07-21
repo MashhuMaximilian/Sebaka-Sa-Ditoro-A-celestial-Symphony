@@ -37,6 +37,8 @@ export const useUpdateBodyMaterials = ({
     }, [planets, planetMeshesRef]);
 
     useEffect(() => {
+        if (!planetMeshesRef.current.length) return; // Guard against running before initialization
+
         planetMeshesRef.current.forEach((mesh) => {
             if (!mesh) return;
 
