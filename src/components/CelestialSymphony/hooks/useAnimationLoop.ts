@@ -79,15 +79,11 @@ export const useAnimationLoop = ({
 
     if (viewFromSebaka && sebakaMesh) {
         if (!characterRef.current) {
-            const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current, scene);
+            const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current);
             characterRef.current = character;
         }
         if (!cameraControllerRef.current) {
-            const cameraController = new ThirdPersonCameraController({
-              camera: camera,
-              character: characterRef.current,
-              planetMesh: sebakaMesh,
-            });
+            const cameraController = new ThirdPersonCameraController(camera, characterRef.current, sebakaMesh);
             cameraControllerRef.current = cameraController;
         }
     } else {
@@ -208,18 +204,8 @@ export const useAnimationLoop = ({
       }
 
       if (viewFromSebaka && characterRef.current && cameraControllerRef.current) {
-          const character = characterRef.current;
-          const cameraController = cameraControllerRef.current;
-          
-          character.longitude = longitude;
-          character.latitude = latitude;
-          character.updateCharacterPosition();
-          
-          cameraController.distance = cameraFov;
-          cameraController.pitch = cameraPitch;
-          cameraController.yaw = cameraYaw;
-          cameraController.update();
-
+          characterRef.current.update(longitude, latitude, cameraYaw);
+          cameraControllerRef.current.update(cameraFov, cameraPitch);
       } else {
         controls.update();
       }
@@ -257,3 +243,5 @@ export const useAnimationLoop = ({
     cameraFov
   ]);
 };
+
+    

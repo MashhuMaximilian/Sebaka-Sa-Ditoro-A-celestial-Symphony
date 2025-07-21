@@ -2,90 +2,59 @@
 import * as THREE from 'three';
 import type { SphericalCharacterCube } from './SphericalCharacterCube';
 
-interface ThirdPersonCameraControllerParams {
-    camera: THREE.PerspectiveCamera;
-    character: SphericalCharacterCube;
-    planetMesh: THREE.Mesh;
-}
-
 export class ThirdPersonCameraController {
     public camera: THREE.PerspectiveCamera;
     public character: SphericalCharacterCube;
-    public planetMesh: THREE.Mesh;
+    private planetMesh: THREE.Mesh;
+    private raycaster: THREE.Raycaster;
 
-    public distance: number = 2.0;
-    public pitch: number = 45;
-    public yaw: number = 0;
-
-    private _raycaster = new THREE.Raycaster();
-
-    constructor(params: ThirdPersonCameraControllerParams) {
-        this.camera = params.camera;
-        this.character = params.character;
-        this.planetMesh = params.planetMesh;
+    constructor(camera: THREE.PerspectiveCamera, character: SphericalCharacterCube, planetMesh: THREE.Mesh) {
+        this.camera = camera;
+        this.character = character;
+        this.planetMesh = planetMesh;
+        this.raycaster = new THREE.Raycaster();
+        
+        // IMPORTANT: Add camera as a child of the character.
+        // This makes it inherit the character's position and orientation.
+        this.character.characterMesh.add(this.camera);
     }
 
-    update() {
-        if (!this.character || !this.character.characterMesh) return;
-
-        const characterMesh = this.character.characterMesh;
-
-        // 1. Get character's world position and orientation
-        const characterPosition = new THREE.Vector3();
-        characterMesh.getWorldPosition(characterPosition);
-
-        const characterQuaternion = new THREE.Quaternion();
-        characterMesh.getWorldQuaternion(characterQuaternion);
+    public update(distance: number, pitch: number) {
+        const pitchRad = THREE.MathUtils.degToRad(pitch);
         
-        // 2. Calculate the ideal camera position
-        // Start with a basic offset vector
-        const idealOffset = new THREE.Vector3(0, 0, this.distance);
-
-        // Create rotation quaternions for pitch (vertical angle) and yaw (horizontal orbit)
-        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(
-            new THREE.Vector3(1, 0, 0),
-            THREE.MathUtils.degToRad(-this.pitch)
-        );
-        const yawQuat = new THREE.Quaternion().setFromAxisAngle(
-            new THREE.Vector3(0, 1, 0),
-            THREE.MathUtils.degToRad(this.yaw)
-        );
-
-        // Combine rotations and apply to the offset
-        const totalRotation = new THREE.Quaternion().multiply(yawQuat, pitchQuat);
-        idealOffset.applyQuaternion(totalRotation);
-
-        // Now, orient the offset based on the character's world rotation
-        idealOffset.applyQuaternion(characterQuaternion);
+        // 1. Calculate the ideal local position of the camera relative to the character
+        const idealOffset = new THREE.Vector3(0, 0, distance);
+        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRad);
+        idealOffset.applyQuaternion(pitchQuat);
         
-        const idealCameraPosition = new THREE.Vector3().addVectors(characterPosition, idealOffset);
+        // The character's head position in its local space is (0,0,0)
+        const characterHeadPos = new THREE.Vector3(0,0,0);
 
-        // 3. Perform collision detection
-        const characterHeadPosition = characterPosition.clone().add(new THREE.Vector3(0, 0.05, 0).applyQuaternion(characterQuaternion));
-        this._raycaster.set(characterHeadPosition, idealCameraPosition.clone().sub(characterHeadPosition).normalize());
-        this._raycaster.far = this.distance; // Only check up to the ideal distance
+        // 2. Check for collisions between the character and the ideal camera position
+        // The raycaster needs to operate in the planet's local space.
+        this.raycaster.set(characterHeadPos, idealOffset.clone().normalize());
+        this.raycaster.near = 0;
+        this.raycaster.far = distance;
         
-        const intersects = this._raycaster.intersectObject(this.planetMesh);
+        // We need to check for intersections with the planet mesh, but the ray is in character space.
+        // So we create a temporary matrix to transform the ray to planet space.
+        // Since the character is a direct child of the planet, this is just the character's local matrix.
+        const intersects = this.raycaster.intersectObject(this.planetMesh, false);
         
-        let finalCameraPosition = idealCameraPosition;
-
+        let finalPosition = idealOffset;
         if (intersects.length > 0) {
-            // Collision detected, move camera to the intersection point (with a small buffer)
-            finalCameraPosition = intersects[0].point.clone().addScaledVector(
-                idealCameraPosition.clone().sub(characterHeadPosition).normalize(),
-                -0.1 // a small buffer to avoid being inside the geometry
-            );
+            // Collision detected! Position camera at the collision point (with a small buffer).
+            const collisionPoint = intersects[0].point;
+            // The intersection point is in planet space, but we need it in character space.
+            // Since the ray started at the character's origin, the distance to intersection is what we need.
+            const collisionDistance = intersects[0].distance;
+            finalPosition = idealOffset.clone().normalize().multiplyScalar(collisionDistance * 0.9);
         }
 
-        // 4. Set final camera position and orientation
-        this.camera.position.copy(finalCameraPosition);
-
-        // Ensure the camera's "up" vector matches the character's "up"
-        const upVector = new THREE.Vector3(0, 1, 0);
-        upVector.applyQuaternion(characterQuaternion);
-        this.camera.up.copy(upVector);
-
-        // Look at a point slightly above the character's feet for a better view
-        this.camera.lookAt(characterHeadPosition);
+        // 3. Set the final camera position and make it look at the character
+        this.camera.position.copy(finalPosition);
+        this.camera.lookAt(characterHeadPos);
     }
 }
+
+    

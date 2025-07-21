@@ -306,7 +306,7 @@ export default function Home() {
           setViewFromSebaka(true);
           setLongitude(0);
           setLatitude(0);
-          setSebakaCamera({ pitch: 0, yaw: 0, fov: 2.0 });
+          setSebakaCamera({ pitch: -45, yaw: 0, fov: 0.5 });
           setActiveSebakaPanel(null);
       }
   }
