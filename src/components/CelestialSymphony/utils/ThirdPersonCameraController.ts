@@ -5,16 +5,15 @@ import type { SphericalCharacterCube } from './SphericalCharacterCube';
 export class ThirdPersonCameraController {
     public camera: THREE.PerspectiveCamera;
     public character: SphericalCharacterCube;
-    private planetMesh: THREE.Mesh;
     
     public distance: number = 2.0;
-    public pitch: number = 20; // Degrees
-    private lerpFactor: number = 0.05;
+    public pitch: number = 45; // Vertical angle
+    public yaw: number = 0; // Horizontal angle
+    private lerpFactor: number = 0.08;
 
-    constructor(camera: THREE.PerspectiveCamera, character: SphericalCharacterCube, planetMesh: THREE.Mesh) {
+    constructor(camera: THREE.PerspectiveCamera, character: SphericalCharacterCube) {
         this.camera = camera;
         this.character = character;
-        this.planetMesh = planetMesh;
     }
 
     updateCamera(deltaTime: number) {
@@ -26,42 +25,34 @@ export class ThirdPersonCameraController {
         const characterWorldPosition = new THREE.Vector3();
         characterMesh.getWorldPosition(characterWorldPosition);
         
-        const characterWorldQuaternion = new THREE.Quaternion();
-        characterMesh.getWorldQuaternion(characterWorldQuaternion);
+        const characterUp = new THREE.Vector3(0, 1, 0);
+        characterUp.applyQuaternion(characterMesh.getWorldQuaternion(new THREE.Quaternion()));
 
-        // The character's "up" vector in world space is the direction from planet center
-        const up = new THREE.Vector3().subVectors(characterWorldPosition, this.planetMesh.getWorldPosition(new THREE.Vector3())).normalize();
-        this.camera.up.copy(up);
-
-        // The character's "forward" vector in world space
-        const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(characterWorldQuaternion);
-        
-        // 2. Calculate the ideal camera position
+        // 2. Calculate ideal camera position based on pitch, yaw, and distance
         const pitchRad = THREE.MathUtils.degToRad(this.pitch);
-        const horizontalDistance = this.distance * Math.cos(pitchRad);
-        const verticalDistance = this.distance * Math.sin(pitchRad);
-
-        const offset = forward.clone().multiplyScalar(-horizontalDistance);
-        offset.addScaledVector(up, verticalDistance);
+        const yawRad = THREE.MathUtils.degToRad(this.yaw);
         
-        let desiredPosition = characterWorldPosition.clone().add(offset);
+        // Start with a basic offset behind the character
+        const offset = new THREE.Vector3(0, 0, this.distance);
+
+        // Apply pitch (vertical rotation)
+        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRad);
+        offset.applyQuaternion(pitchQuat);
+
+        // Apply yaw (horizontal rotation around the character's up vector)
+        const yawQuat = new THREE.Quaternion().setFromAxisAngle(characterUp, yawRad);
+        offset.applyQuaternion(yawQuat);
+
+        // Add the final offset to the character's world position
+        const desiredPosition = characterWorldPosition.clone().add(offset);
         
-        // 3. Implement Collision Detection
-        const raycaster = new THREE.Raycaster(characterWorldPosition, desiredPosition.clone().sub(characterWorldPosition).normalize());
-        const intersects = raycaster.intersectObject(this.planetMesh);
-
-        if (intersects.length > 0 && intersects[0].distance < this.distance) {
-            desiredPosition.copy(intersects[0].point);
-            // Add a small buffer to avoid clipping into the surface
-            desiredPosition.addScaledVector(up, 0.1); 
-        }
-
-        // 4. Smoothly interpolate camera position
+        // 3. Smoothly interpolate camera position
         const lerpSpeed = 1.0 - Math.exp(-this.lerpFactor * 60 * deltaTime);
         this.camera.position.lerp(desiredPosition, lerpSpeed);
         
-        // 5. Always look at the character's head
-        const lookAtTarget = characterWorldPosition.clone().addScaledVector(up, 0.1);
+        // 4. Always look at the character's head and maintain correct orientation
+        const lookAtTarget = characterWorldPosition.clone().addScaledVector(characterUp, 0.1);
+        this.camera.up.copy(characterUp);
         this.camera.lookAt(lookAtTarget);
     }
 }

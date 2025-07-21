@@ -76,14 +76,15 @@ export const useAnimationLoop = ({
     if (!scene || !camera || !bodyData.length || !isInitialized) return;
 
     const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
+
     if (viewFromSebaka && sebakaMesh) {
-        
-        const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current);
-        characterRef.current = character;
+        if (!characterRef.current) {
+            const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current);
+            characterRef.current = character;
 
-        const cameraController = new ThirdPersonCameraController(camera, character, sebakaMesh);
-        cameraControllerRef.current = cameraController;
-
+            const cameraController = new ThirdPersonCameraController(camera, character);
+            cameraControllerRef.current = cameraController;
+        }
     } else {
         if (characterRef.current) {
             characterRef.current.removeFromScene();
@@ -94,10 +95,8 @@ export const useAnimationLoop = ({
 
     return () => {
         if (characterRef.current) {
-            characterRef.current.removeFromScene();
-            characterRef.current = null;
+            // This cleanup is now handled in the main effect to avoid race conditions
         }
-        cameraControllerRef.current = null;
     };
   }, [viewFromSebaka, scene, camera, bodyData, isInitialized, planetMeshesRef, sebakaRadiusRef]);
 
@@ -207,12 +206,15 @@ export const useAnimationLoop = ({
           
           character.longitude = longitude;
           character.latitude = latitude;
+          // Yaw for character turning is now handled by camera yaw
           character.yaw = cameraYaw;
           character.updateCharacterPosition(deltaTime);
 
           cameraController.pitch = cameraPitch;
+          cameraController.yaw = cameraYaw;
           cameraController.distance = cameraFov;
           cameraController.updateCamera(deltaTime);
+
       } else {
         controls.update();
       }
