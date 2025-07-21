@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
-import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 import type { BodyData } from "./useBodyData";
 import { SphericalCharacterController } from '../utils/SphericalCharacterController';
 import { ThirdPersonOrbitControls } from '../utils/ThirdPersonOrbitControls';
@@ -68,9 +67,8 @@ export const useAnimationLoop = ({
     if (!scene || !camera || !renderer || !controls || !bodyData.length || !isInitialized) return;
 
     const sebakaBody = allBodiesRef.current.find(b => b.name === 'Sebaka');
-    const sebakaMesh = sebakaBody?.children[0] as THREE.Mesh | undefined;
+    const sebakaMesh = sebakaBody as THREE.Mesh | undefined;
     
-    // Clean up previous controllers first
     if (thirdPersonControlsRef.current) {
         thirdPersonControlsRef.current.dispose();
         thirdPersonControlsRef.current = null;
@@ -82,7 +80,19 @@ export const useAnimationLoop = ({
 
     if (viewFromSebaka && sebakaMesh) {
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
-      thirdPersonControlsRef.current = new ThirdPersonOrbitControls(camera, renderer.domElement, characterControllerRef.current.characterMesh);
+      thirdPersonControlsRef.current = new ThirdPersonOrbitControls(camera, renderer.domElement, characterControllerRef.current, sebakaMesh);
+      controls.enabled = false;
+
+      // Set initial camera position
+      const charPos = characterControllerRef.current.characterMesh.getWorldPosition(new THREE.Vector3());
+      const planetPos = sebakaMesh.getWorldPosition(new THREE.Vector3());
+      const upVector = charPos.clone().sub(planetPos).normalize();
+      
+      const initialCameraPos = charPos.clone().add(upVector.multiplyScalar(0.5));
+      camera.position.copy(initialCameraPos);
+      thirdPersonControlsRef.current.controls.target.copy(charPos);
+      camera.lookAt(charPos);
+      
     } else {
         controls.enabled = true;
     }
