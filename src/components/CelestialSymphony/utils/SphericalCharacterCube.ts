@@ -10,6 +10,7 @@ export class SphericalCharacterCube {
   // Character state
   public longitude: number = 0;
   public latitude: number = 0;
+  private yaw: number = 0; // Character facing direction (0-360) - kept private for now
 
   constructor(planetMesh: THREE.Mesh, planetRadius: number) {
     this.planetMesh = planetMesh;
@@ -33,11 +34,12 @@ export class SphericalCharacterCube {
     faceMesh.position.set(0, 0, 0.01); // Front face indicator
     this.characterMesh.add(faceMesh);
     
+    // Add character to the planet mesh as a child
     this.planetMesh.add(this.characterMesh);
   }
   
   // Update character's local position and orientation on the parent sphere
-  updateCharacterPosition(camera: THREE.PerspectiveCamera) {
+  updateCharacterPosition() {
     // 1. Calculate local position on sphere from lat/lon
     const latRad = THREE.MathUtils.degToRad(90 - this.latitude);
     const lonRad = THREE.MathUtils.degToRad(this.longitude);
@@ -50,27 +52,20 @@ export class SphericalCharacterCube {
 
     // 2. Orient character to stand upright on the surface
     const upVector = localPosition.clone().normalize();
-    
-    // Base look at target (just look away from the center)
     const lookAtTarget = this.characterMesh.position.clone().add(upVector);
-
     this.characterMesh.up.copy(upVector);
     this.characterMesh.lookAt(lookAtTarget);
 
-    // Add camera as a child of the character mesh if it's not already
-    if (camera.parent !== this.characterMesh) {
-      this.characterMesh.add(camera);
-    }
+    // 3. Apply yaw rotation for character facing direction (currently unused but ready)
+    const yawRad = THREE.MathUtils.degToRad(this.yaw);
+    const yawQuaternion = new THREE.Quaternion().setFromAxisAngle(upVector, yawRad);
+    this.characterMesh.quaternion.multiply(yawQuaternion);
   }
 
   // Method to remove character from scene
-  removeFromScene(camera: THREE.PerspectiveCamera) {
+  removeFromScene() {
     if (this.characterMesh.parent) {
       this.characterMesh.parent.remove(this.characterMesh);
-    }
-    // Also remove camera from character
-    if (camera.parent === this.characterMesh) {
-        this.characterMesh.remove(camera);
     }
   }
 }
