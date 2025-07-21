@@ -39,9 +39,9 @@ export class ThirdPersonOrbitControls {
     
     // Set initial distance and angle
     this.controls.minDistance = 0.5;
-    this.controls.maxDistance = 5;
-    this.controls.minPolarAngle = Math.PI / 4; // Don't allow looking from directly above
-    this.controls.maxPolarAngle = Math.PI / 2; // Don't allow camera to go below horizon
+    this.controls.maxDistance = 10;
+    this.controls.minPolarAngle = 0; // Allow looking from directly above
+    this.controls.maxPolarAngle = Math.PI - 0.1; // Don't allow camera to go below horizon
 
     // Set initial camera position
     this.target.getWorldPosition(this.characterWorldPos);
@@ -80,6 +80,7 @@ export class ThirdPersonOrbitControls {
       this.camera.position.copy(newCamPos);
       
       // Since we manually moved the camera, we need to make it look at the target again.
+      // This might not be strictly necessary as OrbitControls does this, but it adds robustness.
       this.camera.lookAt(this.controls.target);
     }
   }
