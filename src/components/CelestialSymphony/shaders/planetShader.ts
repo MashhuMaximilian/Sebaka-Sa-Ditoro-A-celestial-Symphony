@@ -129,7 +129,7 @@ export const planetShader = {
             attenuation = 1.0 / (1.0 + dist * dist * 0.000005);
         } else {
             // A more standard falloff for the inner system
-            attenuation = 1.0 / (1.0 + dist * dist * 0.0001);
+            attenuation = 1.0 / (1.0 + dist * dist * 0.00001);
         }
         
         // Diffuse
