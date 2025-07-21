@@ -193,39 +193,48 @@ export const useAnimationLoop = ({
         
         const radius = sebakaRadiusRef.current + 0.1;
         
-        // This is the tricky part: getting the camera position relative to a tilted, rotating planet.
-        const sebakaMesh = sebakaBody.children[0] as THREE.Mesh; // The mesh is the first child of the tilt container
+        const sebakaMesh = sebakaBody.children[0] as THREE.Mesh;
         
         const cameraLocalPosition = new THREE.Vector3();
         cameraLocalPosition.setFromSphericalCoords(radius, latRad, lonRad);
 
-        // First, apply the planet's self-rotation to the local position
         cameraLocalPosition.applyQuaternion(sebakaMesh.quaternion);
-
-        // Then, apply the container's tilt (world rotation) to the position
         cameraLocalPosition.applyQuaternion(sebakaBody.quaternion);
 
-        // Now, set the camera's world position
         camera.position.copy(sebakaBody.position).add(cameraLocalPosition);
         
-        // Get the world 'up' vector from the camera's local position relative to the planet's center
-        const up = cameraLocalPosition.clone().normalize();
-        camera.up.copy(up);
-
-        // Point the camera towards the planet's center initially
-        camera.lookAt(sebakaBody.position);
+        // Define the 'forward' vector as pointing from camera towards the planet's center.
+        const forward = new THREE.Vector3().subVectors(sebakaBody.position, camera.position).normalize();
         
-        // Now, apply the player's 'look' rotation (pitch and yaw)
-        // We do this by creating rotation quaternions around the camera's local axes
-        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), pitchRad);
-        const yawQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yawRad);
+        // Calculate the 'right' vector, perpendicular to a temporary 'up' and 'forward'.
+        // This gives us a stable horizontal reference.
+        const tempUp = new THREE.Vector3(0, 1, 0);
+        const right = new THREE.Vector3().crossVectors(tempUp, forward).normalize();
         
-        // Apply yaw first, then pitch relative to the new orientation
-        camera.quaternion.multiply(yawQuat);
-        camera.quaternion.multiply(pitchQuat);
+        // If 'forward' is parallel to 'tempUp', 'right' will be zero. Handle this edge case.
+        if (right.lengthSq() === 0) {
+            right.set(1, 0, 0);
+        }
 
-        // We don't need to manually set controls.target in this mode.
-        // Let OrbitControls handle it if/when it's re-enabled.
+        // Calculate the camera's actual 'up' vector, perpendicular to 'forward' and 'right'.
+        const cameraUp = new THREE.Vector3().crossVectors(forward, right);
+        
+        // Create rotation quaternions for pitch (around the 'right' axis) and yaw (around the 'up' axis).
+        const pitchQuat = new THREE.Quaternion().setFromAxisAngle(right, -pitchRad);
+        const yawQuat = new THREE.Quaternion().setFromAxisAngle(cameraUp, -yawRad);
+        
+        // Combine the rotations: yaw first, then pitch.
+        const combinedQuat = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
+        
+        // Apply the combined rotation to the 'forward' vector to get the final look direction.
+        const lookDirection = forward.clone().applyQuaternion(combinedQuat);
+        
+        // The camera should look at a point along this new direction.
+        const lookAtTarget = camera.position.clone().add(lookDirection);
+        
+        camera.up.copy(cameraUp);
+        camera.lookAt(lookAtTarget);
+
         controls.update();
 
       } else {
