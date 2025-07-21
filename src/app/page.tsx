@@ -173,7 +173,7 @@ const initialMaterialProperties: MaterialProperties = {
   Viridis: { albedo: 0.84, normalScale: 0.36, displacementScale: 0.64, emissiveIntensity: 0, shininess: 5, specularIntensity: 1.92, aoMapIntensity: 2.00 },
   Aetheris: { albedo: 2.77, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 141, specularIntensity: 0.00, aoMapIntensity: 0.53 },
   Gelidis: { albedo: 0.01, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 100, specularIntensity: 1.00, aoMapIntensity: 1.00 },
-  Liminis: { albedo: 0.8, normalScale: 1, displacementScale: 0.1, emissiveIntensity: 0, shininess: 32, specularIntensity: 1, aoMapIntensity: 1 },
+  Liminis: { albedo: 0.01, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 32, specularIntensity: 0.71, aoMapIntensity: 0.16 },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';

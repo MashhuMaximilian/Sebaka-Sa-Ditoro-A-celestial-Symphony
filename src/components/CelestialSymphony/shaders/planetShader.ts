@@ -67,7 +67,7 @@ export const planetShader = {
       vec3 displacedPosition = position;
       if (useDisplacementMap) {
         float displacementValue = texture2D(displacementMap, uv).r;
-        displacedPosition += normal * pow(displacementValue, 2.0) * displacementScale;
+        displacedPosition += normal * pow(displacementValue, 4.0) * displacementScale;
       }
 
       // Calculate world position
