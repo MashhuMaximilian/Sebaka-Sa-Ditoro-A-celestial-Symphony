@@ -42,6 +42,10 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
   const renderMaterialSettings = () => {
     const bodyProps = materialProperties[data.name];
     if (!bodyProps || !bodiesWithSettings.includes(data.name)) return null;
+
+    // A simple way to check if maps exist by checking the initial properties
+    const hasSpecular = initialMaterialProperties[data.name]?.specularIntensity > 0;
+    const hasAo = initialMaterialProperties[data.name]?.aoMapIntensity > 0;
     
     return (
        <Accordion type="single" collapsible className="w-full">
@@ -109,6 +113,54 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                   </div>
                 </div>
               )}
+               {hasSpecular && (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor={`${data.name}-specular`}>Specular Intensity</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                        id={`${data.name}-specular`}
+                        min={0}
+                        max={5}
+                        step={0.01}
+                        value={[bodyProps.specularIntensity]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'specularIntensity', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">{bodyProps.specularIntensity.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor={`${data.name}-shininess`}>Shininess</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                        id={`${data.name}-shininess`}
+                        min={0}
+                        max={256}
+                        step={1}
+                        value={[bodyProps.shininess]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'shininess', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">{bodyProps.shininess.toFixed(0)}</span>
+                    </div>
+                  </div>
+                </>
+              )}
+              {hasAo && (
+                <div className="grid gap-2">
+                  <Label htmlFor={`${data.name}-ao`}>Ambient Occlusion Intensity</Label>
+                  <div className="flex items-center gap-2">
+                    <Slider
+                      id={`${data.name}-ao`}
+                      min={0}
+                      max={2}
+                      step={0.01}
+                      value={[bodyProps.aoMapIntensity]}
+                      onValueChange={(value) => handleSliderChange(data.name, 'aoMapIntensity', value)}
+                    />
+                    <span className="text-xs font-mono w-12 text-center">{bodyProps.aoMapIntensity.toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
               <Button onClick={onReset} variant="outline" className="w-full">
                 Reset All to Defaults
               </Button>
@@ -164,6 +216,20 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
       </div>
     </ScrollArea>
   );
+};
+
+// We need a copy of the initial properties to check if a map exists
+const initialMaterialProperties: MaterialProperties = {
+  Alpha: { normalScale: 1, displacementScale: 0.6, albedo: 1.0, emissiveIntensity: 2.0, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Twilight: { normalScale: 1, displacementScale: 0.2, albedo: 1.0, emissiveIntensity: 1.2, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Beacon: { normalScale: 1, displacementScale: 2.95, albedo: 1.0, emissiveIntensity: 10, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, shininess: 32, specularIntensity: 0, aoMapIntensity: 1 },
+  Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
+  Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },
+  Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },
+  Aetheris: { albedo: 2.0, normalScale: 0, displacementScale: 0, shininess: 14, specularIntensity: 1, aoMapIntensity: 0 },
+  Gelidis: { albedo: 0.5, normalScale: 0, displacementScale: 0, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
+  Liminis: { albedo: 1.0, normalScale: 1, displacementScale: 0.1, shininess: 32, specularIntensity: 1, aoMapIntensity: 1 },
 };
 
 export default InfoPanel;

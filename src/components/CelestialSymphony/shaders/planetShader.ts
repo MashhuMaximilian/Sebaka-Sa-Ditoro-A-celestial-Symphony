@@ -28,6 +28,16 @@ export const planetShader = {
     useDisplacementMap: { value: false },
     displacementMap: { value: null as THREE.Texture | null },
     displacementScale: { value: 1.0 },
+    
+    // Specular and AO maps
+    useSpecularMap: { value: false },
+    specularMap: { value: null as THREE.Texture | null },
+    specularIntensity: { value: 1.0 },
+    shininess: { value: 30.0 },
+
+    useAoMap: { value: false },
+    aoMap: { value: null as THREE.Texture | null },
+    aoMapIntensity: { value: 1.0 },
   },
   
   vertexShader: `
@@ -87,12 +97,43 @@ export const planetShader = {
     uniform bool useNormalMap;
     uniform sampler2D normalMap;
     uniform vec2 normalScale;
+
+    uniform bool useSpecularMap;
+    uniform sampler2D specularMap;
+    uniform float specularIntensity;
+    uniform float shininess;
+
+    uniform bool useAoMap;
+    uniform sampler2D aoMap;
+    uniform float aoMapIntensity;
     
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying vec2 vUv;
     varying mat3 vTBN;
     
+    // Function to calculate lighting and specular contribution from a single star
+    vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir) {
+        vec3 lightDir = normalize(starPos - vWorldPosition);
+        float dist = length(starPos - vWorldPosition);
+        float attenuation = 1.0 / (1.0 + dist * dist * 0.000005);
+        
+        // Diffuse
+        float diff = max(dot(normal, lightDir), 0.0);
+        vec3 diffuse = starColor * diff * starIntensity * attenuation;
+        
+        // Specular
+        vec3 specular = vec3(0.0);
+        if (useSpecularMap) {
+            vec3 halfwayDir = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+            float specularMask = texture2D(specularMap, vUv).r;
+            specular = starColor * spec * specularIntensity * specularMask * attenuation;
+        }
+        
+        return diffuse + specular;
+    }
+
     void main() {
       // Get base texture color
       vec4 texColor = texture2D(planetTexture, vUv);
@@ -110,37 +151,28 @@ export const planetShader = {
           mapN.xy *= normalScale;
           normal = normalize(vTBN * mapN);
       }
-
-      // Calculate directions to each star
-      vec3 alphaDir = normalize(alphaStarPos - vWorldPosition);
-      vec3 twilightDir = normalize(twilightStarPos - vWorldPosition);
-      vec3 beaconDir = normalize(beaconStarPos - vWorldPosition);
       
-      // Calculate dot products (how much each star illuminates this surface)
-      float alphaDot = max(dot(normal, alphaDir), 0.0);
-      float twilightDot = max(dot(normal, twilightDir), 0.0);
-      float beaconDot = max(dot(normal, beaconDir), 0.0);
-      
-      // Calculate distance attenuation (simplified)
-      float alphaDist = length(alphaStarPos - vWorldPosition);
-      float twilightDist = length(twilightStarPos - vWorldPosition);
-      float beaconDist = length(beaconStarPos - vWorldPosition);
-      
-      float alphaAttenuation = 1.0 / (1.0 + alphaDist * alphaDist * 0.000005);
-      float twilightAttenuation = 1.0 / (1.0 + twilightDist * twilightDist * 0.000005);
-      float beaconAttenuation = 1.0 / (1.0 + beaconDist * beaconDist * 0.000005);
+      vec3 viewDir = normalize(cameraPosition - vWorldPosition);
       
       // Combine illumination from all stars
       vec3 lighting = vec3(0.0);
-      lighting += alphaColor * alphaDot * alphaIntensity * alphaAttenuation;
-      lighting += twilightColor * twilightDot * twilightIntensity * twilightAttenuation;
-      lighting += beaconColor * beaconDot * beaconIntensity * beaconAttenuation;
+      lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, normal, viewDir);
+      lighting += getStarContribution(twilightStarPos, twilightColor, twilightIntensity, normal, viewDir);
+      lighting += getStarContribution(beaconStarPos, beaconColor, beaconIntensity, normal, viewDir);
       
-      // Add minimal ambient lighting
-      lighting += vec3(ambientLevel);
+      // Ambient Occlusion
+      float ao = 1.0;
+      if (useAoMap) {
+        ao = texture2D(aoMap, vUv).r;
+        ao = mix(1.0, ao, aoMapIntensity);
+      }
+
+      // Add minimal ambient lighting, affected by AO
+      lighting += vec3(ambientLevel) * ao;
 
       // Mix between base color and lit color based on albedo
       vec3 finalColor = mix(baseColor, baseColor * lighting, albedo);
+      finalColor *= ao;
       
       gl_FragColor = vec4(finalColor, texColor.a);
     }

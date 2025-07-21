@@ -1,6 +1,5 @@
 
 
-
 interface CelestialBody {
     name: string;
     color: string;
@@ -16,15 +15,15 @@ interface CelestialBody {
     characteristics: string;
     appearance: string;
     lore: string;
-    orbitPeriodDays: number; // The orbital period in Sebaka days.
+    orbitPeriodDays: number;
     orbitRadius?: number;
-    // Optional planet-specific properties
     eccentric?: boolean;
     eccentricity?: number;
     rotation?: string;
     axialTilt?: string;
     moons?: string;
     rotationPeriodHours?: number;
+    luminosity?: number;
 }
 
 export interface PlanetData extends CelestialBody {
@@ -40,7 +39,7 @@ export interface PlanetData extends CelestialBody {
 
 export interface StarData extends CelestialBody {
   type: 'Star';
-  luminosity?: number;
+  luminosity: number;
 }
 
 export type AnyBodyData = PlanetData | StarData;
@@ -51,10 +50,8 @@ export interface MaterialProperties {
     displacementScale: number;
     albedo: number;
     emissiveIntensity?: number;
-    specularMap?: boolean;
-    specularIntensity?: number;
-    aoMap?: boolean;
-    aoMapIntensity?: number;
-    shininess?: number;
+    specularIntensity: number;
+    aoMapIntensity: number;
+    shininess: number;
   };
 }

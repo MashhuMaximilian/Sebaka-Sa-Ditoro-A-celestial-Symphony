@@ -65,57 +65,46 @@ export const createBodyMesh = (
             emissiveIntensity: 1,
             shininess: 10,
         };
-
-        if (body.name === 'Alpha') {
-            Object.assign(starMaterialOptions, { map: textureLoader.load('/maps/goldenGiverTexture.jpg') });
-        } else if (body.name === 'Twilight') {
-            Object.assign(starMaterialOptions, { map: textureLoader.load('/maps/TwilightTexture.jpg') });
-        } else if (body.name === 'Beacon') {
-             Object.assign(starMaterialOptions, { map: textureLoader.load('/maps/BeaconTexture.png') });
+        // Simplified star texture loading
+        const starTextures: { [key: string]: {map: string} } = {
+            Alpha: { map: '/maps/goldenGiverTexture.jpg' },
+            Twilight: { map: '/maps/TwilightTexture.jpg' },
+            Beacon: { map: '/maps/BeaconTexture.png' },
+        };
+        if (starTextures[body.name]) {
+            starMaterialOptions.map = textureLoader.load(starTextures[body.name].map);
         }
+
         material = new THREE.MeshPhongMaterial(starMaterialOptions);
         mesh = new THREE.Mesh(geometry, material);
         mesh.name = body.name; // Keep name on mesh for raycasting
     } else { // It's a planet
         const uniforms = THREE.UniformsUtils.clone(planetShader.uniforms);
-        let textureUrl = '';
-        
-        switch (body.name) {
-            case 'Aetheris': 
-                textureUrl = '/maps/AetherisTexture.png';
-                break;
-            case 'Gelidis': 
-                textureUrl = '/maps/GelidisTexture.png'; 
-                break;
-            case 'Rutilus': 
-                textureUrl = '/maps/RutiliusTexture.png';
-                break;
-            case 'Spectris': 
-                textureUrl = '/maps/SpectrisTexture.png'; 
-                break;
-            case 'Viridis': 
-                textureUrl = '/maps/ViridisTexture.png';
-                break;
-            case 'Liminis': 
-                textureUrl = '/maps/LiminisTexture.png';
-                break;
-            case 'Sebaka': 
-                textureUrl = '/maps/SebakaTexture.png';
-                uniforms.normalMap.value = textureLoader.load('/maps/SebakaNormalMap.png');
-                uniforms.displacementMap.value = textureLoader.load('/maps/SebakaDisplacementMap.png');
-                break;
-        }
 
-        if(textureUrl) uniforms.planetTexture.value = textureLoader.load(textureUrl);
+        const texturePaths: { [key: string]: { [key: string]: string } } = {
+            Aetheris: { base: '/maps/AetherisTexture.png', specular: '/maps/AetherisTexture_specular.png' },
+            Gelidis: { base: '/maps/GelidisTexture.png', ambient: '/maps/GelidisTexture_ambient.png', displacement: '/maps/GelidisTexture_displacement.png', normal: '/maps/GelidisTexture_normal.png', specular: '/maps/GelidisTexture_specular.png' },
+            Rutilus: { base: '/maps/RutiliusTexture.png', ambient: '/maps/RutiliusTexture_ambient.png', displacement: '/maps/RutiliusTexture_displacement.png', normal: '/maps/RutiliusTexture_normal.png' },
+            Spectris: { base: '/maps/SpectrisTexture.png', ambient: '/maps/SpectrisTexture_ambient.png', displacement: '/maps/SpectrisTexture_displacement.png', normal: '/maps/SpectrisTexture_normal.png', specular: '/maps/SpectrisTexture_specular.png' },
+            Viridis: { base: '/maps/ViridisTexture.png', ambient: '/maps/ViridisTexture_ambient.png', displacement: '/maps/ViridisTexture_displacement.png', normal: '/maps/ViridisTexture_normal.png', specular: '/maps/ViridisTexture_specular.png' },
+            Liminis: { base: '/maps/LiminisTexture.png', ambient: '/maps/LiminiAmbientOcclusionMap.png', displacement: '/maps/LiminiDisplacementMap.png', normal: '/maps/LiminiNormalMap.png', specular: '/maps/LiminiSpecularMap.png' },
+            Sebaka: { base: '/maps/SebakaTexture.png', ambient: '/maps/SebakaAmbientOcclusionMap.png', displacement: '/maps/SebakaDisplacementMap.png', normal: '/maps/SebakaNormalMap.png', specular: '/maps/SebakaSpecularMap.png' },
+        };
+        
+        const paths = texturePaths[body.name];
+        if (paths) {
+            if(paths.base) uniforms.planetTexture.value = textureLoader.load(paths.base);
+            if(paths.normal) uniforms.normalMap.value = textureLoader.load(paths.normal);
+            if(paths.displacement) uniforms.displacementMap.value = textureLoader.load(paths.displacement);
+            if(paths.specular) uniforms.specularMap.value = textureLoader.load(paths.specular);
+            if(paths.ambient) uniforms.aoMap.value = textureLoader.load(paths.ambient);
+        }
 
         if(body.name === 'Sebaka'){
             uniforms.gridTexture.value = sebakaGridTexture;
             uniforms.useGrid.value = viewFromSebaka;
         }
         
-        uniforms.normalScale.value.set(1, 1);
-        uniforms.displacementScale.value = 1;
-
         material = new THREE.ShaderMaterial({
             uniforms: uniforms,
             vertexShader: planetShader.vertexShader,
@@ -123,7 +112,7 @@ export const createBodyMesh = (
             transparent: body.name === 'Spectris' || body.name === 'Aetheris',
         });
 
-        mesh = new THREE.Mesh(geometry, material!);
+        mesh = new THREE.Mesh(geometry, material);
         mesh.name = body.name;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -182,7 +171,6 @@ export const createBodyMesh = (
         const tiltDegrees = parseFloat(planetBody.axialTilt.replace('°', ''));
         if (!isNaN(tiltDegrees)) {
             const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
-            // We set the rotation of the container. The mesh inside will spin on its own Y-axis.
             tiltAxis.rotation.set(0, 0, tiltRadians, 'XYZ');
         }
     }

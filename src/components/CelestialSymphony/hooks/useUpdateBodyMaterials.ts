@@ -29,8 +29,6 @@ export const useUpdateBodyMaterials = ({
     useEffect(() => {
         planetMeshesRef.current.forEach((mesh) => {
             const planetData = planets.find(p => p.name === mesh.name);
-            // This effect is for color changes, which we are not currently doing with shaders.
-            // If color needs to be a uniform, it would be set here.
         });
     }, [planets, planetMeshesRef]);
 
@@ -58,10 +56,29 @@ export const useUpdateBodyMaterials = ({
                 if (uniforms.displacementScale && props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
                     uniforms.displacementScale.value = props.displacementScale;
                 }
-
+                
                 if (uniforms.albedo && props.albedo !== undefined && uniforms.albedo.value !== props.albedo) {
                     uniforms.albedo.value = props.albedo;
                 }
+
+                if (uniforms.useSpecularMap && uniforms.specularMap.value) {
+                    uniforms.useSpecularMap.value = true;
+                }
+                if (uniforms.specularIntensity && props.specularIntensity !== undefined && uniforms.specularIntensity.value !== props.specularIntensity) {
+                    uniforms.specularIntensity.value = props.specularIntensity;
+                }
+
+                if (uniforms.shininess && props.shininess !== undefined && uniforms.shininess.value !== props.shininess) {
+                    uniforms.shininess.value = props.shininess;
+                }
+
+                if (uniforms.useAoMap && uniforms.aoMap.value) {
+                    uniforms.useAoMap.value = true;
+                }
+                if (uniforms.aoMapIntensity && props.aoMapIntensity !== undefined && uniforms.aoMapIntensity.value !== props.aoMapIntensity) {
+                    uniforms.aoMapIntensity.value = props.aoMapIntensity;
+                }
+
             } else if (mesh.material instanceof THREE.MeshPhongMaterial) {
                  if (props.emissiveIntensity !== undefined && mesh.material.emissiveIntensity !== props.emissiveIntensity) {
                     mesh.material.emissiveIntensity = props.emissiveIntensity;

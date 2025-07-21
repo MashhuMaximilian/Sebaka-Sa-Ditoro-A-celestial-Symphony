@@ -164,16 +164,16 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, albedo: 1.0, emissiveIntensity: 2.0, shininess: 10 },
-  Twilight: { normalScale: 1, displacementScale: 0.2, albedo: 1.0, emissiveIntensity: 1.2, shininess: 10 },
-  Beacon: { normalScale: 1, displacementScale: 2.95, albedo: 1.0, emissiveIntensity: 10, shininess: 10 },
-  Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, shininess: 32 },
-  Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, shininess: 100 },
-  Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, shininess: 0 },
-  Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, shininess: 0 },
-  Aetheris: { albedo: 2.0, normalScale: 0, displacementScale: 0, shininess: 14 },
-  Gelidis: { albedo: 0.5, normalScale: 0, displacementScale: 0, shininess: 100 },
-  Liminis: { albedo: 1.0, normalScale: 1, displacementScale: 0.1, shininess: 32 },
+  Alpha: { normalScale: 1, displacementScale: 0.6, albedo: 1.0, emissiveIntensity: 2.0, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Twilight: { normalScale: 1, displacementScale: 0.2, albedo: 1.0, emissiveIntensity: 1.2, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Beacon: { normalScale: 1, displacementScale: 2.95, albedo: 1.0, emissiveIntensity: 10, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, shininess: 32, specularIntensity: 0, aoMapIntensity: 1 },
+  Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
+  Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },
+  Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },
+  Aetheris: { albedo: 2.0, normalScale: 0, displacementScale: 0, shininess: 14, specularIntensity: 1, aoMapIntensity: 0 },
+  Gelidis: { albedo: 0.5, normalScale: 0, displacementScale: 0, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
+  Liminis: { albedo: 1.0, normalScale: 1, displacementScale: 0.1, shininess: 32, specularIntensity: 1, aoMapIntensity: 1 },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
@@ -312,8 +312,6 @@ export default function Home() {
     } else {
       setSpeedMultiplier(0);
       setSpeedInput('0');
-      // We don't automatically pause rotation here anymore to allow manual control.
-      // setIsSebakaRotating(false); 
     }
   };
   
@@ -460,7 +458,11 @@ export default function Home() {
         )
     };
     
-    return <div className="w-full space-y-2">{panels[activeSebakaPanel]}</div>;
+    return (
+      <div className="w-full space-y-2">
+        {panels[activeSebakaPanel]}
+      </div>
+    );
   }
 
   return (
