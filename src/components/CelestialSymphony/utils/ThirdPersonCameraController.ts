@@ -5,46 +5,46 @@ import type { SphericalCharacterCube } from './SphericalCharacterCube';
 export class ThirdPersonCameraController {
   public camera: THREE.PerspectiveCamera;
   public character: SphericalCharacterCube;
-  private cameraDistance: number;
-  private pitch: number; // Camera angle up/down
-  private lerpFactor: number; // For smooth camera movement
+  
+  // Camera state
+  private cameraDistance: number = 2.0;
+  private pitch: number = -20;
+  private lerpFactor: number = 0.05;
 
   constructor(camera: THREE.PerspectiveCamera, character: SphericalCharacterCube) {
     this.camera = camera;
     this.character = character;
-    
-    // Camera settings
-    this.cameraDistance = 2.0; // Initial distance from character
-    this.pitch = -20;          // degrees, looking slightly down
-    this.lerpFactor = 0.05;    // Controls smoothness
   }
 
   updateCamera(deltaTime: number) {
-    const characterPos = this.character.characterMesh.position;
-    const planetPos = this.character.planetMesh.position;
+    const characterMesh = this.character.characterMesh;
 
-    // The 'up' vector is from the planet center to the character
-    const up = characterPos.clone().sub(planetPos).normalize();
+    // Get the character's world position and rotation
+    const characterWorldPosition = new THREE.Vector3();
+    characterMesh.getWorldPosition(characterWorldPosition);
     
-    // The 'forward' vector of the character (where its red face is pointing)
-    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.character.characterMesh.quaternion);
+    const characterWorldQuaternion = new THREE.Quaternion();
+    characterMesh.getWorldQuaternion(characterWorldQuaternion);
+    
+    // The character's 'up' vector in world space
+    const up = new THREE.Vector3(0, 1, 0).applyQuaternion(characterWorldQuaternion);
+    // The character's 'forward' vector in world space
+    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(characterWorldQuaternion);
 
     // Calculate desired camera position
     const pitchRad = THREE.MathUtils.degToRad(this.pitch);
+    const horizontalDistance = Math.cos(pitchRad) * this.cameraDistance;
+    const verticalDistance = Math.sin(pitchRad) * this.cameraDistance;
     
-    // Start with offset behind the character
-    const offset = forward.clone().multiplyScalar(-this.cameraDistance);
-    // And raise it up
-    offset.addScaledVector(up, Math.sin(-pitchRad) * this.cameraDistance);
+    const offset = forward.clone().multiplyScalar(-horizontalDistance).addScaledVector(up, -verticalDistance);
     
-    const desiredPosition = characterPos.clone().add(offset);
+    const desiredPosition = characterWorldPosition.clone().add(offset);
     
     // Smoothly interpolate camera position
-    this.camera.position.lerp(desiredPosition, this.lerpFactor);
+    this.camera.position.lerp(desiredPosition, this.lerpFactor * (deltaTime * 60)); // Normalize lerp to 60fps
 
-    // Set camera up vector and look at character
-    this.camera.up.copy(up);
-    this.camera.lookAt(characterPos);
+    // Set camera to look at the character
+    this.camera.lookAt(characterWorldPosition);
   }
 
   // Slider integration methods

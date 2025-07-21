@@ -68,38 +68,48 @@ export const useAnimationLoop = ({
   const isSebakaRotatingRef = useRef(isSebakaRotating);
   const cameraTargetRef = useRef(cameraTarget);
   
-  const characterCubeRef = useRef<SphericalCharacterCube | null>(null);
-  const thirdPersonCameraRef = useRef<ThirdPersonCameraController | null>(null);
+  const characterControllerRef = useRef<{
+    character: SphericalCharacterCube;
+    cameraController: ThirdPersonCameraController;
+  } | null>(null);
 
   useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
   useEffect(() => { isSebakaRotatingRef.current = isSebakaRotating; }, [isSebakaRotating]);
   useEffect(() => { cameraTargetRef.current = cameraTarget; }, [cameraTarget]);
-
+  
   useEffect(() => {
     if (!scene || !camera || !bodyData.length || !isInitialized) return;
 
     if (viewFromSebaka) {
         const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
         if (!sebakaMesh) return;
-
-        characterCubeRef.current = new SphericalCharacterCube(
-            scene,
-            sebakaRadiusRef.current,
-            sebakaMesh
+        
+        const character = new SphericalCharacterCube(
+            sebakaMesh, // Parent the character directly to the planet mesh
+            sebakaRadiusRef.current
         );
 
-        thirdPersonCameraRef.current = new ThirdPersonCameraController(camera, characterCubeRef.current);
+        const cameraController = new ThirdPersonCameraController(camera, character);
+        
+        characterControllerRef.current = { character, cameraController };
+
     } else {
-        if (characterCubeRef.current && scene) {
-            scene.remove(characterCubeRef.current.characterMesh);
-            characterCubeRef.current = null;
+        if (characterControllerRef.current) {
+            const { character } = characterControllerRef.current;
+            if (character.characterMesh.parent) {
+                character.characterMesh.parent.remove(character.characterMesh);
+            }
+            characterControllerRef.current = null;
         }
-        thirdPersonCameraRef.current = null;
     }
 
     return () => {
-        if (characterCubeRef.current && scene) {
-            scene.remove(characterCubeRef.current.characterMesh);
+        if (characterControllerRef.current) {
+            const { character } = characterControllerRef.current;
+            if (character.characterMesh.parent) {
+                character.characterMesh.parent.remove(character.characterMesh);
+            }
+            characterControllerRef.current = null;
         }
     };
   }, [viewFromSebaka, scene, camera, bodyData, isInitialized, planetMeshesRef, sebakaRadiusRef]);
@@ -176,21 +186,14 @@ export const useAnimationLoop = ({
           }
       }
       
-      const isFocusedOnPlanet = cameraTargetRef.current && !cameraTargetRef.current.endsWith('System') && cameraTargetRef.current !== 'Binary Stars';
-      const shouldPauseRotation = speedMultiplierRef.current === 0 && isFocusedOnPlanet;
-
       if (isSebakaRotatingRef.current) {
         allBodiesRef.current.forEach(bodyObject => {
           const currentBodyData = bodyData.find(d => d.name === bodyObject.name);
           if (currentBodyData?.type === 'Planet' && 'rotationPeriodHours' in currentBodyData && currentBodyData.rotationPeriodHours) {
             const mesh = bodyObject.children[0] as THREE.Mesh | undefined;
             if (mesh) {
-                if(shouldPauseRotation && mesh.name === cameraTargetRef.current) {
-                    // Do nothing, rotation is paused
-                } else {
-                    const rotationPerHour = (2 * Math.PI) / currentBodyData.rotationPeriodHours;
-                    mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
-                }
+                const rotationPerHour = (2 * Math.PI) / currentBodyData.rotationPeriodHours;
+                mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
             }
           }
         });
@@ -211,10 +214,9 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebaka && characterCubeRef.current && thirdPersonCameraRef.current) {
-          const character = characterCubeRef.current;
-          const cameraController = thirdPersonCameraRef.current;
-
+      if (viewFromSebaka && characterControllerRef.current) {
+          const { character, cameraController } = characterControllerRef.current;
+          
           character.setLatitude(latitude);
           character.setLongitude(longitude);
           character.setYaw(cameraYaw);
