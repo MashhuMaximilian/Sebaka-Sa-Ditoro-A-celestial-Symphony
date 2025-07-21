@@ -45,12 +45,12 @@ export const createGridTexture = (size = 1024, lines = 24) => {
 };
 
 export const texturePaths: { [key: string]: { [key: string]: string | undefined } } = {
-    Alpha: { // GoldenGiver
+    Alpha: {
         base: '/maps/goldenGiverTexture.jpg',
         ambient: '/maps/goldenGiver_ambient.png',
         displacement: '/maps/goldenGiver_displacement.png',
         specular: '/maps/goldenGiver_specular.png',
-        normal: undefined, // No normal map for Alpha/GoldenGiver
+        normal: undefined,
     },
     Twilight: {
         base: '/maps/TwilightTexture.jpg',
@@ -108,7 +108,7 @@ export const texturePaths: { [key: string]: { [key: string]: string | undefined 
         normal: '/maps/GelidisTexture_normal.png',
         specular: '/maps/GelidisTexture_specular.png',
     },
-    Liminis: { // Limni
+    Liminis: {
         base: '/maps/LimnisTexture.png',
         ambient: '/maps/LimnisAmbientOcclusionMap.png',
         displacement: '/maps/LimnisDisplacementMap.png',
@@ -158,7 +158,7 @@ export const createBodyMesh = (
                 beaconColor: { value: new THREE.Color(0xD4E5FF) },
                 alphaIntensity: { value: 1.0 },
                 twilightIntensity: { value: 0.7 },
-                beaconIntensity: { value: 1000.0 },
+                beaconIntensity: { value: 200.0 },
                 emissiveIntensity: { value: initialProps.emissiveIntensity },
 
                 albedo: { value: initialProps.albedo },
