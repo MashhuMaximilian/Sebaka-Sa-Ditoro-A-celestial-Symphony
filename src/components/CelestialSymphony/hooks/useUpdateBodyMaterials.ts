@@ -68,7 +68,7 @@ export const useUpdateBodyMaterials = ({
                  }
             }
         });
-    }, [materialProperties, allBodiesRef, planetMeshesRef]);
+    }, [materialProperties, allBodiesRef]);
 
 
     useEffect(() => {

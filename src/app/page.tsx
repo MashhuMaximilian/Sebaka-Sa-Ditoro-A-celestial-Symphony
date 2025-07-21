@@ -164,16 +164,16 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, shininess: 10, albedo: 1.0 },
-  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10, albedo: 1.0 },
-  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10, albedo: 1.0 },
-  Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, specularIntensity: 0.5, shininess: 32 },
-  Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, specularIntensity: 0.1, aoMapIntensity: 0, shininess: 100 },
-  Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, specularIntensity: 0.13, aoMapIntensity: 1.02, shininess: 0 },
-  Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, specularIntensity: 0, aoMapIntensity: 0, shininess: 0 },
-  Aetheris: { albedo: 2.0, normalScale: 0, displacementScale: 0, specularIntensity: 0.23, aoMapIntensity: 1.23, shininess: 14 },
-  Gelidis: { albedo: 0.5, normalScale: 0, displacementScale: 0, specularIntensity: 0.2, aoMapIntensity: 1, shininess: 100 },
-  Liminis: { normalScale: 1, displacementScale: 0.1, shininess: 32, albedo: 1.0 },
+  Alpha: { normalScale: 1, displacementScale: 0.6, albedo: 1.0, emissiveIntensity: 2.0, shininess: 10 },
+  Twilight: { normalScale: 1, displacementScale: 0.2, albedo: 1.0, emissiveIntensity: 1.2, shininess: 10 },
+  Beacon: { normalScale: 1, displacementScale: 2.95, albedo: 1.0, emissiveIntensity: 10, shininess: 10 },
+  Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, shininess: 32 },
+  Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, shininess: 100 },
+  Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, shininess: 0 },
+  Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, shininess: 0 },
+  Aetheris: { albedo: 2.0, normalScale: 0, displacementScale: 0, shininess: 14 },
+  Gelidis: { albedo: 0.5, normalScale: 0, displacementScale: 0, shininess: 100 },
+  Liminis: { albedo: 1.0, normalScale: 1, displacementScale: 0.1, shininess: 32 },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
@@ -189,9 +189,7 @@ export default function Home() {
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [longitude, setLongitude] = useState(0);
   const [latitude, setLatitude] = useState(0);
-  const [cameraPitch, setCameraPitch] = useState(0);
-  const [cameraYaw, setCameraYaw] = useState(0);
-  const [cameraFov, setCameraFov] = useState(75);
+  const [sebakaCamera, setSebakaCamera] = useState({ pitch: 0, yaw: 0, fov: 75 });
   const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [materialProperties, setMaterialProperties] = useState(initialMaterialProperties);
@@ -238,16 +236,8 @@ export default function Home() {
     setLatitude(value[0]);
   };
   
-  const handleCameraPitchChange = (value: number[]) => {
-    setCameraPitch(value[0]);
-  }
-
-  const handleCameraYawChange = (value: number[]) => {
-    setCameraYaw(value[0]);
-  }
-
-  const handleCameraFovChange = (value: number[]) => {
-    setCameraFov(value[0]);
+  const handleSebakaCameraChange = (prop: keyof typeof sebakaCamera, value: number) => {
+    setSebakaCamera(prev => ({ ...prev, [prop]: value }));
   }
 
   const resetSpeed = () => {
@@ -280,9 +270,7 @@ export default function Home() {
           setViewFromSebaka(true);
           setLongitude(0);
           setLatitude(0);
-          setCameraPitch(0);
-          setCameraYaw(0);
-          setCameraFov(75);
+          setSebakaCamera({ pitch: 0, yaw: 0, fov: 75 });
           setActiveSebakaPanel(null);
       }
   }
@@ -398,11 +386,11 @@ export default function Home() {
                         min={-90}
                         max={90}
                         step={1}
-                        value={[cameraPitch]}
-                        onValueChange={handleCameraPitchChange}
+                        value={[sebakaCamera.pitch]}
+                        onValueChange={(val) => handleSebakaCameraChange('pitch', val[0])}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{cameraPitch.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.pitch.toFixed(0)}°</span>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
@@ -413,11 +401,11 @@ export default function Home() {
                         min={0}
                         max={360}
                         step={1}
-                        value={[cameraYaw]}
-                        onValueChange={handleCameraYawChange}
+                        value={[sebakaCamera.yaw]}
+                        onValueChange={(val) => handleSebakaCameraChange('yaw', val[0])}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{cameraYaw.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.yaw.toFixed(0)}°</span>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="fov-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
@@ -428,11 +416,11 @@ export default function Home() {
                         min={10}
                         max={140}
                         step={1}
-                        value={[cameraFov]}
-                        onValueChange={handleCameraFovChange}
+                        value={[sebakaCamera.fov]}
+                        onValueChange={(val) => handleSebakaCameraChange('fov', val[0])}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{cameraFov.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.fov.toFixed(0)}°</span>
                 </div>
             </>
         ),
@@ -487,9 +475,9 @@ export default function Home() {
         isSebakaRotating={isSebakaRotating}
         longitude={longitude}
         latitude={latitude}
-        cameraPitch={cameraPitch}
-        cameraYaw={cameraYaw}
-        cameraFov={cameraFov}
+        cameraPitch={sebakaCamera.pitch}
+        cameraYaw={sebakaCamera.yaw}
+        cameraFov={sebakaCamera.fov}
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
