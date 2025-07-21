@@ -80,6 +80,20 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                     <span className="text-xs font-mono w-12 text-center">{bodyProps.displacementScale.toFixed(2)}</span>
                 </div>
               </div>
+              <div className="grid gap-2">
+                  <Label htmlFor={`${data.name}-albedo`}>Albedo (Brightness)</Label>
+                  <div className="flex items-center gap-2">
+                      <Slider
+                          id={`${data.name}-albedo`}
+                          min={0}
+                          max={5}
+                          step={0.01}
+                          value={[bodyProps.albedo || 1]}
+                          onValueChange={(value) => handleSliderChange(data.name, 'albedo', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">{(bodyProps.albedo || 1).toFixed(2)}</span>
+                  </div>
+              </div>
                {data.type === 'Star' && (
                 <div className="grid gap-2">
                   <Label htmlFor={`${data.name}-emissive`}>Emissive Intensity</Label>
@@ -154,5 +168,3 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
 };
 
 export default InfoPanel;
-
-    

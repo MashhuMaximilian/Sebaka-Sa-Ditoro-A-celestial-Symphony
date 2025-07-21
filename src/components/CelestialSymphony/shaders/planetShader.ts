@@ -15,6 +15,7 @@ export const planetShader = {
     beaconIntensity: { value: 25.0 },
     
     // Planet properties
+    albedo: { value: 1.0 },
     planetTexture: { value: null },
     gridTexture: { value: null },
     useGrid: { value: false },
@@ -46,7 +47,6 @@ export const planetShader = {
       vec3 N = normalize( mat3(modelMatrix) * normal );
       vec3 B = cross( N, T );
       vTBN = mat3( T, B, N );
-      vNormal = N; // Pass world-space normal to fragment shader
       
       // Apply displacement mapping
       vec3 displacedPosition = position;
@@ -57,6 +57,11 @@ export const planetShader = {
       // Calculate world position
       vWorldPosition = (modelMatrix * vec4(displacedPosition, 1.0)).xyz;
       
+      // The world-space normal is passed to the fragment shader. 
+      // For accurate lighting on a displaced surface, the normal should also be perturbed.
+      // We pass the TBN and let the fragment shader handle it with the normal map.
+      vNormal = N;
+
       gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPosition, 1.0);
     }
   `,
@@ -72,6 +77,7 @@ export const planetShader = {
     uniform float twilightIntensity;
     uniform float beaconIntensity;
     
+    uniform float albedo;
     uniform sampler2D planetTexture;
     uniform sampler2D gridTexture;
     uniform bool useGrid;
@@ -87,9 +93,9 @@ export const planetShader = {
     varying mat3 vTBN;
     
     void main() {
-      // Get base texture color
+      // Get base texture color and apply albedo
       vec4 texColor = texture2D(planetTexture, vUv);
-      vec3 baseColor = texColor.rgb;
+      vec3 baseColor = texColor.rgb * albedo;
 
       if (useGrid) {
         vec4 gridColor = texture2D(gridTexture, vUv);

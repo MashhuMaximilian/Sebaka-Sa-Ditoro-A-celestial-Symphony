@@ -31,6 +31,7 @@ interface AnimationLoopParams {
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     sebakaRadiusRef: React.MutableRefObject<number>;
     isInitialized: boolean;
+    cameraTarget: string | null;
 };
 
 export const useAnimationLoop = ({
@@ -54,6 +55,7 @@ export const useAnimationLoop = ({
   beaconPositionRef,
   sebakaRadiusRef,
   isInitialized,
+  cameraTarget,
 }: AnimationLoopParams) => {
   const clockRef = useRef(new THREE.Clock());
   const elapsedHoursRef = useRef(0);
@@ -63,11 +65,13 @@ export const useAnimationLoop = ({
   const viewFromSebakaRef = useRef(viewFromSebaka);
   const isSebakaRotatingRef = useRef(isSebakaRotating);
   const playerInputsRef = useRef({ longitude, latitude, pitch: cameraPitch, yaw: cameraYaw });
+  const cameraTargetRef = useRef(cameraTarget);
 
   useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
   useEffect(() => { viewFromSebakaRef.current = viewFromSebaka; }, [viewFromSebaka]);
   useEffect(() => { isSebakaRotatingRef.current = isSebakaRotating; }, [isSebakaRotating]);
   useEffect(() => { playerInputsRef.current = { longitude, latitude, pitch: cameraPitch, yaw: cameraYaw }; }, [longitude, latitude, cameraPitch, cameraYaw]);
+  useEffect(() => { cameraTargetRef.current = cameraTarget; }, [cameraTarget]);
 
   useEffect(() => {
     if (goToTime !== null) {
@@ -118,7 +122,6 @@ export const useAnimationLoop = ({
                   uniforms.alphaStarPos.value.copy(alphaStarMesh.position);
                   uniforms.twilightStarPos.value.copy(twilightStarMesh.position);
                   uniforms.beaconStarPos.value.copy(beaconStarMesh.position);
-                  uniforms.cameraPosition.value.copy(camera.position);
               }
           };
 
@@ -136,12 +139,20 @@ export const useAnimationLoop = ({
           }
       }
       
+      // Auto-pause rotation when speed is 0 and focused on a planet
+      const isFocusedOnPlanet = cameraTargetRef.current && !cameraTargetRef.current.endsWith('System') && cameraTargetRef.current !== 'Binary Stars';
+      const shouldPauseRotation = speedMultiplierRef.current === 0 && isFocusedOnPlanet;
+
       if (isSebakaRotatingRef.current) {
         planetMeshesRef.current.forEach(planetMesh => {
             const planetData = bodyData.find(d => d.name === planetMesh.name) as PlanetData | undefined;
             if (planetData?.rotationPeriodHours) {
-                const rotationPerHour = (2 * Math.PI) / planetData.rotationPeriodHours;
-                planetMesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
+                if(shouldPauseRotation && planetMesh.name === cameraTargetRef.current) {
+                    // Do nothing, rotation is paused
+                } else {
+                    const rotationPerHour = (2 * Math.PI) / planetData.rotationPeriodHours;
+                    planetMesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
+                }
             }
         });
       }

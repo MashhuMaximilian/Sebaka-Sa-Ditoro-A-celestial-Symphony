@@ -39,10 +39,10 @@ export interface MaterialProperties {
   [key: string]: {
     normalScale: number;
     displacementScale: number;
+    albedo: number;
     emissiveIntensity?: number;
     specularMap?: boolean;
     specularIntensity?: number;
-    albedo?: number;
     aoMap?: boolean;
     aoMapIntensity?: number;
     shininess?: number;

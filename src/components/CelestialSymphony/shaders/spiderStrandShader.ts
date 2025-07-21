@@ -2,16 +2,16 @@
 import * as THREE from 'three';
 
 const iridescentPalette = [
-    new THREE.Color("#ff00ff"), // Magenta
-    new THREE.Color("#00ffff"), // Cyan
-    new THREE.Color("#ffff00"), // Yellow
-    new THREE.Color("#ff0000"), // Red
-    new THREE.Color("#00ff00"), // Green
-    new THREE.Color("#0000ff"), // Blue
-    new THREE.Color("#ff9900"), // Orange
-    new THREE.Color("#9900ff"), // Purple
-    new THREE.Color("#00ff99"), // Teal
-    new THREE.Color("#ff69b4")  // Hot Pink
+  new THREE.Color("#ff99ff"), // Soft Magenta
+  new THREE.Color("#99ffff"), // Light Cyan
+  new THREE.Color("#ffff99"), // Pale Yellow
+  new THREE.Color("#ff9999"), // Light Coral
+  new THREE.Color("#99ff99"), // Mint Green
+  new THREE.Color("#9999ff"), // Periwinkle Blue
+  new THREE.Color("#ffd699"), // Peach
+  new THREE.Color("#d699ff"), // Lavender
+  new THREE.Color("#99ffd6"), // Seafoam
+  new THREE.Color("#ffc3e1")  // Blush Pink
 ];
 
 
@@ -19,14 +19,13 @@ export const spiderStrandShader = {
   uniforms: {
     // Iridescence & Time
     time: { value: 0 },
-    iridescenceStrength: { value: 1.0 },
+    iridescenceStrength: { value: 0.5 },
     opacity: { value: 0.85 },
     colors: { value: iridescentPalette },
     numColors: { value: iridescentPalette.length },
     baseColor: { value: new THREE.Color(0xffffff) },
     
     // Lighting
-    cameraPosition: { value: new THREE.Vector3() },
     alphaStarPos: { value: new THREE.Vector3() },
     twilightStarPos: { value: new THREE.Vector3() },
     beaconStarPos: { value: new THREE.Vector3() },
@@ -104,10 +103,10 @@ export const spiderStrandShader = {
     void main() {
       vec3 viewDir = normalize(cameraPosition - vWorldPosition);
       vec3 normal = normalize(vWorldNormal);
-      float fresnel = pow(1.0 - max(0.0, dot(normal, viewDir)), 3.0);
+      float fresnel = pow(1.0 - max(0.0, dot(normal, viewDir)), 5.0);
       
-      // Iridescence color calculation
-      float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.y) * 0.05 + time * 5.0, float(numColors));
+      // Iridescence color calculation based on world position for a smooth gradient
+      float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.y) * 0.01 + time * 0.5, float(numColors));
       int colorIndex1 = int(colorIndexFloat);
       int colorIndex2 = (colorIndex1 + 1) % numColors;
       vec3 color1 = colors[colorIndex1];

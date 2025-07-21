@@ -164,23 +164,24 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, shininess: 10 },
-  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10 },
-  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10 },
+  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, shininess: 10, albedo: 1.0 },
+  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10, albedo: 1.0 },
+  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10, albedo: 1.0 },
   Rutilus: { albedo: 1.5, normalScale: 0.45, displacementScale: 1.74, specularIntensity: 0.5, shininess: 32 },
   Sebaka: { albedo: 0.5, normalScale: 0.0, displacementScale: 0.01, specularIntensity: 0.1, aoMapIntensity: 0, shininess: 100 },
   Spectris: { albedo: 1.05, normalScale: 0, displacementScale: 0.01, specularIntensity: 0.13, aoMapIntensity: 1.02, shininess: 0 },
   Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, specularIntensity: 0, aoMapIntensity: 0, shininess: 0 },
   Aetheris: { albedo: 4.4, normalScale: 0, displacementScale: 0, specularIntensity: 0.23, aoMapIntensity: 1.23, shininess: 14 },
   Gelidis: { albedo: 2.85, normalScale: 0, displacementScale: 0, specularIntensity: 0.2, aoMapIntensity: 1, shininess: 100 },
-  Liminis: { normalScale: 1, displacementScale: 0.1, shininess: 32 },
+  Liminis: { normalScale: 1, displacementScale: 0.1, shininess: 32, albedo: 1.0 },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
 
 export default function Home() {
   const [planets, setPlanets] = useState<PlanetData[]>(initialPlanets);
-  const [speedMultiplier, setSpeedMultiplier] = useState(24); // Default to 24 hours/sec (1 day/sec)
+  const [speedMultiplier, setSpeedMultiplier] = useState(24);
+  const [speedInput, setSpeedInput] = useState('24');
   const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
@@ -221,9 +222,12 @@ export default function Home() {
   };
   
   const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSpeedInput(e.target.value);
     const value = parseFloat(e.target.value);
     if (!isNaN(value)) {
         setSpeedMultiplier(value);
+    } else if (e.target.value.trim() === '') {
+        setSpeedMultiplier(0);
     }
   };
 
@@ -249,6 +253,7 @@ export default function Home() {
 
   const resetSpeed = () => {
     setSpeedMultiplier(24);
+    setSpeedInput('24');
   };
   
   const handleBodyClick = (bodyName: string) => {
@@ -346,7 +351,7 @@ export default function Home() {
                     <Input
                         id="speed-input"
                         type="number"
-                        value={speedMultiplier}
+                        value={speedInput}
                         onChange={handleSpeedChange}
                         className="w-full bg-card"
                         min={0.1}
@@ -687,7 +692,7 @@ export default function Home() {
                   <Input
                       id="speed-input"
                       type="number"
-                      value={speedMultiplier}
+                      value={speedInput}
                       onChange={handleSpeedChange}
                       className="w-full bg-card"
                       min={0.1}

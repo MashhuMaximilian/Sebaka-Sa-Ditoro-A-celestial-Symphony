@@ -47,6 +47,9 @@ export const useUpdateBodyMaterials = ({
                 if (uniforms.displacementScale && props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
                     uniforms.displacementScale.value = props.displacementScale;
                 }
+                if (uniforms.albedo && props.albedo !== undefined && uniforms.albedo.value !== props.albedo) {
+                    uniforms.albedo.value = props.albedo;
+                }
             } else if (mesh.material instanceof THREE.MeshPhongMaterial) {
                  if (props.emissiveIntensity !== undefined && mesh.material.emissiveIntensity !== props.emissiveIntensity) {
                     mesh.material.emissiveIntensity = props.emissiveIntensity;
