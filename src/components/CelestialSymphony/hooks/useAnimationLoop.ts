@@ -82,30 +82,7 @@ export const useAnimationLoop = ({
 
     if (viewFromSebaka && sebakaMesh) {
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
-      thirdPersonControlsRef.current = new ThirdPersonOrbitControls(camera, renderer.domElement, characterControllerRef.current.characterMesh, sebakaMesh);
-      
-      const startDistance = 2;
-      thirdPersonControlsRef.current.controls.minDistance = 0.5;
-      thirdPersonControlsRef.current.controls.maxDistance = 20;
-
-      // Manually set the initial camera position
-      const charPos = new THREE.Vector3();
-      characterControllerRef.current.characterMesh.getWorldPosition(charPos);
-      
-      const upVec = new THREE.Vector3().subVectors(charPos, sebakaMesh.getWorldPosition(new THREE.Vector3())).normalize();
-      
-      // Get a "forward" vector relative to the character
-      const forward = new THREE.Vector3();
-      characterControllerRef.current.characterMesh.getWorldDirection(forward);
-      
-      const cameraPos = charPos.clone()
-        .add(upVec.clone().multiplyScalar(startDistance * 0.5)) // Go up a bit
-        .add(forward.clone().multiplyScalar(-startDistance)); // Go back
-        
-      camera.position.copy(cameraPos);
-      thirdPersonControlsRef.current.controls.target.copy(charPos);
-      thirdPersonControlsRef.current.controls.update();
-
+      thirdPersonControlsRef.current = new ThirdPersonOrbitControls(camera, renderer.domElement, characterControllerRef.current.characterMesh);
     } else {
         controls.enabled = true;
     }
