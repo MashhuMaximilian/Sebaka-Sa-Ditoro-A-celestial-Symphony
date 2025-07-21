@@ -3,9 +3,16 @@ import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { spiderStrandShader } from '../shaders/spiderStrandShader';
 
-export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
+export const createOrbitMesh = (body: BodyData, usePlainOrbits: boolean): THREE.Mesh | null => {
     if ((body.type === 'Planet' || body.name === 'Beacon') && body.orbitRadius) {
-        const tubeRadius = body.name === 'Beacon' ? 5 : 0.5;
+        
+        let tubeRadius: number;
+        if (usePlainOrbits) {
+            tubeRadius = body.name === 'Beacon' ? 1.5 : 0.15; // 3x thinner
+        } else {
+            tubeRadius = body.name === 'Beacon' ? 0.5 : 0.05; // 10x thinner
+        }
+
         const tubularSegments = 512;
         const radialSegments = 12;
 
@@ -32,19 +39,28 @@ export const createOrbitMesh = (body: BodyData): THREE.Mesh | null => {
             orbitGeometry = new THREE.TorusGeometry(body.orbitRadius, tubeRadius, radialSegments, tubularSegments);
         }
 
-        const shaderMaterial = new THREE.ShaderMaterial({
-            uniforms: THREE.UniformsUtils.clone(spiderStrandShader.uniforms),
-            vertexShader: spiderStrandShader.vertexShader,
-            fragmentShader: spiderStrandShader.fragmentShader,
-            transparent: true,
-            side: THREE.DoubleSide,
-            blending: THREE.AdditiveBlending,
-        });
+        let orbitMaterial: THREE.Material;
+
+        if (usePlainOrbits) {
+             orbitMaterial = new THREE.MeshBasicMaterial({
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.5
+            });
+        } else {
+            orbitMaterial = new THREE.ShaderMaterial({
+                uniforms: THREE.UniformsUtils.clone(spiderStrandShader.uniforms),
+                vertexShader: spiderStrandShader.vertexShader,
+                fragmentShader: spiderStrandShader.fragmentShader,
+                transparent: true,
+                side: THREE.DoubleSide,
+                blending: THREE.AdditiveBlending,
+            });
+            (orbitMaterial as THREE.ShaderMaterial).uniforms.iridescenceStrength.value = 1;
+            (orbitMaterial as THREE.ShaderMaterial).uniforms.opacity.value = 0.85;
+        }
         
-        shaderMaterial.uniforms.iridescenceStrength.value = 1;
-        shaderMaterial.uniforms.opacity.value = 0.85;
-        
-        const orbit = new THREE.Mesh(orbitGeometry, shaderMaterial);
+        const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
         orbit.rotation.x = Math.PI / 2;
         orbit.name = `${body.name}_orbit`;
 

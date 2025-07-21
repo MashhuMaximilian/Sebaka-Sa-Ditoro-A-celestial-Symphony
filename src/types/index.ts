@@ -41,10 +41,10 @@ export interface MaterialProperties {
     displacementScale: number;
     emissiveIntensity?: number;
     specularMap?: boolean;
+    specularIntensity?: number;
+    albedo?: number;
     aoMap?: boolean;
-    shininess?: number;
     aoMapIntensity?: number;
+    shininess?: number;
   };
 }
-
-    

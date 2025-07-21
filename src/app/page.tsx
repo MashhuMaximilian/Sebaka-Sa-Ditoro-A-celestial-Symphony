@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings } from "lucide-react";
+import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers } from "lucide-react";
 
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
@@ -68,7 +68,7 @@ const initialStars: StarData[] = [
       name: "Beacon", color: "#B4DCFF", size: 27.84, orbitPeriodDays: 126036, orbitRadius: 100 * AU_TO_UNITS,
       type: 'Star', classification: 'B-type Blue-White Giant',
       orbitalRole: 'Distant Companion (orbits common barycenter of Alpha-Twilight)', orbitalPeriod: '~1,201 Sebakan years (389 Earth years)', orbitalDistance: '100 AU',
-      radius: '~4 R☉', mass: '5.0 M☉', luminosity: 100,
+      radius: '~4 R☉', mass: '5.0 M☉', luminosity: 1200,
       surface: 'Brilliant blue-white giant, intensely luminous.',
       characteristics: 'Significantly more luminous than Alpha and Twilight combined. Hosts its own planetary subsystem (Gelidis, Liminis). ~100x brighter than before.',
       appearance: 'A brilliant, unblinking point of light (brighter than Sirius, ~mag -1 to 0), often visible during twilight and occasionally during the day. Its slow generational shift provides a marker for cultural ages.',
@@ -164,16 +164,16 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, specularMap: false },
-  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, specularMap: false },
-  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, specularMap: false },
-  Rutilus: { normalScale: 1, displacementScale: 0.1, specularMap: false },
-  Sebaka: { normalScale: 0.1, displacementScale: 0.1, specularMap: true },
-  Spectris: { normalScale: 0.1, displacementScale: 0.05, specularMap: false },
-  Viridis: { normalScale: 2, displacementScale: 0.1, specularMap: false },
-  Aetheris: { normalScale: 0.15, displacementScale: 0, specularMap: true },
-  Gelidis: { normalScale: 0.03, displacementScale: 0.001, specularMap: false },
-  Liminis: { normalScale: 1, displacementScale: 0.1, specularMap: true },
+  Alpha: { normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, shininess: 10 },
+  Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10 },
+  Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10 },
+  Rutilus: { albedo: 1.5, normalScale: 0.45, displacementScale: 1.74, specularIntensity: 0.5, shininess: 32 },
+  Sebaka: { albedo: 0.5, normalScale: 0.0, displacementScale: 0.01, specularIntensity: 0.1, aoMapIntensity: 0, shininess: 100 },
+  Spectris: { albedo: 1.05, normalScale: 0, displacementScale: 0.01, specularIntensity: 0.13, aoMapIntensity: 1.02, shininess: 0 },
+  Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, specularIntensity: 0, aoMapIntensity: 0, shininess: 0 },
+  Aetheris: { albedo: 4.4, normalScale: 0, displacementScale: 0, specularIntensity: 0.23, aoMapIntensity: 1.23, shininess: 14 },
+  Gelidis: { albedo: 2.85, normalScale: 0, displacementScale: 0, specularIntensity: 0.2, aoMapIntensity: 1, shininess: 100 },
+  Liminis: { normalScale: 1, displacementScale: 0.1, shininess: 32 },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
@@ -195,6 +195,7 @@ export default function Home() {
   const [cameraTarget, setCameraTarget] = useState<string | null>(null);
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [materialProperties, setMaterialProperties] = useState(initialMaterialProperties);
+  const [usePlainOrbits, setUsePlainOrbits] = useState(false);
 
   const [currentYear, setCurrentYear] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
@@ -457,6 +458,7 @@ export default function Home() {
   return (
     <main className="relative h-screen w-screen overflow-hidden">
       <CelestialSymphony 
+        key={String(viewFromSebaka)}
         stars={initialStars} 
         planets={planets} 
         speedMultiplier={speedMultiplier} 
@@ -476,6 +478,7 @@ export default function Home() {
         isInitialized={isInitialized}
         setIsInitialized={setIsInitialized}
         materialProperties={materialProperties}
+        usePlainOrbits={usePlainOrbits}
       />
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
@@ -598,6 +601,10 @@ export default function Home() {
                     <DropdownMenuContent className="w-56 backdrop-blur-sm">
                         <DropdownMenuLabel>Settings</DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                         <DropdownMenuItem onSelect={() => setUsePlainOrbits(prev => !prev)}>
+                            <Layers className="mr-2 h-4 w-4" />
+                            <span>{usePlainOrbits ? 'Iridescent Orbits' : 'Plain Orbits'}</span>
+                        </DropdownMenuItem>
                         <DropdownMenuItem onSelect={handleResetView}>
                             <Eye className="mr-2 h-4 w-4" />
                             <span>Reset View</span>
@@ -705,7 +712,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
-
-    

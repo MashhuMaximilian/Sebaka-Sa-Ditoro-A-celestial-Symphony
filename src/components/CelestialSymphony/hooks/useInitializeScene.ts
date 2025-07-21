@@ -13,9 +13,10 @@ interface InitializeSceneProps {
     setIsInitialized: (isInitialized: boolean) => void;
     materialProperties: MaterialProperties;
     viewFromSebaka: boolean;
+    usePlainOrbits: boolean;
 }
 
-export const useInitializeScene = ({ bodyData, setIsInitialized, materialProperties, viewFromSebaka }: InitializeSceneProps) => {
+export const useInitializeScene = ({ bodyData, setIsInitialized, materialProperties, viewFromSebaka, usePlainOrbits }: InitializeSceneProps) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer>();
     const sceneRef = useRef<THREE.Scene>();
@@ -85,7 +86,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
             allBodiesRef.current.push(mesh);
             if (body.type === 'Planet') planetMeshesRef.current.push(mesh);
             
-            const orbit = createOrbitMesh(body);
+            const orbit = createOrbitMesh(body, usePlainOrbits);
             if (orbit) {
                 scene.add(orbit);
                 orbitMeshesRef.current.push(orbit);
@@ -166,7 +167,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
                 }
             }
         };
-    }, [bodyData, setIsInitialized, materialProperties, viewFromSebaka, sebakaGridTexture]);
+    }, [bodyData, setIsInitialized, materialProperties, viewFromSebaka, sebakaGridTexture, usePlainOrbits]);
 
     return {
         mountRef,

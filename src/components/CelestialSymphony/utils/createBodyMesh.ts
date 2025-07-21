@@ -127,7 +127,7 @@ export const createBodyMesh = (
     mesh.castShadow = true;
     mesh.receiveShadow = true;
 
-    if (body.type === 'Planet' && (body.name === "Spectris" || body.name === "Aetheris")) {
+    if (body.type === 'Planet' && body.name === "Spectris") {
         const ringCount = Math.floor(Math.random() * 70) + 80;
         const ringBaseColors = [
             new THREE.Color("#eeeaea"), new THREE.Color("#efc5f4"), new THREE.Color("#a0f9af"),

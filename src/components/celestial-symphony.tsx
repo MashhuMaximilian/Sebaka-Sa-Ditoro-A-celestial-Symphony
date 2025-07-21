@@ -30,6 +30,7 @@ export interface CelestialSymphonyProps {
   isInitialized: boolean;
   setIsInitialized: (isInitialized: boolean) => void;
   materialProperties: MaterialProperties;
+  usePlainOrbits: boolean;
 }
 
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
@@ -52,6 +53,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     setIsInitialized: props.setIsInitialized,
     materialProperties: props.materialProperties,
     viewFromSebaka: props.viewFromSebaka,
+    usePlainOrbits: props.usePlainOrbits,
   });
 
   useBodyClickHandler({
