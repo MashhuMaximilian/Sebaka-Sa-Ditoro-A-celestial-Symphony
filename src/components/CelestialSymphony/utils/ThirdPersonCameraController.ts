@@ -9,7 +9,7 @@ export class ThirdPersonCameraController {
     // Public properties to be controlled by sliders
     public distance: number = 2.0;
     public pitch: number = 45; // Vertical angle
-    public yaw: number = 0;   // Horizontal angle
+    public yaw: number = 0;   // Horizontal angle around character
 
     private lerpFactor: number = 0.08;
 
@@ -26,43 +26,48 @@ export class ThirdPersonCameraController {
         // 1. Get character's absolute world position and orientation
         const characterWorldPosition = new THREE.Vector3();
         characterMesh.getWorldPosition(characterWorldPosition);
+
+        const characterWorldQuaternion = new THREE.Quaternion();
+        characterMesh.getWorldQuaternion(characterWorldQuaternion);
         
-        const characterUp = new THREE.Vector3(0, 1, 0);
-        characterUp.applyQuaternion(characterMesh.getWorldQuaternion(new THREE.Quaternion()));
-
-        // 2. Calculate the ideal camera position
-        // Start with a basic offset vector
+        // 2. Calculate the ideal camera position in local space
         const offset = new THREE.Vector3(0, 0, this.distance);
-
-        // Create quaternions for pitch and yaw rotations
+        
+        // Create rotation quaternions for pitch and yaw
+        // Pitch (up/down) is relative to the camera's local X-axis
         const pitchQuat = new THREE.Quaternion().setFromAxisAngle(
             new THREE.Vector3(1, 0, 0), 
             THREE.MathUtils.degToRad(this.pitch)
         );
+
+        // Yaw (left/right orbit) is relative to the character's local Y-axis (their "up")
         const yawQuat = new THREE.Quaternion().setFromAxisAngle(
             new THREE.Vector3(0, 1, 0), 
             THREE.MathUtils.degToRad(this.yaw)
         );
 
-        // Combine rotations: apply yaw first, then pitch
+        // Combine rotations: yaw first, then pitch
         const totalRotation = new THREE.Quaternion().multiplyQuaternions(yawQuat, pitchQuat);
-        offset.applyQuaternion(totalRotation);
         
-        // Now, transform this local offset into the character's world space
-        offset.applyQuaternion(characterMesh.getWorldQuaternion(new THREE.Quaternion()));
+        // Apply this rotation to the base offset
+        offset.applyQuaternion(totalRotation);
+
+        // 3. Transform the local offset into the character's world space
+        offset.applyQuaternion(characterWorldQuaternion);
         
         const desiredPosition = characterWorldPosition.clone().add(offset);
         
-        // 3. Smoothly interpolate camera position
+        // 4. Smoothly interpolate camera position
         const lerpSpeed = 1.0 - Math.exp(-this.lerpFactor * 60 * deltaTime);
-        if(this.camera.position.length() > 0){ // Avoid lerping from (0,0,0) on first frame
+        if(this.camera.position.length() > 0.01){ // Avoid lerping from (0,0,0) on first frame
             this.camera.position.lerp(desiredPosition, lerpSpeed);
         } else {
             this.camera.position.copy(desiredPosition);
         }
         
-        // 4. Set camera's "up" vector and look at the character
-        // This is crucial for stability on a sphere
+        // 5. Set camera's "up" vector and look at the character
+        // Get the character's "up" vector in world space
+        const characterUp = new THREE.Vector3(0, 1, 0).applyQuaternion(characterWorldQuaternion);
         this.camera.up.copy(characterUp);
         
         const lookAtTarget = characterWorldPosition.clone().addScaledVector(characterUp, 0.1); // Look slightly above the character's feet

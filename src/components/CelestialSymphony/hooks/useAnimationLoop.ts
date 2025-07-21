@@ -95,8 +95,10 @@ export const useAnimationLoop = ({
 
     return () => {
         if (characterRef.current) {
-            // This cleanup is now handled in the main effect to avoid race conditions
+            characterRef.current.removeFromScene();
+            characterRef.current = null;
         }
+        cameraControllerRef.current = null;
     };
   }, [viewFromSebaka, scene, camera, bodyData, isInitialized, planetMeshesRef, sebakaRadiusRef]);
 
@@ -204,15 +206,16 @@ export const useAnimationLoop = ({
           const character = characterRef.current;
           const cameraController = cameraControllerRef.current;
           
+          // Update character from sliders
           character.longitude = longitude;
           character.latitude = latitude;
-          // Yaw for character turning is now handled by camera yaw
           character.yaw = cameraYaw;
           character.updateCharacterPosition(deltaTime);
 
+          // Update camera from sliders
+          cameraController.distance = cameraFov;
           cameraController.pitch = cameraPitch;
           cameraController.yaw = cameraYaw;
-          cameraController.distance = cameraFov;
           cameraController.updateCamera(deltaTime);
 
       } else {
