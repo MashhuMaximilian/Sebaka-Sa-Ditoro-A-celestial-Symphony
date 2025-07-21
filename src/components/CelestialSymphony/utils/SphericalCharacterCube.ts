@@ -55,74 +55,53 @@ export class SphericalCharacterCube {
   }
   
   // Convert spherical coordinates to world position
-  getWorldPosition() {
+  private getLocalPosition() {
     const latRad = THREE.MathUtils.degToRad(90 - this.latitude);
     const lonRad = THREE.MathUtils.degToRad(this.longitude);
     
-    const localPos = new THREE.Vector3().setFromSphericalCoords(
+    return new THREE.Vector3().setFromSphericalCoords(
       this.planetRadius + this.surfaceHeight,
       latRad,
       lonRad
     );
-    
-    // Transform local position by planet's rotation
-    localPos.applyQuaternion(this.planetMesh.quaternion);
-    
-    // Add planet's orbital position
-    return localPos.add(this.planetMesh.position);
   }
-  
-  // Get local coordinate system at character position
-  getLocalCoordinateSystem() {
-    const position = this.getWorldPosition();
-    const planetCenter = this.planetMesh.position;
-    const up = position.clone().sub(planetCenter).normalize();
-    
-    // North direction (toward north pole, projected on surface)
-    const northPoleWorld = new THREE.Vector3(0, this.planetRadius, 0).applyQuaternion(this.planetMesh.quaternion).add(planetCenter);
-    let north = northPoleWorld.sub(position).normalize();
-    
-    // Handle pole singularity
-    if (Math.abs(this.latitude) > 89.9) {
-      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.characterMesh.quaternion);
-      north = forward;
-    }
-    
-    // Remove component along up vector
-    north.addScaledVector(up, -north.dot(up));
-    north.normalize();
-    
-    // East is perpendicular to both
-    const east = new THREE.Vector3().crossVectors(up, north).normalize();
-    const correctedNorth = new THREE.Vector3().crossVectors(east, up).normalize();
-    
-    return { up, north: correctedNorth, east };
-  }
-  
+
   // Update character position and orientation
   updateCharacterPosition(deltaTime: number) {
-    const worldPos = this.getWorldPosition();
-    this.characterMesh.position.copy(worldPos);
+    // Start with the planet's world transform
+    const planetWorldPosition = new THREE.Vector3();
+    const planetWorldQuaternion = new THREE.Quaternion();
+    this.planetMesh.getWorldPosition(planetWorldPosition);
+    this.planetMesh.getWorldQuaternion(planetWorldQuaternion);
+    
+    // Character's position relative to the planet center
+    const localPos = this.getLocalPosition();
+    
+    // Apply planet's rotation to character's local position
+    localPos.applyQuaternion(this.planetMesh.quaternion);
+    
+    // Now add the planet's orbital position to get final world position
+    const finalWorldPos = localPos.add(planetWorldPosition);
+    this.characterMesh.position.copy(finalWorldPos);
     
     // Orient character to stand upright on planet surface
-    const { up, north, east } = this.getLocalCoordinateSystem();
+    const up = this.characterMesh.position.clone().sub(planetWorldPosition).normalize();
     
-    // Create rotation matrix for character orientation
     const yawRad = THREE.MathUtils.degToRad(this.yaw);
-    const forwardDirection = north.clone()
-      .multiplyScalar(Math.cos(yawRad))
-      .addScaledVector(east, -Math.sin(yawRad)); // Corrected direction
+    const forwardDirection = new THREE.Vector3(Math.sin(yawRad), 0, Math.cos(yawRad));
     
-    // Set character rotation to face forward direction
+    const tangent = new THREE.Vector3().crossVectors(up, forwardDirection).normalize();
+    const finalForward = new THREE.Vector3().crossVectors(tangent, up).normalize();
+    
     this.characterMesh.up.copy(up);
-    this.characterMesh.lookAt(worldPos.clone().add(forwardDirection));
+    this.characterMesh.lookAt(this.characterMesh.position.clone().add(finalForward));
     
     this.updateCharacterAnimation(deltaTime);
   }
   
   // Slider integration methods
   setLongitude(value: number) {
-    this.longitude = value % 360;
+    this.longitude = value;
   }
   
   setLatitude(value: number) {
@@ -130,24 +109,17 @@ export class SphericalCharacterCube {
   }
   
   setYaw(value: number) {
-    this.yaw = value % 360;
+    this.yaw = value;
   }
 
   updateCharacterAnimation(deltaTime: number) {
     if (deltaTime > 0) { // Animate only if time is passing
         this.walkAnimation.time += deltaTime * 5; // Animation speed
         
-        // Bob up and down while moving
         const bob = Math.sin(this.walkAnimation.time) * this.walkAnimation.bobAmount;
         
-        // Slight rotation while moving
-        const rotateAmount = Math.cos(this.walkAnimation.time) * THREE.MathUtils.degToRad(this.walkAnimation.rotateAmount);
-        
-        const up = this.getLocalCoordinateSystem().up;
+        const up = this.characterMesh.position.clone().sub(this.planetMesh.position).normalize();
         this.characterMesh.position.addScaledVector(up, bob);
-        
-        const rotationQuaternion = new THREE.Quaternion().setFromAxisAngle(up, rotateAmount);
-        this.characterMesh.quaternion.premultiply(rotationQuaternion);
     }
   }
 }

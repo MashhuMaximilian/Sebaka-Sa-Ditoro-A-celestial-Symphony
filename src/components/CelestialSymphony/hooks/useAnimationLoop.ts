@@ -16,6 +16,7 @@ interface AnimationLoopParams {
     latitude: number;
     cameraPitch: number;
     cameraYaw: number;
+    cameraFov: number;
     isViridisAnimationActive: boolean;
     onTimeUpdate: (elapsedHours: number) => void;
     goToTime: number | null;
@@ -42,6 +43,7 @@ export const useAnimationLoop = ({
   latitude,
   cameraPitch,
   cameraYaw,
+  cameraFov,
   onTimeUpdate,
   goToTime,
   onGoToTimeComplete,
@@ -80,28 +82,15 @@ export const useAnimationLoop = ({
         const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
         if (!sebakaMesh) return;
 
-        // Create character cube
-        const character = new SphericalCharacterCube(
+        characterCubeRef.current = new SphericalCharacterCube(
             scene,
             sebakaRadiusRef.current,
             sebakaMesh
         );
-        characterCubeRef.current = character;
 
-        // Create third-person camera controller
-        const thirdPersonCam = new ThirdPersonCameraController(camera, character);
-        thirdPersonCameraRef.current = thirdPersonCam;
-
-        // Initialize position
-        character.setLatitude(latitude);
-        character.setLongitude(longitude);
-        character.setYaw(cameraYaw);
-        thirdPersonCam.setPitch(cameraPitch); // Use pitch for camera angle
-        thirdPersonCam.updateCamera();
-
+        thirdPersonCameraRef.current = new ThirdPersonCameraController(camera, characterCubeRef.current);
     } else {
-        // Cleanup when exiting view
-        if (characterCubeRef.current) {
+        if (characterCubeRef.current && scene) {
             scene.remove(characterCubeRef.current.characterMesh);
             characterCubeRef.current = null;
         }
@@ -141,9 +130,10 @@ export const useAnimationLoop = ({
       const hoursPassedThisFrame = deltaTime * speedMultiplierRef.current;
       elapsedHoursRef.current += hoursPassedThisFrame;
       
+      updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
+
       if (!viewFromSebaka) {
         onTimeUpdate(elapsedHoursRef.current);
-        updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
       }
 
       const alphaStarBody = allBodiesRef.current.find(b => b.name === 'Alpha');
@@ -222,18 +212,17 @@ export const useAnimationLoop = ({
       }
 
       if (viewFromSebaka && characterCubeRef.current && thirdPersonCameraRef.current) {
-          characterCubeRef.current.setLatitude(latitude);
-          characterCubeRef.current.setLongitude(longitude);
-          characterCubeRef.current.setYaw(cameraYaw);
-          thirdPersonCameraRef.current.setPitch(cameraPitch);
-
           const character = characterCubeRef.current;
-          character.planetMesh.getWorldPosition(character.characterMesh.position);
-          character.planetMesh.getWorldQuaternion(character.characterMesh.quaternion);
-          
+          const cameraController = thirdPersonCameraRef.current;
+
+          character.setLatitude(latitude);
+          character.setLongitude(longitude);
+          character.setYaw(cameraYaw);
           character.updateCharacterPosition(deltaTime);
 
-          thirdPersonCameraRef.current.updateCamera(deltaTime);
+          cameraController.setPitch(cameraPitch);
+          cameraController.setCameraDistance(cameraFov);
+          cameraController.updateCamera(deltaTime);
       } else {
         controls.update();
       }
@@ -267,6 +256,7 @@ export const useAnimationLoop = ({
     latitude, 
     longitude, 
     cameraPitch, 
-    cameraYaw
+    cameraYaw,
+    cameraFov
   ]);
 };

@@ -20,17 +20,25 @@ export class ThirdPersonCameraController {
   }
 
   updateCamera(deltaTime: number) {
-    // Get character's local coordinate system
-    const { up, north, east } = this.character.getLocalCoordinateSystem();
     const characterPos = this.character.characterMesh.position;
+    const planetPos = this.character.planetMesh.position;
+
+    // The 'up' vector is from the planet center to the character
+    const up = characterPos.clone().sub(planetPos).normalize();
+    
+    // The 'forward' vector of the character (where its red face is pointing)
+    const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(this.character.characterMesh.quaternion);
 
     // Calculate desired camera position
     const pitchRad = THREE.MathUtils.degToRad(this.pitch);
-    const offsetDirection = up.clone().multiplyScalar(Math.sin(pitchRad))
-      .add(north.clone().multiplyScalar(-Math.cos(pitchRad)));
-
-    const desiredPosition = characterPos.clone().addScaledVector(offsetDirection, this.cameraDistance);
-
+    
+    // Start with offset behind the character
+    const offset = forward.clone().multiplyScalar(-this.cameraDistance);
+    // And raise it up
+    offset.addScaledVector(up, Math.sin(-pitchRad) * this.cameraDistance);
+    
+    const desiredPosition = characterPos.clone().add(offset);
+    
     // Smoothly interpolate camera position
     this.camera.position.lerp(desiredPosition, this.lerpFactor);
 

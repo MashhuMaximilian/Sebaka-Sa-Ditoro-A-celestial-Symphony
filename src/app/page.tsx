@@ -225,7 +225,7 @@ export default function Home() {
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
   const [longitude, setLongitude] = useState(0);
   const [latitude, setLatitude] = useState(0);
-  const [sebakaCamera, setSebakaCamera] = useState({ pitch: -20, yaw: 0, fov: 75 });
+  const [sebakaCamera, setSebakaCamera] = useState({ pitch: 0, yaw: 0, fov: 2.0 });
   const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [materialProperties, setMaterialProperties] = useState(initialMaterialProperties);
@@ -306,7 +306,7 @@ export default function Home() {
           setViewFromSebaka(true);
           setLongitude(0);
           setLatitude(0);
-          setSebakaCamera({ pitch: -20, yaw: 0, fov: 75 });
+          setSebakaCamera({ pitch: 0, yaw: 0, fov: 2.0 });
           setActiveSebakaPanel(null);
       }
   }
@@ -418,7 +418,7 @@ export default function Home() {
         look: (
             <>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="look-angle-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
+                    <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Turn Character
                     </Label>
                     <Slider
@@ -433,7 +433,7 @@ export default function Home() {
                     <span className="text-sm font-medium text-foreground w-10 text-center">{sebakaCamera.yaw.toFixed(0)}°</span>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="look-yaw-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
+                    <Label htmlFor="look-angle-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Camera Angle
                     </Label>
                     <Slider
