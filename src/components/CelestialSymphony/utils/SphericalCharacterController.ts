@@ -45,7 +45,7 @@ export class SphericalCharacterController {
     // The rest of its orientation is inherited from the parent planet's rotation.
     // We no longer call lookAt() here, which was causing the wiggle.
     const upVector = localPosition.clone().normalize();
-    this.characterMesh.up.copy(upVector);
+    // this.characterMesh.up.copy(upVector); // REMOVED: This was causing instability.
   }
 
   public dispose() {

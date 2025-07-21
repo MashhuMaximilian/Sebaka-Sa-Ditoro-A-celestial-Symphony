@@ -107,8 +107,10 @@ export class CloseUpCharacterCamera {
     // Create a stable local coordinate system at the character's position
     // This system is independent of the character's own rotation.
     const surfaceNormal = toCharacter.clone().normalize(); // This is our "UP"
-    const someVector = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
-    const forward = new THREE.Vector3().crossVectors(surfaceNormal, someVector).normalize();
+    
+    // To prevent gimbal lock, choose a vector that is not parallel to the surface normal
+    const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+    const forward = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
     const right = new THREE.Vector3().crossVectors(forward, surfaceNormal).normalize();
     
     // Calculate the camera's offset based on mouse input angles
