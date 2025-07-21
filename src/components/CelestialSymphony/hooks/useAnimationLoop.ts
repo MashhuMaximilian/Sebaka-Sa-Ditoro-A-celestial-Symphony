@@ -82,7 +82,11 @@ export const useAnimationLoop = ({
             const character = new SphericalCharacterCube(sebakaMesh, sebakaRadiusRef.current);
             characterRef.current = character;
 
-            const cameraController = new ThirdPersonCameraController(camera, character);
+            const cameraController = new ThirdPersonCameraController({
+              camera: camera,
+              character: character,
+              planetMesh: sebakaMesh,
+            });
             cameraControllerRef.current = cameraController;
         }
     } else {
@@ -133,6 +137,19 @@ export const useAnimationLoop = ({
       if (!viewFromSebaka) {
         onTimeUpdate(elapsedHoursRef.current);
       }
+      
+      if (isSebakaRotatingRef.current) {
+        allBodiesRef.current.forEach(bodyObject => {
+          const currentBodyData = bodyData.find(d => d.name === bodyObject.name);
+          if (currentBodyData?.type === 'Planet' && 'rotationPeriodHours' in currentBodyData && currentBodyData.rotationPeriodHours) {
+            const mesh = bodyObject.children[0] as THREE.Mesh | undefined;
+            if (mesh) {
+                const rotationPerHour = (2 * Math.PI) / currentBodyData.rotationPeriodHours;
+                mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
+            }
+          }
+        });
+      }
 
       const alphaStarBody = allBodiesRef.current.find(b => b.name === 'Alpha');
       const twilightStarBody = allBodiesRef.current.find(b => b.name === 'Twilight');
@@ -174,19 +191,6 @@ export const useAnimationLoop = ({
           }
       }
       
-      if (isSebakaRotatingRef.current) {
-        allBodiesRef.current.forEach(bodyObject => {
-          const currentBodyData = bodyData.find(d => d.name === bodyObject.name);
-          if (currentBodyData?.type === 'Planet' && 'rotationPeriodHours' in currentBodyData && currentBodyData.rotationPeriodHours) {
-            const mesh = bodyObject.children[0] as THREE.Mesh | undefined;
-            if (mesh) {
-                const rotationPerHour = (2 * Math.PI) / currentBodyData.rotationPeriodHours;
-                mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
-            }
-          }
-        });
-      }
-
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.name === 'Gelidis_orbit');
       const liminisOrbit = orbitMeshesRef.current.find(o => o.name === 'Liminis_orbit');
       if(gelidisOrbit) gelidisOrbit.position.copy(beaconPositionRef.current);
@@ -213,7 +217,7 @@ export const useAnimationLoop = ({
           cameraController.distance = cameraFov;
           cameraController.pitch = cameraPitch;
           cameraController.yaw = cameraYaw;
-          cameraController.updateCamera();
+          cameraController.update();
 
       } else {
         controls.update();
