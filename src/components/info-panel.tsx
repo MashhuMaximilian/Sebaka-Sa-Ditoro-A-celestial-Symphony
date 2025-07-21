@@ -138,7 +138,7 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                     <div className="flex items-center gap-2">
                       <Slider
                         id={`${data.name}-shininess`}
-                        min={0}
+                        min={1}
                         max={256}
                         step={1}
                         value={[bodyProps.shininess]}

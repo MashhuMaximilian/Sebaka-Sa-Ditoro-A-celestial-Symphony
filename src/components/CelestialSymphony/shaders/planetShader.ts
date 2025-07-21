@@ -140,7 +140,7 @@ export const planetShader = {
         vec3 specular = vec3(0.0);
         if (useSpecularMap) {
             vec3 halfwayDir = normalize(lightDir + viewDir);
-            float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+            float spec = pow(max(dot(normal, halfwayDir), 0.0), max(shininess, 0.1));
             float specularMask = texture2D(specularMap, vUv).r;
             specular = starColor * spec * specularIntensity * specularMask;
         }
