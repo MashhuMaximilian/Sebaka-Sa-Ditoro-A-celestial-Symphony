@@ -7,7 +7,6 @@ import { createOrbitMesh } from "../utils/createOrbitMesh";
 import type { BodyData } from "./useBodyData";
 import { createStarfield } from "../utils/createStarfield";
 import { MaterialProperties } from "@/types";
-import { eyeHeight } from "../constants/config";
 
 interface InitializeSceneProps {
     bodyData: BodyData[];
@@ -107,28 +106,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
             }
         });
 
-        if (viewFromSebaka) {
-            const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-            const sebakaData = bodyData.find(d => d.name === 'Sebaka');
-            if (sebakaMesh && sebakaData) {
-                // The "body" of our robot character
-                const tiltAxis = new THREE.Object3D();
-                tiltAxis.name = "Sebaka_tilt_axis";
-                
-                // Get the planet's axial tilt and apply it
-                const tiltDegrees = parseFloat(sebakaData.axialTilt?.replace('°', '') || '0');
-                const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
-                tiltAxis.rotation.set(0, 0, tiltRadians, 'XYZ');
-
-                sebakaMesh.add(tiltAxis);
-                tiltAxis.add(camera);
-                camera.position.set(0, eyeHeight, 0);
-            }
-        } else {
-             camera.position.copy(originalCameraPosRef.current);
-             controls.target.set(0, 0, 0);
-        }
-
+        camera.position.copy(originalCameraPosRef.current);
+        controls.target.set(0, 0, 0);
 
         setIsInitialized(true);
 
@@ -151,11 +130,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 rendererRef.current.dispose();
             }
             if (mountRef.current && rendererRef.current?.domElement) {
-                // Ensure camera is removed from Sebaka mesh before cleaning up
-                const sebakaTiltAxis = scene.getObjectByName('Sebaka_tilt_axis');
-                if (sebakaTiltAxis && cameraRef.current) {
-                    sebakaTiltAxis.remove(cameraRef.current);
-                }
                 mountRef.current.removeChild(rendererRef.current.domElement);
             }
         };

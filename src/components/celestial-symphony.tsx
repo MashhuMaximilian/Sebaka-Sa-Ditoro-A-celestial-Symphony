@@ -1,14 +1,13 @@
 
 "use client";
 
-import type { PlanetData, StarData, MaterialProperties, AnyBodyData } from "@/types";
+import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import { useAnimationLoop } from "./CelestialSymphony/hooks/useAnimationLoop";
 import { useBodyClickHandler } from "./CelestialSymphony/hooks/useBodyClickHandler";
 import { useCameraControl } from "./CelestialSymphony/hooks/useCameraControl";
 import { useInitializeScene } from "./CelestialSymphony/hooks/useInitializeScene";
 import { useUpdateBodyMaterials } from "./CelestialSymphony/hooks/useUpdateBodyMaterials";
 import { useBodyData } from "./CelestialSymphony/hooks/useBodyData";
-import * as THREE from 'three';
 
 export interface CelestialSymphonyProps {
   stars: StarData[];

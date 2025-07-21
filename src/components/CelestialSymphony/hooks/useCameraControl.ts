@@ -47,7 +47,10 @@ export const useCameraControl = ({
         };
 
         const animationId = requestAnimationFrame(function animate() {
-            followTarget();
+            // Only follow target if not in Sebaka view, as character controller will handle camera
+            if (!viewFromSebaka) {
+                followTarget();
+            }
             requestAnimationFrame(animate);
         });
 
@@ -90,11 +93,12 @@ export const useCameraControl = ({
         orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
         
         if (viewFromSebaka) {
-            camera.near = 0.001;
+            camera.near = 0.01;
             controls.enabled = false;
         } else {
             camera.near = 0.001;
             controls.enabled = true;
+            controls.target.set(0, 0, 0); // Reset target when exiting view
         }
         camera.updateProjectionMatrix();
     }, [viewFromSebaka, camera, controls, orbitMeshesRef]);

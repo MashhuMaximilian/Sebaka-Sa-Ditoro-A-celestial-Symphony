@@ -3,10 +3,9 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
-import { HOURS_IN_SEBAKA_DAY, eyeHeight } from "../constants/config";
+import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 import type { BodyData } from "./useBodyData";
-import type { PlanetData } from "@/types";
-import { spiderStrandShader } from "../shaders/spiderStrandShader";
+import { useCharacterController } from "./useCharacterController";
 
 // Define props directly to avoid circular dependency
 interface AnimationLoopParams {
@@ -64,16 +63,27 @@ export const useAnimationLoop = ({
   const animationFrameId = useRef<number>();
 
   const speedMultiplierRef = useRef(speedMultiplier);
-  const viewFromSebakaRef = useRef(viewFromSebaka);
   const isSebakaRotatingRef = useRef(isSebakaRotating);
-  const playerInputsRef = useRef({ longitude, latitude, pitch: cameraPitch, yaw: cameraYaw });
   const cameraTargetRef = useRef(cameraTarget);
+  
+  const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+  const sebakaBody = allBodiesRef.current.find(b => b.name === 'Sebaka');
+
+  const characterController = useCharacterController({
+    camera,
+    planetMesh: sebakaMesh,
+    planetBody: sebakaBody,
+    planetRadius: sebakaRadiusRef.current,
+    enabled: viewFromSebaka,
+  });
 
   useEffect(() => { speedMultiplierRef.current = speedMultiplier; }, [speedMultiplier]);
-  useEffect(() => { viewFromSebakaRef.current = viewFromSebaka; }, [viewFromSebaka]);
   useEffect(() => { isSebakaRotatingRef.current = isSebakaRotating; }, [isSebakaRotating]);
-  useEffect(() => { playerInputsRef.current = { longitude, latitude, pitch: cameraPitch, yaw: cameraYaw }; }, [longitude, latitude, cameraPitch, cameraYaw]);
   useEffect(() => { cameraTargetRef.current = cameraTarget; }, [cameraTarget]);
+  useEffect(() => {
+    characterController?.updateInputs({ pitch: cameraPitch, yaw: cameraYaw, lat: latitude, lon: longitude });
+  }, [characterController, cameraPitch, cameraYaw, latitude, longitude]);
+
 
   useEffect(() => {
     if (goToTime !== null) {
@@ -166,11 +176,6 @@ export const useAnimationLoop = ({
         });
       }
 
-      const sebakaBody = allBodiesRef.current.find(p => p.name === 'Sebaka');
-      const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
-      const sebakaTiltAxis = scene.getObjectByName('Sebaka_tilt_axis');
-
-
       const gelidisOrbit = orbitMeshesRef.current.find(o => o.name === 'Gelidis_orbit');
       const liminisOrbit = orbitMeshesRef.current.find(o => o.name === 'Liminis_orbit');
       if(gelidisOrbit) gelidisOrbit.position.copy(beaconPositionRef.current);
@@ -186,32 +191,9 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebakaRef.current && sebakaMesh && sebakaBody && sebakaTiltAxis) {
-          const lat = playerInputsRef.current.latitude;
-          const lon = playerInputsRef.current.longitude;
-          const pitch = playerInputsRef.current.pitch;
-          const yaw = playerInputsRef.current.yaw;
-          
-          // Position the "body" (tiltAxis) on the planet's surface
-          const bodyPosition = new THREE.Vector3();
-          bodyPosition.setFromSphericalCoords(
-              sebakaRadiusRef.current,
-              THREE.MathUtils.degToRad(90 - lat),
-              THREE.MathUtils.degToRad(lon)
-          );
-          sebakaTiltAxis.position.copy(bodyPosition);
-
-          // Point the body up, away from the planet's center
-          sebakaTiltAxis.lookAt(sebakaMesh.position);
-          sebakaTiltAxis.rotateX(Math.PI / 2); // Correct for lookAt orientation
-          
-          // Apply look controls to the camera (the "head")
-          // We use Euler angles for simplicity. YXZ order is good for FPS-style controls.
-          const euler = new THREE.Euler(0, 0, 0, 'YXZ');
-          euler.x = THREE.MathUtils.degToRad(pitch);
-          euler.y = THREE.MathUtils.degToRad(yaw);
-          camera.quaternion.setFromEuler(euler);
-
+      if (viewFromSebaka && characterController) {
+          characterController.update();
+          controls.update();
       } else {
         controls.update();
       }
@@ -239,8 +221,9 @@ export const useAnimationLoop = ({
     planetMeshesRef, 
     orbitMeshesRef, 
     beaconPositionRef, 
-    sebakaRadiusRef, 
     onTimeUpdate,
     isInitialized,
+    characterController,
+    viewFromSebaka,
   ]);
 };
