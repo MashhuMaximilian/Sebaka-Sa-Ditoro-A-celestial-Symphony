@@ -22,11 +22,6 @@ interface InfoPanelProps {
   onReset: () => void;
 }
 
-const bodiesWithSettings = [
-  'Alpha', 'Twilight', 'Beacon', 'Rutilus', 'Sebaka', 
-  'Spectris', 'Viridis', 'Aetheris', 'Gelidis', 'Liminis'
-];
-
 const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: InfoPanelProps) => {
 
   const handleSliderChange = (bodyName: string, propName: keyof MaterialProperties[string], value: number[]) => {
@@ -41,11 +36,12 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
   
   const renderMaterialSettings = () => {
     const bodyProps = materialProperties[data.name];
-    if (!bodyProps || !bodiesWithSettings.includes(data.name)) return null;
+    if (!bodyProps) return null;
 
-    // A simple way to check if maps exist by checking the initial properties
-    const hasSpecular = initialMaterialProperties[data.name]?.specularIntensity > 0;
-    const hasAo = initialMaterialProperties[data.name]?.aoMapIntensity > 0;
+    // Check if the specific maps exist by checking if their corresponding intensity properties are defined in the initial defaults.
+    const initialProps = initialMaterialProperties[data.name];
+    const hasSpecular = initialProps?.specularIntensity !== undefined;
+    const hasAo = initialProps?.aoMapIntensity !== undefined;
     
     return (
        <Accordion type="single" collapsible className="w-full">
@@ -220,9 +216,9 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
 
 // We need a copy of the initial properties to check if a map exists
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, albedo: 1.0, emissiveIntensity: 2.0, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
-  Twilight: { normalScale: 1, displacementScale: 0.2, albedo: 1.0, emissiveIntensity: 1.2, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
-  Beacon: { normalScale: 1, displacementScale: 2.95, albedo: 1.0, emissiveIntensity: 10, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Alpha: { albedo: 1.0, normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Twilight: { albedo: 1.0, normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Beacon: { albedo: 1.0, normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
   Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, shininess: 32, specularIntensity: 0, aoMapIntensity: 1 },
   Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
   Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },

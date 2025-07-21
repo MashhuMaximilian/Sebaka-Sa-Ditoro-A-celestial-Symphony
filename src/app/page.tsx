@@ -164,9 +164,9 @@ const initialPlanets: PlanetData[] = [
 ];
 
 const initialMaterialProperties: MaterialProperties = {
-  Alpha: { normalScale: 1, displacementScale: 0.6, albedo: 1.0, emissiveIntensity: 2.0, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
-  Twilight: { normalScale: 1, displacementScale: 0.2, albedo: 1.0, emissiveIntensity: 1.2, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
-  Beacon: { normalScale: 1, displacementScale: 2.95, albedo: 1.0, emissiveIntensity: 10, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Alpha: { albedo: 1.0, normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Twilight: { albedo: 1.0, normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
+  Beacon: { albedo: 1.0, normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
   Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, shininess: 32, specularIntensity: 0, aoMapIntensity: 1 },
   Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
   Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },

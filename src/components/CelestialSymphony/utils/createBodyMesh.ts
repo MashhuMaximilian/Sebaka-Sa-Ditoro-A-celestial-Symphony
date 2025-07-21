@@ -60,29 +60,37 @@ export const createBodyMesh = (
     let mesh: THREE.Mesh;
 
     if (body.type === 'Star') {
-        const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
+        const uniforms = THREE.UniformsUtils.clone(planetShader.uniforms);
+        
+        const texturePaths: { [key: string]: { [key: string]: string } } = {
+             Alpha: { base: '/maps/goldenGiverTexture.jpg', ambient: '/maps/goldenGiver_ambient.png', displacement: '/maps/goldenGiver_displacement.png', normal: '/maps/goldenGiver_normal.png', specular: '/maps/goldenGiver_specular.png' },
+             Twilight: { base: '/maps/TwilightTexture.jpg', ambient: '/maps/Twilight_ambient.png', displacement: '/maps/Twilight_displacement.png', normal: '/maps/Twilight_normal.png', specular: '/maps/Twilight_specular.png' },
+             Beacon: { base: '/maps/BeaconTexture.png', ambient: '/maps/Beacon_ambient.png', displacement: '/maps/Beacon_displacement.png', normal: '/maps/Beacon_normal.png', specular: '/maps/Beacon_specular.png' },
+        };
+        
+        const paths = texturePaths[body.name];
+        if (paths) {
+            if(paths.base) uniforms.planetTexture.value = textureLoader.load(paths.base);
+            if(paths.normal) uniforms.normalMap.value = textureLoader.load(paths.normal);
+            if(paths.displacement) uniforms.displacementMap.value = textureLoader.load(paths.displacement);
+            if(paths.specular) uniforms.specularMap.value = textureLoader.load(paths.specular);
+            if(paths.ambient) uniforms.aoMap.value = textureLoader.load(paths.ambient);
+        }
+
+        material = new THREE.MeshPhongMaterial({
             emissive: body.color,
             emissiveIntensity: 1,
             shininess: 10,
-        };
-        // Simplified star texture loading
-        const starTextures: { [key: string]: {map: string} } = {
-            Alpha: { map: '/maps/goldenGiverTexture.jpg' },
-            Twilight: { map: '/maps/TwilightTexture.jpg' },
-            Beacon: { map: '/maps/BeaconTexture.png' },
-        };
-        if (starTextures[body.name]) {
-            starMaterialOptions.map = textureLoader.load(starTextures[body.name].map);
-        }
+            map: uniforms.planetTexture.value,
+        });
 
-        material = new THREE.MeshPhongMaterial(starMaterialOptions);
         mesh = new THREE.Mesh(geometry, material);
-        mesh.name = body.name; // Keep name on mesh for raycasting
+        mesh.name = body.name;
     } else { // It's a planet
         const uniforms = THREE.UniformsUtils.clone(planetShader.uniforms);
 
         const texturePaths: { [key: string]: { [key: string]: string } } = {
-            Aetheris: { base: '/maps/AetherisTexture.png', specular: '/maps/AetherisTexture_specular.png' },
+            Aetheris: { base: '/maps/AetherisTexture.png', specular: '/maps/AetherisTexture_specular.png', ambient: '/maps/AetherisTexture_ambient.png', displacement: '/maps/AetherisTexture_displacement.png', normal: '/maps/AetherisTexture_normal.png' },
             Gelidis: { base: '/maps/GelidisTexture.png', ambient: '/maps/GelidisTexture_ambient.png', displacement: '/maps/GelidisTexture_displacement.png', normal: '/maps/GelidisTexture_normal.png', specular: '/maps/GelidisTexture_specular.png' },
             Rutilus: { base: '/maps/RutiliusTexture.png', ambient: '/maps/RutiliusTexture_ambient.png', displacement: '/maps/RutiliusTexture_displacement.png', normal: '/maps/RutiliusTexture_normal.png' },
             Spectris: { base: '/maps/SpectrisTexture.png', ambient: '/maps/SpectrisTexture_ambient.png', displacement: '/maps/SpectrisTexture_displacement.png', normal: '/maps/SpectrisTexture_normal.png', specular: '/maps/SpectrisTexture_specular.png' },
