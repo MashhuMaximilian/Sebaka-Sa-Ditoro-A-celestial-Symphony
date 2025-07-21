@@ -1,7 +1,6 @@
 
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
-import { MaterialProperties } from '@/types';
 import { planetShader } from '../shaders/planetShader';
 import { spiderStrandShader } from '../shaders/spiderStrandShader';
 
@@ -46,7 +45,6 @@ export const createGridTexture = (size = 1024, lines = 24) => {
 
 export const createBodyMesh = (
     body: BodyData,
-    materialProperties: MaterialProperties,
     viewFromSebaka: boolean,
     sebakaGridTexture: THREE.CanvasTexture | null,
 ): THREE.Mesh => {
@@ -54,12 +52,11 @@ export const createBodyMesh = (
     geometry.computeTangents();
     let material: THREE.Material;
     
-    const bodyProps = materialProperties[body.name];
 
     if (body.type === 'Star') {
         const starMaterialOptions: THREE.MeshPhongMaterialParameters = {
             emissive: body.color,
-            emissiveIntensity: bodyProps?.emissiveIntensity === 0 ? 0 : bodyProps?.emissiveIntensity || 1,
+            emissiveIntensity: 1,
             shininess: 10,
         };
 
@@ -109,10 +106,8 @@ export const createBodyMesh = (
             uniforms.useGrid.value = viewFromSebaka;
         }
         
-        if (bodyProps) {
-            uniforms.normalScale.value.set(bodyProps.normalScale, bodyProps.normalScale);
-            uniforms.displacementScale.value = bodyProps.displacementScale;
-        }
+        uniforms.normalScale.value.set(1, 1);
+        uniforms.displacementScale.value = 1;
 
         material = new THREE.ShaderMaterial({
             uniforms: uniforms,

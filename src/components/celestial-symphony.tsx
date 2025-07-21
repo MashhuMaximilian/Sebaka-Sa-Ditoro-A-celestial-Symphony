@@ -51,7 +51,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
   } = useInitializeScene({ 
     bodyData, 
     setIsInitialized: props.setIsInitialized,
-    materialProperties: props.materialProperties,
     viewFromSebaka: props.viewFromSebaka,
     usePlainOrbits: props.usePlainOrbits,
   });

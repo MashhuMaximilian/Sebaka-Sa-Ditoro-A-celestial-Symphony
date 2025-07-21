@@ -6,17 +6,15 @@ import { createBodyMesh, createGridTexture } from "../utils/createBodyMesh";
 import { createOrbitMesh } from "../utils/createOrbitMesh";
 import type { BodyData } from "./useBodyData";
 import { createStarfield } from "../utils/createStarfield";
-import { MaterialProperties } from "@/types";
 
 interface InitializeSceneProps {
     bodyData: BodyData[];
     setIsInitialized: (isInitialized: boolean) => void;
-    materialProperties: MaterialProperties;
     viewFromSebaka: boolean;
     usePlainOrbits: boolean;
 }
 
-export const useInitializeScene = ({ bodyData, setIsInitialized, materialProperties, viewFromSebaka, usePlainOrbits }: InitializeSceneProps) => {
+export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka, usePlainOrbits }: InitializeSceneProps) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const rendererRef = useRef<THREE.WebGLRenderer>();
     const sceneRef = useRef<THREE.Scene>();
@@ -78,7 +76,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
         orbitMeshesRef.current = [];
         
         bodyData.forEach(body => {
-            const mesh = createBodyMesh(body, materialProperties, viewFromSebaka, sebakaGridTexture);
+            const mesh = createBodyMesh(body, viewFromSebaka, sebakaGridTexture);
             if (body.name === 'Sebaka') {
                 sebakaRadiusRef.current = body.size;
             }
@@ -174,7 +172,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, materialPropert
 
             setIsInitialized(false);
         };
-    }, [bodyData, setIsInitialized, materialProperties, viewFromSebaka, sebakaGridTexture, usePlainOrbits]);
+    }, [bodyData, setIsInitialized, viewFromSebaka, sebakaGridTexture, usePlainOrbits]);
 
     return {
         mountRef,
