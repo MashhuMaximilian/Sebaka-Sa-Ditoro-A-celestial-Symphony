@@ -151,8 +151,8 @@ export const useAnimationLoop = ({
 
       if (isSebakaRotatingRef.current) {
         allBodiesRef.current.forEach(bodyObject => {
-          const currentBodyData = bodyData.find(d => d.name === bodyObject.name) as PlanetData | undefined;
-          if (currentBodyData?.type === 'Planet' && currentBodyData?.rotationPeriodHours) {
+          const currentBodyData = bodyData.find(d => d.name === bodyObject.name);
+          if (currentBodyData?.type === 'Planet' && 'rotationPeriodHours' in currentBodyData && currentBodyData.rotationPeriodHours) {
             const mesh = bodyObject.children[0] as THREE.Mesh | undefined;
             if (mesh) {
                 if(shouldPauseRotation && mesh.name === cameraTargetRef.current) {
