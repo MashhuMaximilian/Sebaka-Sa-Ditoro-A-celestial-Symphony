@@ -67,7 +67,8 @@ export const useAnimationLoop = ({
   useEffect(() => {
     if (!scene || !camera || !renderer || !controls || !bodyData.length || !isInitialized) return;
 
-    const sebakaMesh = planetMeshesRef.current.find(m => m.name === 'Sebaka');
+    const sebakaBody = allBodiesRef.current.find(b => b.name === 'Sebaka');
+    const sebakaMesh = sebakaBody?.children[0] as THREE.Mesh | undefined;
     
     // Clean up previous controllers first
     if (thirdPersonControlsRef.current) {
@@ -83,34 +84,29 @@ export const useAnimationLoop = ({
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
       thirdPersonControlsRef.current = new ThirdPersonOrbitControls(camera, renderer.domElement, characterControllerRef.current.characterMesh, sebakaMesh);
       
-      // Set a closer, more "behind the shoulder" initial view
-      const startDistance = 2; // Much closer
-      thirdPersonControlsRef.current.controls.minDistance = 0.5; // Allow zooming in very close
-      thirdPersonControlsRef.current.controls.maxDistance = 20; // Limit max zoom out
+      const startDistance = 2;
+      thirdPersonControlsRef.current.controls.minDistance = 0.5;
+      thirdPersonControlsRef.current.controls.maxDistance = 20;
 
-      const characterWorldPos = new THREE.Vector3();
-      characterControllerRef.current.characterMesh.getWorldPosition(characterWorldPos);
-
-      const planetWorldPos = new THREE.Vector3();
-      sebakaMesh.getWorldPosition(planetWorldPos);
-
-      // Vector from planet center to character is the "up" direction
-      const upVector = characterWorldPos.clone().sub(planetWorldPos).normalize();
+      // Manually set the initial camera position
+      const charPos = new THREE.Vector3();
+      characterControllerRef.current.characterMesh.getWorldPosition(charPos);
       
-      // A vector pointing "forward" from the character. We can start by assuming a direction, e.g., along the planet's Z-axis in its local space.
-      const forwardVector = new THREE.Vector3(0,0,1).applyQuaternion(sebakaMesh.quaternion).normalize();
-
-      // Position camera behind and slightly above the character
-      const behindOffset = forwardVector.clone().multiplyScalar(-startDistance);
-      const aboveOffset = upVector.clone().multiplyScalar(startDistance * 0.5); // Elevate it a bit
-      const cameraPos = characterWorldPos.clone().add(behindOffset).add(aboveOffset);
+      const upVec = new THREE.Vector3().subVectors(charPos, sebakaMesh.getWorldPosition(new THREE.Vector3())).normalize();
       
+      // Get a "forward" vector relative to the character
+      const forward = new THREE.Vector3();
+      characterControllerRef.current.characterMesh.getWorldDirection(forward);
+      
+      const cameraPos = charPos.clone()
+        .add(upVec.clone().multiplyScalar(startDistance * 0.5)) // Go up a bit
+        .add(forward.clone().multiplyScalar(-startDistance)); // Go back
+        
       camera.position.copy(cameraPos);
-      thirdPersonControlsRef.current.controls.target.copy(characterWorldPos);
+      thirdPersonControlsRef.current.controls.target.copy(charPos);
       thirdPersonControlsRef.current.controls.update();
 
     } else {
-        // If not in Sebaka view, ensure standard controls are enabled.
         controls.enabled = true;
     }
 
@@ -124,7 +120,7 @@ export const useAnimationLoop = ({
         characterControllerRef.current = null;
       }
     };
-  }, [viewFromSebaka, scene, camera, renderer, bodyData, isInitialized, planetMeshesRef, controls]);
+  }, [viewFromSebaka, scene, camera, renderer, bodyData, isInitialized, planetMeshesRef, controls, allBodiesRef]);
 
 
   useEffect(() => {
