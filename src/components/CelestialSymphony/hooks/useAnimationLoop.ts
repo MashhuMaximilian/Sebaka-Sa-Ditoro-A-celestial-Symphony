@@ -80,6 +80,7 @@ export const useAnimationLoop = ({
     if (viewFromSebaka && sebakaMesh) {
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
       thirdPersonCameraRef.current = new CloseUpCharacterCamera(camera, characterControllerRef.current.characterMesh, sebakaMesh, renderer.domElement);
+      thirdPersonCameraRef.current.distance = 2; // Start closer
       controls.enabled = false;
     } else {
         controls.enabled = true;

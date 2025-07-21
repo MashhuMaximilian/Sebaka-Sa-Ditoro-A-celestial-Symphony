@@ -1,22 +1,21 @@
 
 import * as THREE from 'three';
+import { eyeHeight } from '../constants/config';
 
 export class CloseUpCharacterCamera {
-  private camera: THREE.PerspectiveCamera;
-  private character: THREE.Object3D;
-  private planet: THREE.Mesh;
-  private planetRadius: number;
-  private domElement: HTMLElement;
+  public camera: THREE.PerspectiveCamera;
+  public character: THREE.Object3D;
+  public planet: THREE.Mesh;
+  public planetRadius: number;
+  public domElement: HTMLElement;
   
-  private distance = 0.15;
-  private height = 0.05;
-  private lookAhead = 0.1;
+  public distance = 2.0;
+  private height = eyeHeight;
   
   private isMouseDown = false;
   private lastMouseX = 0;
   private lastMouseY = 0;
   private horizontalAngle = 0;
-  private verticalAngle = 0;
 
   // Bound event handlers
   private onMouseDown: (event: MouseEvent) => void;
@@ -67,14 +66,7 @@ export class CloseUpCharacterCamera {
     if (!this.isMouseDown) return;
     
     const deltaX = event.clientX - this.lastMouseX;
-    const deltaY = event.clientY - this.lastMouseY;
-    
     this.horizontalAngle -= deltaX * 0.01;
-    this.verticalAngle = THREE.MathUtils.clamp(
-      this.verticalAngle - deltaY * 0.01,
-      -Math.PI / 3,
-      Math.PI / 3
-    );
     
     this.lastMouseX = event.clientX;
     this.lastMouseY = event.clientY;
@@ -82,54 +74,39 @@ export class CloseUpCharacterCamera {
   
   private _onWheel(event: WheelEvent) {
     this.distance = THREE.MathUtils.clamp(
-      this.distance + event.deltaY * 0.001,
-      0.05,
-      0.5
+      this.distance + event.deltaY * 0.01, // Slower zoom
+      2,   // Minimum distance
+      40   // Maximum distance
     );
   }
   
   update() {
     const characterWorldPos = new THREE.Vector3();
     this.character.getWorldPosition(characterWorldPos);
-    
-    const characterWorldQuaternion = new THREE.Quaternion();
-    this.character.getWorldQuaternion(characterWorldQuaternion);
-    
+
     const planetWorldPos = new THREE.Vector3();
     this.planet.getWorldPosition(planetWorldPos);
-    const surfaceNormal = characterWorldPos.clone().sub(planetWorldPos).normalize();
+
+    // This is the "up" vector from the planet's center to the character.
+    const upVector = characterWorldPos.clone().sub(planetWorldPos).normalize();
+
+    // The forward direction is calculated based on the horizontal angle (mouse movement).
+    // We start with a base forward vector (e.g., world Z axis) and rotate it around the character.
+    const baseForward = new THREE.Vector3(0, 0, -1);
+    const rotation = new THREE.Quaternion().setFromAxisAngle(upVector, this.horizontalAngle);
+    const forwardVector = baseForward.clone().applyQuaternion(rotation);
+
+    // The ideal camera position is behind the character.
+    const idealOffset = forwardVector.multiplyScalar(-this.distance);
+    const idealCameraPos = characterWorldPos.clone().add(idealOffset);
+
+    // Now, we force the camera to be "on the ground".
+    // We take the vector from the planet's center to the ideal camera position...
+    const finalCameraDirection = idealCameraPos.clone().sub(planetWorldPos).normalize();
+    // ...and set its length to be the planet's radius plus a fixed height.
+    const finalCameraPos = planetWorldPos.clone().add(finalCameraDirection.multiplyScalar(this.planetRadius + this.height));
     
-    const forward = new THREE.Vector3(0, 0, 1);
-    forward.applyQuaternion(characterWorldQuaternion);
-    
-    const right = new THREE.Vector3().crossVectors(surfaceNormal, forward).normalize();
-    const correctedForward = new THREE.Vector3().crossVectors(right, surfaceNormal).normalize();
-    
-    const horizontalRotation = new THREE.Quaternion().setFromAxisAngle(surfaceNormal, this.horizontalAngle);
-    const rotatedForward = correctedForward.clone().applyQuaternion(horizontalRotation);
-    const rotatedRight = right.clone().applyQuaternion(horizontalRotation);
-    
-    const behindOffset = rotatedForward.clone().multiplyScalar(-this.distance);
-    const heightOffset = surfaceNormal.clone().multiplyScalar(this.height);
-    const verticalOffset = rotatedRight.clone().multiplyScalar(Math.sin(this.verticalAngle) * this.distance);
-    
-    const idealCameraPos = characterWorldPos.clone()
-      .add(behindOffset)
-      .add(heightOffset)
-      .add(verticalOffset);
-    
-    const cameraToCenter = idealCameraPos.clone().sub(planetWorldPos);
-    const distanceToCenter = cameraToCenter.length();
-    const minDistance = this.planetRadius + 0.01;
-    
-    if (distanceToCenter < minDistance) {
-        cameraToCenter.setLength(minDistance);
-        idealCameraPos.copy(planetWorldPos).add(cameraToCenter);
-    }
-    
-    this.camera.position.copy(idealCameraPos);
-    
-    const lookAtTarget = characterWorldPos.clone().add(rotatedForward.multiplyScalar(this.lookAhead));
-    this.camera.lookAt(lookAtTarget);
+    this.camera.position.copy(finalCameraPos);
+    this.camera.lookAt(characterWorldPos);
   }
 }
