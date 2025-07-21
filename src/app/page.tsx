@@ -167,13 +167,13 @@ const initialMaterialProperties: MaterialProperties = {
   Alpha: { albedo: 1.0, normalScale: 1, displacementScale: 0.6, emissiveIntensity: 2.0, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
   Twilight: { albedo: 1.0, normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
   Beacon: { albedo: 1.0, normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
-  Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, shininess: 32, specularIntensity: 0, aoMapIntensity: 1 },
-  Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
-  Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },
-  Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, shininess: 0, specularIntensity: 1, aoMapIntensity: 1 },
-  Aetheris: { albedo: 2.0, normalScale: 0, displacementScale: 0, shininess: 14, specularIntensity: 1, aoMapIntensity: 0 },
-  Gelidis: { albedo: 0.5, normalScale: 0, displacementScale: 0, shininess: 100, specularIntensity: 1, aoMapIntensity: 1 },
-  Liminis: { albedo: 1.0, normalScale: 1, displacementScale: 0.1, shininess: 32, specularIntensity: 1, aoMapIntensity: 1 },
+  Rutilus: { albedo: 0.8, normalScale: 0.45, displacementScale: 1.74, shininess: 32, specularIntensity: 0.5, aoMapIntensity: 1, emissiveIntensity: 0 },
+  Sebaka: { albedo: 0.4, normalScale: 0.05, displacementScale: 0.05, shininess: 100, specularIntensity: 1, aoMapIntensity: 1, emissiveIntensity: 0 },
+  Spectris: { albedo: 0.6, normalScale: 0.1, displacementScale: 0.01, shininess: 10, specularIntensity: 0.8, aoMapIntensity: 1, emissiveIntensity: 0 },
+  Viridis: { albedo: 0.7, normalScale: 0.3, displacementScale: 2.0, shininess: 10, specularIntensity: 0.2, aoMapIntensity: 1, emissiveIntensity: 0 },
+  Aetheris: { albedo: 0.9, normalScale: 0.1, displacementScale: 0.1, shininess: 14, specularIntensity: 0.5, aoMapIntensity: 1, emissiveIntensity: 0 },
+  Gelidis: { albedo: 0.5, normalScale: 0.1, displacementScale: 0.1, shininess: 100, specularIntensity: 1, aoMapIntensity: 1, emissiveIntensity: 0 },
+  Liminis: { albedo: 0.8, normalScale: 1, displacementScale: 0.1, shininess: 32, specularIntensity: 1, aoMapIntensity: 1, emissiveIntensity: 0 },
 };
 
 type ActiveSebakaPanel = 'time' | 'look' | 'move';
@@ -468,7 +468,7 @@ export default function Home() {
   return (
     <main className="relative h-screen w-screen overflow-hidden">
       <CelestialSymphony 
-        key={String(viewFromSebaka)}
+        key={String(viewFromSebaka) + String(usePlainOrbits)}
         stars={initialStars} 
         planets={planets} 
         speedMultiplier={speedMultiplier} 

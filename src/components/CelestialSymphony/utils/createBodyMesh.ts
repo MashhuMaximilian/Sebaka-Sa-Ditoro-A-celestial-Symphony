@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { planetShader } from '../shaders/planetShader';
 import { spiderStrandShader } from '../shaders/spiderStrandShader';
-import type { MaterialProperties, PlanetData } from '@/types';
+import type { MaterialProperties } from '@/types';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -45,16 +45,76 @@ export const createGridTexture = (size = 1024, lines = 24) => {
 };
 
 export const texturePaths: { [key: string]: { [key: string]: string | undefined } } = {
-    Alpha:      { base: '/maps/goldenGiverTexture.jpg', ambient: '/maps/goldenGiver_ambient.png', displacement: '/maps/goldenGiver_displacement.png', specular: '/maps/goldenGiver_specular.png', normal: undefined },
-    Twilight:   { base: '/maps/TwilightTexture.jpg', ambient: '/maps/Twilight_ambient.png', displacement: '/maps/Twilight_displacement.png', normal: '/maps/Twilight_normal.png', specular: '/maps/Twilight_specular.png' },
-    Beacon:     { base: '/maps/BeaconTexture.png', ambient: '/maps/Beacon_ambient.png', displacement: '/maps/Beacon_displacement.png', normal: '/maps/Beacon_normal.png', specular: '/maps/Beacon_specular.png' },
-    Aetheris:   { base: '/maps/AetherisTexture.png', ambient: '/maps/AetherisTexture_ambient.png', displacement: '/maps/AetherisTexture_displacement.png', normal: '/maps/AetherisTexture_normal.png', specular: '/maps/AetherisTexture_specular.png' },
-    Gelidis:    { base: '/maps/GelidisTexture.png', ambient: '/maps/GelidisTexture_ambient.png', displacement: '/maps/GelidisTexture_displacement.png', normal: '/maps/GelidisTexture_normal.png', specular: '/maps/GelidisTexture_specular.png' },
-    Rutilus:    { base: '/maps/RutiliusTexture.png', ambient: '/maps/RutiliusTexture_ambient.png', displacement: '/maps/RutiliusTexture_displacement.png', normal: '/maps/RutiliusTexture_normal.png', specular: '/maps/RutiliusTexture_specular.png' },
-    Spectris:   { base: '/maps/SpectrisTexture.png', ambient: '/maps/SpectrisTexture_ambient.png', displacement: '/maps/SpectrisTexture_displacement.png', normal: '/maps/SpectrisTexture_normal.png', specular: '/maps/SpectrisTexture_specular.png' },
-    Viridis:    { base: '/maps/ViridisTexture.png', ambient: '/maps/ViridisTexture_ambient.png', displacement: '/maps/ViridisTexture_displacement.png', normal: '/maps/ViridisTexture_normal.png', specular: '/maps/ViridisTexture_specular.png' },
-    Liminis:    { base: '/maps/LimnisTexture.png', ambient: '/maps/LimnisAmbientOcclusionMap.png', displacement: '/maps/LimnisDisplacementMap.png', normal: '/maps/LimnisNormalMap.png', specular: '/maps/LimnisSpecularMap.png' },
-    Sebaka:     { base: '/maps/SebakaTexture.png', ambient: '/maps/SebakaAmbientOcclusionMap.png', displacement: '/maps/SebakaDisplacementMap.png', normal: '/maps/SebakaNormalMap.png', specular: '/maps/SebakaSpecularMap.png' },
+    Alpha: {
+        base: '/maps/goldenGiverTexture.jpg',
+        ambient: '/maps/goldenGiver_ambient.png',
+        displacement: '/maps/goldenGiver_displacement.png',
+        specular: '/maps/goldenGiver_specular.png',
+        normal: undefined, // No normal map for Alpha/GoldenGiver
+    },
+    Twilight: {
+        base: '/maps/TwilightTexture.jpg',
+        ambient: '/maps/Twilight_ambient.png',
+        displacement: '/maps/Twilight_displacement.png',
+        normal: '/maps/Twilight_normal.png',
+        specular: '/maps/Twilight_specular.png',
+    },
+    Beacon: {
+        base: '/maps/BeaconTexture.png',
+        ambient: '/maps/Beacon_ambient.png',
+        displacement: '/maps/Beacon_displacement.png',
+        normal: '/maps/Beacon_normal.png',
+        specular: '/maps/Beacon_specular.png',
+    },
+    Aetheris: {
+        base: '/maps/AetherisTexture.png',
+        ambient: '/maps/AetherisTexture_ambient.png',
+        displacement: '/maps/AetherisTexture_displacement.png',
+        normal: '/maps/AetherisTexture_normal.png',
+        specular: '/maps/AetherisTexture_specular.png',
+    },
+    Gelidis: {
+        base: '/maps/GelidisTexture.png',
+        ambient: '/maps/GelidisTexture_ambient.png',
+        displacement: '/maps/GelidisTexture_displacement.png',
+        normal: '/maps/GelidisTexture_normal.png',
+        specular: '/maps/GelidisTexture_specular.png',
+    },
+    Rutilus: {
+        base: '/maps/RutiliusTexture.png',
+        ambient: '/maps/RutiliusTexture_ambient.png',
+        displacement: '/maps/RutiliusTexture_displacement.png',
+        normal: '/maps/RutiliusTexture_normal.png',
+        specular: '/maps/RutiliusTexture_specular.png',
+    },
+    Spectris: {
+        base: '/maps/SpectrisTexture.png',
+        ambient: '/maps/SpectrisTexture_ambient.png',
+        displacement: '/maps/SpectrisTexture_displacement.png',
+        normal: '/maps/SpectrisTexture_normal.png',
+        specular: '/maps/SpectrisTexture_specular.png',
+    },
+    Viridis: {
+        base: '/maps/ViridisTexture.png',
+        ambient: '/maps/ViridisTexture_ambient.png',
+        displacement: '/maps/ViridisTexture_displacement.png',
+        normal: '/maps/ViridisTexture_normal.png',
+        specular: '/maps/ViridisTexture_specular.png',
+    },
+    Liminis: {
+        base: '/maps/LimnisTexture.png',
+        ambient: '/maps/LimnisAmbientOcclusionMap.png',
+        displacement: '/maps/LimnisDisplacementMap.png',
+        normal: '/maps/LimnisNormalMap.png',
+        specular: '/maps/LimnisSpecularMap.png',
+    },
+    Sebaka: {
+        base: '/maps/SebakaTexture.png',
+        ambient: '/maps/SebakaAmbientOcclusionMap.png',
+        displacement: '/maps/SebakaDisplacementMap.png',
+        normal: '/maps/SebakaNormalMap.png',
+        specular: '/maps/SebakaSpecularMap.png',
+    }
 };
 
 export const createBodyMesh = (
@@ -67,63 +127,59 @@ export const createBodyMesh = (
     geometry.computeTangents();
     let material: THREE.Material;
     
-    // This Object3D will handle the orbital position and axial tilt
     const tiltAxis = new THREE.Object3D();
     tiltAxis.name = body.name;
 
     let mesh: THREE.Mesh;
     const paths = texturePaths[body.name];
 
+    const baseTexture = paths?.base ? textureLoader.load(paths.base) : null;
+    const normalMap = paths?.normal ? textureLoader.load(paths.normal) : null;
+    const displacementMap = paths?.displacement ? textureLoader.load(paths.displacement) : null;
+    const specularMap = paths?.specular ? textureLoader.load(paths.specular) : null;
+    const aoMap = paths?.ambient ? textureLoader.load(paths.ambient) : null;
+
     if (body.type === 'Star') {
-        // Stars use a simpler material for glowing
         material = new THREE.MeshPhongMaterial({
+            map: baseTexture,
+            color: body.color,
             emissive: body.color,
             emissiveIntensity: initialProps.emissiveIntensity,
-            shininess: initialProps.shininess,
-            map: paths?.base ? textureLoader.load(paths.base) : undefined,
-            normalMap: paths?.normal ? textureLoader.load(paths.normal) : undefined,
-            normalScale: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale),
-            displacementMap: paths?.displacement ? textureLoader.load(paths.displacement) : undefined,
-            displacementScale: initialProps.displacementScale,
-            specularMap: paths?.specular ? textureLoader.load(paths.specular) : undefined,
-            aoMap: paths?.ambient ? textureLoader.load(paths.ambient) : undefined,
+            shininess: 0
         });
-
-        mesh = new THREE.Mesh(geometry, material);
-        mesh.name = body.name;
-    } else { // It's a planet
-        const baseTexture = paths?.base ? textureLoader.load(paths.base) : null;
-        const normalMap = paths?.normal ? textureLoader.load(paths.normal) : null;
-        const displacementMap = paths?.displacement ? textureLoader.load(paths.displacement) : null;
-        const specularMap = paths?.specular ? textureLoader.load(paths.specular) : null;
-        const aoMap = paths?.ambient ? textureLoader.load(paths.ambient) : null;
-        
+    } else {
         material = new THREE.ShaderMaterial({
             uniforms: {
                 alphaStarPos: { value: new THREE.Vector3() },
                 twilightStarPos: { value: new THREE.Vector3() },
                 beaconStarPos: { value: new THREE.Vector3() },
-                alphaColor: { value: new THREE.Color(0xfff8e7) },
-                twilightColor: { value: new THREE.Color(0xfff0d4) },
-                beaconColor: { value: new THREE.Color(0xaaccff) },
+                alphaColor: { value: new THREE.Color(0xFFF4D4) },      // Pale Yellow
+                twilightColor: { value: new THREE.Color(0xFFC8A2) },   // Orange
+                beaconColor: { value: new THREE.Color(0xD4E5FF) },     // Blue-white
                 alphaIntensity: { value: 1.0 },
                 twilightIntensity: { value: 0.7 },
                 beaconIntensity: { value: 500.0 },
+                emissiveIntensity: { value: initialProps.emissiveIntensity },
+
                 albedo: { value: initialProps.albedo },
                 planetTexture: { value: baseTexture },
                 gridTexture: { value: null as THREE.CanvasTexture | null },
                 useGrid: { value: false },
                 ambientLevel: { value: 0.02 },
+
                 useNormalMap: { value: !!normalMap },
                 normalMap: { value: normalMap },
                 normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
+
                 useDisplacementMap: { value: !!displacementMap },
                 displacementMap: { value: displacementMap },
                 displacementScale: { value: initialProps.displacementScale },
+
                 useSpecularMap: { value: !!specularMap },
                 specularMap: { value: specularMap },
                 specularIntensity: { value: initialProps.specularIntensity },
                 shininess: { value: initialProps.shininess },
+
                 useAoMap: { value: !!aoMap },
                 aoMap: { value: aoMap },
                 aoMapIntensity: { value: initialProps.aoMapIntensity },
@@ -132,66 +188,66 @@ export const createBodyMesh = (
             fragmentShader: planetShader.fragmentShader,
             transparent: body.name === 'Spectris' || body.name === 'Aetheris',
         });
-        
-        if(body.name === 'Sebaka' && (material instanceof THREE.ShaderMaterial)){
-            material.uniforms.gridTexture.value = sebakaGridTexture;
-            material.uniforms.useGrid.value = viewFromSebaka;
-        }
-        
-        mesh = new THREE.Mesh(geometry, material);
-        mesh.name = body.name;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
+    }
+    
+    if(body.name === 'Sebaka' && (material instanceof THREE.ShaderMaterial)){
+        material.uniforms.gridTexture.value = sebakaGridTexture;
+        material.uniforms.useGrid.value = viewFromSebaka;
+    }
+    
+    mesh = new THREE.Mesh(geometry, material);
+    mesh.name = body.name;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
 
-        if (body.name === "Spectris") {
-            const ringCount = Math.floor(Math.random() * 70) + 80;
-            const ringBaseColors = [
-                new THREE.Color("#eeeaea"), new THREE.Color("#efc5f4"), new THREE.Color("#a0f9af"),
-                new THREE.Color("#b9a2e5"), new THREE.Color("#8c88fb"), new THREE.Color("#ff9ab8"),
-                new THREE.Color("#f3ffb2"), new THREE.Color("#8ff6fe"), new THREE.Color("#b9b1dc"),
-                new THREE.Color("#dbc1dc"), new THREE.Color("#ff0000"), new THREE.Color("#ffff00"),
-                new THREE.Color("#ff00ff")
-            ];
+    if (body.type === 'Planet' && body.name === "Spectris") {
+        const ringCount = Math.floor(Math.random() * 70) + 80;
+        const ringBaseColors = [
+            new THREE.Color("#eeeaea"), new THREE.Color("#efc5f4"), new THREE.Color("#a0f9af"),
+            new THREE.Color("#b9a2e5"), new THREE.Color("#8c88fb"), new THREE.Color("#ff9ab8"),
+            new THREE.Color("#f3ffb2"), new THREE.Color("#8ff6fe"), new THREE.Color("#b9b1dc"),
+            new THREE.Color("#dbc1dc"), new THREE.Color("#ff0000"), new THREE.Color("#ffff00"),
+            new THREE.Color("#ff00ff")
+        ];
 
-            for (let i = 0; i < ringCount; i++) {
-                const innerRadius = body.size * (1.5 + i * 0.02 + Math.random() * 0.01);
-                const outerRadius = innerRadius + (Math.random() * 0.05 + 0.01) * body.size;
+        for (let i = 0; i < ringCount; i++) {
+            const innerRadius = body.size * (1.5 + i * 0.02 + Math.random() * 0.01);
+            const outerRadius = innerRadius + (Math.random() * 0.05 + 0.01) * body.size;
 
-                const ringGeometry = new THREE.RingGeometry(innerRadius, outerRadius, 128, 1);
-                
-                let ringMaterial: THREE.Material;
-                
-                if (Math.random() < 0.3) {
-                     const uniforms = THREE.UniformsUtils.clone(spiderStrandShader.uniforms);
-                     uniforms.baseColor.value = ringBaseColors[Math.floor(Math.random() * ringBaseColors.length)];
+            const ringGeometry = new THREE.RingGeometry(innerRadius, outerRadius, 128, 1);
+            
+            let ringMaterial: THREE.Material;
+            
+            if (Math.random() < 0.3) {
+                 const uniforms = THREE.UniformsUtils.clone(spiderStrandShader.uniforms);
+                 uniforms.baseColor.value = ringBaseColors[Math.floor(Math.random() * ringBaseColors.length)];
 
-                     ringMaterial = new THREE.ShaderMaterial({
-                        uniforms: uniforms,
-                        vertexShader: spiderStrandShader.vertexShader,
-                        fragmentShader: spiderStrandShader.fragmentShader,
-                        transparent: true,
-                        side: THREE.DoubleSide,
-                        blending: THREE.AdditiveBlending,
-                    });
-                } else {
-                    ringMaterial = new THREE.MeshBasicMaterial({
-                        color: 0xffffff,
-                        transparent: true,
-                        opacity: 0.1 + Math.random() * 0.2,
-                        side: THREE.DoubleSide,
-                        blending: THREE.AdditiveBlending,
-                    });
-                }
-
-                const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
-                ringMesh.rotation.x = Math.PI / 2 + (Math.random() - 0.5) * 0.1;
-                ringMesh.rotation.y = (Math.random() - 0.5) * 0.05;
-                mesh.add(ringMesh);
+                 ringMaterial = new THREE.ShaderMaterial({
+                    uniforms: uniforms,
+                    vertexShader: spiderStrandShader.vertexShader,
+                    fragmentShader: spiderStrandShader.fragmentShader,
+                    transparent: true,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending,
+                });
+            } else {
+                ringMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xffffff,
+                    transparent: true,
+                    opacity: 0.1 + Math.random() * 0.2,
+                    side: THREE.DoubleSide,
+                    blending: THREE.AdditiveBlending,
+                });
             }
+
+            const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+            ringMesh.rotation.x = Math.PI / 2 + (Math.random() - 0.5) * 0.1;
+            ringMesh.rotation.y = (Math.random() - 0.5) * 0.05;
+            mesh.add(ringMesh);
         }
     }
     
-    if (body.type === 'Planet' && body.axialTilt) {
+    if (body.axialTilt) {
         const tiltDegrees = parseFloat(body.axialTilt.replace('°', ''));
         if (!isNaN(tiltDegrees)) {
             const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);

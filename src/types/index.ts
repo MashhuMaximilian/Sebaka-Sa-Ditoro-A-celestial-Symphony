@@ -49,7 +49,7 @@ export interface MaterialProperties {
     normalScale: number;
     displacementScale: number;
     albedo: number;
-    emissiveIntensity?: number;
+    emissiveIntensity: number | undefined;
     specularIntensity: number;
     aoMapIntensity: number;
     shininess: number;

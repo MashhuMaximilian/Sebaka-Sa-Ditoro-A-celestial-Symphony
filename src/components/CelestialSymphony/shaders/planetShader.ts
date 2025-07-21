@@ -13,6 +13,7 @@ export const planetShader = {
     alphaIntensity: { value: 1.0 },
     twilightIntensity: { value: 0.7 },
     beaconIntensity: { value: 500.0 },
+    emissiveIntensity: { value: 0.0 },
     
     // Planet properties
     albedo: { value: 1.0 },
@@ -86,6 +87,7 @@ export const planetShader = {
     uniform float alphaIntensity;
     uniform float twilightIntensity;
     uniform float beaconIntensity;
+    uniform float emissiveIntensity;
     
     uniform float albedo;
     uniform sampler2D planetTexture;
@@ -120,7 +122,7 @@ export const planetShader = {
         
         // Diffuse
         float diff = max(dot(normal, lightDir), 0.0);
-        vec3 diffuse = starColor * diff * starIntensity * attenuation;
+        vec3 diffuse = starColor * diff * starIntensity;
         
         // Specular
         vec3 specular = vec3(0.0);
@@ -128,10 +130,10 @@ export const planetShader = {
             vec3 halfwayDir = normalize(lightDir + viewDir);
             float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
             float specularMask = texture2D(specularMap, vUv).r;
-            specular = starColor * spec * specularIntensity * specularMask * attenuation;
+            specular = starColor * spec * specularIntensity * specularMask;
         }
         
-        return diffuse + specular;
+        return (diffuse * albedo + specular) * attenuation;
     }
 
     void main() {
@@ -167,13 +169,14 @@ export const planetShader = {
         ao = mix(1.0, ao, aoMapIntensity);
       }
 
-      // Add minimal ambient lighting, affected by AO
-      lighting += vec3(ambientLevel) * ao;
-
-      // Mix between base color and lit color based on albedo
-      vec3 finalColor = mix(baseColor, baseColor * lighting, albedo);
-      finalColor *= ao;
+      vec3 emissive = baseColor * emissiveIntensity;
       
+      // Add minimal ambient lighting, affected by AO
+      vec3 ambient = vec3(ambientLevel) * albedo * ao;
+
+      vec3 finalColor = baseColor * lighting + ambient + emissive;
+      finalColor *= ao;
+
       gl_FragColor = vec4(finalColor, texColor.a);
     }
   `
