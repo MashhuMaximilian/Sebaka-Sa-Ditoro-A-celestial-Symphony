@@ -68,7 +68,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     controls: controlsRef.current,
     cameraTarget: props.cameraTarget,
     viewFromSebaka: props.viewFromSebaka,
-    cameraFov: props.cameraFov,
     allBodiesRef,
     bodyData,
     beaconPositionRef,

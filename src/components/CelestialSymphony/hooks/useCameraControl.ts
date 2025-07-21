@@ -9,7 +9,6 @@ interface CameraControlProps {
     controls: OrbitControls | undefined;
     cameraTarget: string | null;
     viewFromSebaka: boolean;
-    cameraFov: number;
     allBodiesRef: React.MutableRefObject<THREE.Object3D[]>;
     bodyData: BodyData[];
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
@@ -22,7 +21,6 @@ export const useCameraControl = ({
     controls,
     cameraTarget,
     viewFromSebaka,
-    cameraFov,
     allBodiesRef,
     bodyData,
     beaconPositionRef,
@@ -89,12 +87,10 @@ export const useCameraControl = ({
     useEffect(() => {
         if (!camera || !controls) return;
         
+        // Hide planets and stars when in Sebaka view, except for the character cube
+        // The character cube is managed separately and added/removed from the scene
         allBodiesRef.current.forEach(body => {
-            const isPlanetOrStarMesh = body.children[0] instanceof THREE.Mesh;
-            if (isPlanetOrStarMesh) {
-                // Hide planets and stars when in Sebaka view, except for the character cube
-                body.visible = !viewFromSebaka;
-            }
+            body.visible = !viewFromSebaka;
         });
         orbitMeshesRef.current.forEach(orbit => orbit.visible = !viewFromSebaka);
         
@@ -108,6 +104,7 @@ export const useCameraControl = ({
             controls.enabled = true;
             controls.target.set(0, 0, 0);
             allBodiesRef.current.forEach(body => body.visible = true);
+            orbitMeshesRef.current.forEach(orbit => orbit.visible = true);
         }
         camera.updateProjectionMatrix();
     }, [viewFromSebaka, camera, controls, allBodiesRef, orbitMeshesRef]);
