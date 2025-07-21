@@ -122,17 +122,21 @@ export const createBodyMesh = (
     mesh.castShadow = true;
     mesh.receiveShadow = true;
 
+    // Set initial rotation to match tilt, so spin starts from tilted axis
+    const tiltQuaternion = new THREE.Quaternion();
     if (body.type === 'Planet' && body.axialTilt) {
         const tiltDegrees = parseFloat(body.axialTilt.replace('°', ''));
         if (!isNaN(tiltDegrees)) {
             const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
-            // Apply axial tilt around the world's X-axis after orbital rotation
-            const tiltQuaternion = new THREE.Quaternion().setFromAxisAngle(
-                new THREE.Vector3(1, 0, 0), tiltRadians
+            tiltQuaternion.setFromAxisAngle(
+                new THREE.Vector3(0, 0, 1), // Tilt around Z-axis
+                tiltRadians
             );
-            mesh.userData.tiltQuaternion = tiltQuaternion;
+            mesh.quaternion.copy(tiltQuaternion);
         }
     }
+    // Store the base tilt for animation loop
+    mesh.userData.tiltQuaternion = tiltQuaternion.clone();
 
     if (body.type === 'Planet' && body.name === "Spectris") {
         const ringCount = Math.floor(Math.random() * 70) + 80;
@@ -183,3 +187,5 @@ export const createBodyMesh = (
     
     return mesh;
 };
+
+    

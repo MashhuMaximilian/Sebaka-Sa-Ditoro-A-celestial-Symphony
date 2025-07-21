@@ -168,11 +168,11 @@ const initialMaterialProperties: MaterialProperties = {
   Twilight: { normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10, albedo: 1.0 },
   Beacon: { normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10, albedo: 1.0 },
   Rutilus: { albedo: 1.2, normalScale: 0.45, displacementScale: 1.74, specularIntensity: 0.5, shininess: 32 },
-  Sebaka: { albedo: 0.5, normalScale: 0.0, displacementScale: 0.01, specularIntensity: 0.1, aoMapIntensity: 0, shininess: 100 },
+  Sebaka: { albedo: 0.4, normalScale: 0.0, displacementScale: 0.01, specularIntensity: 0.1, aoMapIntensity: 0, shininess: 100 },
   Spectris: { albedo: 0.6, normalScale: 0, displacementScale: 0.01, specularIntensity: 0.13, aoMapIntensity: 1.02, shininess: 0 },
   Viridis: { albedo: 1.9, normalScale: 0.3, displacementScale: 2.0, specularIntensity: 0, aoMapIntensity: 0, shininess: 0 },
   Aetheris: { albedo: 2.0, normalScale: 0, displacementScale: 0, specularIntensity: 0.23, aoMapIntensity: 1.23, shininess: 14 },
-  Gelidis: { albedo: 1.2, normalScale: 0, displacementScale: 0, specularIntensity: 0.2, aoMapIntensity: 1, shininess: 100 },
+  Gelidis: { albedo: 0.5, normalScale: 0, displacementScale: 0, specularIntensity: 0.2, aoMapIntensity: 1, shininess: 100 },
   Liminis: { normalScale: 1, displacementScale: 0.1, shininess: 32, albedo: 1.0 },
 };
 
@@ -572,31 +572,6 @@ export default function Home() {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                         <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm" onClick={() => setIsViridisAnimationActive(prev => !prev)}>
-                            <Orbit className="h-5 w-5" />
-                            <span className="sr-only">Toggle Viridis Animation</span>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>{isViridisAnimationActive ? 'Stop Viridis Animation' : 'Start Viridis Animation'}</p>
-                    </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm" onClick={enterSebakaView}>
-                            <PersonStanding className="h-5 w-5" />
-                            <span className="sr-only">View from Sebaka</span>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>View from Sebaka</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-
             <Sheet>
                  <DropdownMenu>
                     <TooltipProvider>
@@ -629,6 +604,16 @@ export default function Home() {
                             <RotateCw className="mr-2 h-4 w-4" />
                             <span>{isSebakaRotating ? 'Pause Rotation' : 'Resume Rotation'}</span>
                         </DropdownMenuItem>
+                         <DropdownMenuItem onSelect={() => setIsViridisAnimationActive(prev => !prev)}>
+                            <Orbit className="mr-2 h-4 w-4" />
+                             <span>{isViridisAnimationActive ? 'Stop Viridis' : 'Start Viridis'}</span>
+                        </DropdownMenuItem>
+                        {!viewFromSebaka && (
+                            <DropdownMenuItem onSelect={enterSebakaView}>
+                                <PersonStanding className="mr-2 h-4 w-4" />
+                                <span>View from Sebaka</span>
+                            </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <SheetTrigger asChild>
                             <DropdownMenuItem>

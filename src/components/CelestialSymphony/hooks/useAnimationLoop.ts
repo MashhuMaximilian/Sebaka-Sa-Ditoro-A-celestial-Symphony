@@ -156,11 +156,15 @@ export const useAnimationLoop = ({
                     const rotationPerHour = (2 * Math.PI) / planetData.rotationPeriodHours;
                     const spinAngle = rotationPerHour * hoursPassedThisFrame;
                     
-                    // Create quaternions for spin and tilt
                     const spinQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), spinAngle);
                     
-                    // Apply spin to the current rotation
-                    planetMesh.quaternion.premultiply(spinQuat);
+                    // Combine spin with axial tilt
+                    if (planetMesh.userData.tiltQuaternion) {
+                        planetMesh.quaternion.premultiply(spinQuat);
+                        planetMesh.quaternion.multiply(planetMesh.userData.tiltQuaternion).normalize();
+                    } else {
+                        planetMesh.quaternion.premultiply(spinQuat);
+                    }
                 }
             }
         });
@@ -256,3 +260,5 @@ export const useAnimationLoop = ({
     isInitialized,
   ]);
 };
+
+    
