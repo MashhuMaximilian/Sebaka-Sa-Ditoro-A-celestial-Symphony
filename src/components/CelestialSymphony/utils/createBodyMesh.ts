@@ -153,12 +153,12 @@ export const createBodyMesh = (
                 alphaStarPos: { value: new THREE.Vector3() },
                 twilightStarPos: { value: new THREE.Vector3() },
                 beaconStarPos: { value: new THREE.Vector3() },
-                alphaColor: { value: new THREE.Color(0xFFF4D4) },      // Pale Yellow
-                twilightColor: { value: new THREE.Color(0xFFC8A2) },   // Orange
-                beaconColor: { value: new THREE.Color(0xD4E5FF) },     // Blue-white
+                alphaColor: { value: new THREE.Color(0xFFF4D4) },
+                twilightColor: { value: new THREE.Color(0xFFC8A2) },
+                beaconColor: { value: new THREE.Color(0xD4E5FF) },
                 alphaIntensity: { value: 1.0 },
                 twilightIntensity: { value: 0.7 },
-                beaconIntensity: { value: 500.0 },
+                beaconIntensity: { value: 1000.0 },
                 emissiveIntensity: { value: initialProps.emissiveIntensity },
 
                 albedo: { value: initialProps.albedo },
