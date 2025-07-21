@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 
 const iridescentPalette = [
@@ -63,7 +64,6 @@ export const spiderStrandShader = {
     uniform vec3 baseColor;
     
     // Lighting
-    uniform vec3 cameraPosition;
     uniform vec3 alphaStarPos;
     uniform vec3 twilightStarPos;
     uniform vec3 beaconStarPos;
