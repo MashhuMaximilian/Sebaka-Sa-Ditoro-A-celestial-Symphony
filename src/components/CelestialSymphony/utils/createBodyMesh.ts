@@ -5,6 +5,7 @@ import { planetShader } from '../shaders/planetShader';
 import { fresnelShader } from '../shaders/fresnelShader';
 import { ImprovedNoise } from './ImprovedNoise';
 import type { MaterialProperties } from '@/types';
+import { spiderStrandShader } from '../shaders/spiderStrandShader';
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -380,6 +381,7 @@ export const createBodyMesh = (
     tiltAxis.add(mesh);
     return tiltAxis;
 };
+
 
 
 
