@@ -28,6 +28,7 @@ export interface CelestialSymphonyProps {
   materialProperties: MaterialProperties;
   usePlainOrbits: boolean;
   showOrbits: boolean;
+  fov: number;
 }
 
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
@@ -73,6 +74,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     beaconPositionRef,
     originalCameraPosRef,
     orbitMeshesRef,
+    fov: props.fov,
   });
 
   useUpdateBodyMaterials({
@@ -100,5 +102,3 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
 };
 
 export default CelestialSymphony;
-
-    

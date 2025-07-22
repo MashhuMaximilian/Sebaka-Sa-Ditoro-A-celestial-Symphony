@@ -15,6 +15,7 @@ interface CameraControlProps {
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     originalCameraPosRef: React.MutableRefObject<THREE.Vector3>;
     orbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
+    fov: number;
 }
 
 export const useCameraControl = ({
@@ -28,6 +29,7 @@ export const useCameraControl = ({
     beaconPositionRef,
     originalCameraPosRef,
     orbitMeshesRef,
+    fov,
 }: CameraControlProps) => {
 
     useEffect(() => {
@@ -102,4 +104,11 @@ export const useCameraControl = ({
         }
         camera.updateProjectionMatrix();
     }, [viewFromSebaka, camera, controls, originalCameraPosRef]);
+
+    useEffect(() => {
+        if (camera) {
+            camera.fov = fov;
+            camera.updateProjectionMatrix();
+        }
+    }, [fov, camera]);
 };

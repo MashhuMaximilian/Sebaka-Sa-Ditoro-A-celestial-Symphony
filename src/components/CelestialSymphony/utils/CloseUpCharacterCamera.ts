@@ -98,11 +98,10 @@ export class CloseUpCharacterCamera {
     this.distance = THREE.MathUtils.clamp(
       this.distance + event.deltaY * 0.002, // Slightly faster zoom
       0.1,  // Very close
-      1.0    // Much wider range for circumference viewing
+      this.planetRadius * 0.5  // Max zoom relative to planet size
     );
   }
   
-
   update() {
     const characterWorldPos = new THREE.Vector3();
     this.character.getWorldPosition(characterWorldPos);
@@ -128,33 +127,38 @@ export class CloseUpCharacterCamera {
     const forward = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
     const right = new THREE.Vector3().crossVectors(forward, surfaceNormal).normalize();
     
-    // ** NEW: Calculate camera position to follow planet curvature **
+    // ** CORRECTED: Calculate circumferential camera position **
     
-    // Calculate the "arc distance" the camera should be from character along surface
-    const arcDistance = this.distance;
+    // Calculate the arc angle for the zoom distance
+    const arcAngle = this.distance / this.planetRadius;
     
-    // Calculate the angle this arc distance represents on the planet
-    const arcAngle = arcDistance / this.planetRadius;
+    // Calculate the direction vector for camera placement
+    // Rotate the "back" direction around the surface normal by horizontalAngle
+    const backDirection = forward.clone().multiplyScalar(-1); // Start facing backward
+    const rotationAxis = surfaceNormal.clone();
+    const rotationMatrix = new THREE.Matrix4().makeRotationAxis(rotationAxis, this.horizontalAngle);
+    const cameraDirection = backDirection.clone().applyMatrix4(rotationMatrix);
     
-    // Calculate how high above the surface the camera should be for this arc
-    // This creates the curved zoom effect
-    const cameraHeight = this.planetRadius * (1 - Math.cos(arcAngle)) + this.height;
-    const horizontalDistance = this.planetRadius * Math.sin(arcAngle);
+    // Calculate position along the planet's circumference
+    // Move the character position along the surface by the arc angle
+    const characterOnSurface = surfaceNormal.clone().multiplyScalar(this.planetRadius);
     
-    // Apply horizontal angle rotation
-    const horizontalOffset = horizontalDistance * Math.sin(this.horizontalAngle);
-    const depthOffset = horizontalDistance * Math.cos(this.horizontalAngle);
+    // Rotate the character's surface position by the arc angle in the camera direction
+    const arcRotationAxis = new THREE.Vector3().crossVectors(surfaceNormal, cameraDirection).normalize();
+    const arcRotationMatrix = new THREE.Matrix4().makeRotationAxis(arcRotationAxis, arcAngle);
     
-    // Create the camera offset following planet curvature
-    const localOffset = right.clone().multiplyScalar(horizontalOffset)
-                       .add(surfaceNormal.clone().multiplyScalar(cameraHeight))
-                       .add(forward.clone().multiplyScalar(depthOffset));
-  
-    // Calculate camera position in local space
-    const localCameraPos = characterLocalPos.clone().add(localOffset);
+    // Calculate the new surface position
+    const cameraOnSurface = characterOnSurface.clone().applyMatrix4(arcRotationMatrix);
+    
+    // Add height above surface
+    const finalCameraLocalPos = cameraOnSurface.clone().add(
+      cameraOnSurface.clone().normalize().multiplyScalar(this.height)
+    );
     
     // Transform camera position back to world space
-    const finalCamPos = localCameraPos.clone().applyQuaternion(planetContainerWorldQuat).add(planetContainerWorldPos);
+    const finalCamPos = finalCameraLocalPos.clone()
+      .applyQuaternion(planetContainerWorldQuat)
+      .add(planetContainerWorldPos);
   
     this.camera.position.copy(finalCamPos);
     

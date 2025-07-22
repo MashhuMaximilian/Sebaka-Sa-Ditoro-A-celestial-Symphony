@@ -239,6 +239,7 @@ export default function Home() {
   const [goToTime, setGoToTime] = useState<number | null>(null);
   
   const [isInitialized, setIsInitialized] = useState(false);
+  const [fov, setFov] = useState(75);
 
 
   const handleApplyPalette = (newColors: string[]) => {
@@ -270,6 +271,10 @@ export default function Home() {
 
   const handleLatitudeChange = (value: number[]) => {
     setLatitude(value[0]);
+  };
+
+  const handleFovChange = (value: number[]) => {
+    setFov(value[0]);
   };
 
   const resetSpeed = () => {
@@ -447,6 +452,21 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{longitude.toFixed(0)}°</span>
                 </div>
+                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                    <Label htmlFor="fov-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
+                      Field of View
+                    </Label>
+                    <Slider
+                        id="fov-slider"
+                        min={25}
+                        max={250}
+                        step={1}
+                        value={[fov]}
+                        onValueChange={handleFovChange}
+                        className="w-full"
+                    />
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{fov.toFixed(0)}°</span>
+                </div>
             </>
         )
     };
@@ -480,6 +500,7 @@ export default function Home() {
         materialProperties={materialProperties}
         usePlainOrbits={usePlainOrbits}
         showOrbits={showOrbits}
+        fov={fov}
       />
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
