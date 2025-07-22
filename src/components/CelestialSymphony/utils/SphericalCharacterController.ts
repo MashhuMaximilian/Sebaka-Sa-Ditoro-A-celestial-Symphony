@@ -25,10 +25,17 @@ export class SphericalCharacterController {
     
     const geometry = new THREE.BoxGeometry(0.02, 0.02, 0.02);
     
-    const material = new THREE.MeshStandardMaterial({
-        color: 0xB87333,
-        metalness: 0.8,
-        roughness: 0.2,
+    const uniforms = THREE.UniformsUtils.clone(spiderStrandShader.uniforms);
+    uniforms.baseColor.value = new THREE.Color(0xffffff);
+    uniforms.opacity.value = 1.0;
+    uniforms.iridescenceStrength.value = 1.5;
+
+    const material = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        vertexShader: spiderStrandShader.vertexShader,
+        fragmentShader: spiderStrandShader.fragmentShader,
+        transparent: true,
+        side: THREE.DoubleSide,
     });
     
     this.characterMesh = new THREE.Mesh(geometry, material);
