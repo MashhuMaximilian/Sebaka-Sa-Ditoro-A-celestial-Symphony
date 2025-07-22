@@ -2,6 +2,20 @@
 import * as THREE from 'three';
 import { eyeHeight } from '../constants/config';
 
+const REFERENCE = new THREE.Vector3(0, 0, 1); // Any vector not parallel to Up
+
+function buildStableAxes(up: THREE.Vector3) {
+  // Ensure reference isn’t parallel to up (happens only at perfect poles)
+  const ref = Math.abs(up.dot(REFERENCE)) > 0.99
+              ? new THREE.Vector3(1, 0, 0)        // fallback
+              : REFERENCE;
+
+  const right   = new THREE.Vector3().crossVectors(ref, up).normalize();
+  const forward = new THREE.Vector3().crossVectors(up, right).normalize();
+  return { right, forward };
+}
+
+
 export class CloseUpCharacterCamera {
   public camera: THREE.PerspectiveCamera;
   public character: THREE.Object3D;
@@ -86,11 +100,14 @@ export class CloseUpCharacterCamera {
   private applyDrag(dx: number, dy: number) {
     const yawSpeed = 0.005;
     const pitchSpeed = 0.005;
-    this.horizontalAngle -= dx * yawSpeed;
+    
+    this.horizontalAngle = (this.horizontalAngle - dx * yawSpeed) % (Math.PI * 2);
+    if (this.horizontalAngle < 0) this.horizontalAngle += Math.PI * 2;
+
     this.verticalAngle = THREE.MathUtils.clamp(
         this.verticalAngle - dy * pitchSpeed,
-        0.05, // Prevent looking underground
-        Math.PI / 2 - 0.05 // Allow looking up to see planet curvature when zoomed out
+        -Math.PI / 2 + 0.1, // Prevent looking straight down
+        Math.PI / 2 - 0.1  // Prevent looking straight up
     );
   }
 
@@ -167,62 +184,27 @@ export class CloseUpCharacterCamera {
     }
   }
   
-update() {
-  const characterWorldPos = new THREE.Vector3();
-  this.character.getWorldPosition(characterWorldPos);
+  update() {
+    const characterWorldPos = new THREE.Vector3();
+    this.character.getWorldPosition(characterWorldPos);
 
-  const planetContainerWorldPos = new THREE.Vector3();
-  const planetContainerWorldQuat = new THREE.Quaternion();
-  this.planetContainer.getWorldPosition(planetContainerWorldPos);
-  this.planetContainer.getWorldQuaternion(planetContainerWorldQuat);
-  
-  // Get character position in planet's local space
-  const characterLocalPos = characterWorldPos.clone().sub(planetContainerWorldPos);
-  const inverseQuat = planetContainerWorldQuat.clone().invert();
-  characterLocalPos.applyQuaternion(inverseQuat);
-  
-  // Normalize to get position on unit sphere, then scale to planet surface
-  const characterSurfacePos = characterLocalPos.clone().normalize().multiplyScalar(this.planetRadius);
-  
-  // Create local coordinate system at character's surface position
-  const surfaceNormal = characterSurfacePos.clone().normalize();
-  const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
-  const tangent1 = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
-  const tangent2 = new THREE.Vector3().crossVectors(surfaceNormal, tangent1).normalize();
-  
-  // Calculate arc angle from distance
-  const arcAngle = this.distance / this.planetRadius;
-  
-  // Calculate direction for camera offset (behind character)
-  const offsetDirection = tangent1.clone().multiplyScalar(Math.cos(this.horizontalAngle))
-                           .add(tangent2.clone().multiplyScalar(Math.sin(this.horizontalAngle)));
-  
-  // Rotate the character's surface position around planet center by arc angle
-  // Create rotation axis perpendicular to both surface normal and offset direction
-  const rotationAxis = new THREE.Vector3().crossVectors(surfaceNormal, offsetDirection).normalize();
-  
-  // Create rotation matrix for the arc movement
-  const rotationMatrix = new THREE.Matrix4().makeRotationAxis(rotationAxis, arcAngle);
-  
-  // Apply rotation to get new surface position
-  const cameraSurfacePos = characterSurfacePos.clone().applyMatrix4(rotationMatrix);
-  
-  // Add minimal height offset (just enough to avoid z-fighting)
-  const cameraLocalPos = cameraSurfacePos.clone().add(
-    cameraSurfacePos.clone().normalize().multiplyScalar(this.height)
-  );
-  
-  // Transform back to world space
-  const finalCamPos = cameraLocalPos.clone()
-    .applyQuaternion(planetContainerWorldQuat)
-    .add(planetContainerWorldPos);
+    const planetContainerWorldPos = new THREE.Vector3();
+    this.planetContainer.getWorldPosition(planetContainerWorldPos);
 
-  this.camera.position.copy(finalCamPos);
-  
-  // Camera up vector points away from planet center
-  const cameraUp = finalCamPos.clone().sub(planetContainerWorldPos).normalize();
-  this.camera.up.copy(cameraUp);
-  
-  this.camera.lookAt(characterWorldPos);
-}
+    const up = characterWorldPos.clone().sub(planetContainerWorldPos).normalize();
+    this.camera.up.copy(up);
+
+    const { right, forward } = buildStableAxes(up);
+
+    const yawQuat = new THREE.Quaternion().setFromAxisAngle(up, this.horizontalAngle);
+    const pitchQuat = new THREE.Quaternion().setFromAxisAngle(right, this.verticalAngle);
+
+    const lookDir = forward.clone().applyQuaternion(yawQuat).applyQuaternion(pitchQuat).normalize();
+    
+    const cameraOffset = lookDir.clone().multiplyScalar(-this.distance);
+    const finalCamPos = characterWorldPos.clone().add(cameraOffset);
+
+    this.camera.position.copy(finalCamPos);
+    this.camera.lookAt(characterWorldPos);
+  }
 }
