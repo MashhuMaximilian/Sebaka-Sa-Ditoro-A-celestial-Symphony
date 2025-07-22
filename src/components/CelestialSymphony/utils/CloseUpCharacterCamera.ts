@@ -10,9 +10,9 @@ export class CloseUpCharacterCamera {
   public domElement: HTMLElement;
   
   // Public state controlled by input handlers
-  public yaw = Math.PI;   // Rotation around the planet's normal vector (up-down axis)
-  public pitch = 0.15;      // Angle above the horizon
-  public distance = 0.1;    // Distance from the character in planet radii
+  public horizontalAngle = Math.PI; // Renamed from yaw for clarity
+  public verticalAngle = 0.15;      // Renamed from pitch
+  public distance = 0.1;
 
   private planetRadius: number;
   private height = eyeHeight;
@@ -29,6 +29,8 @@ export class CloseUpCharacterCamera {
   private isMouseDown = false;
   private lastMouseX = 0;
   private lastMouseY = 0;
+  private lastTouchX = 0;
+  private lastTouchY = 0;
   private lastPinchDist = 0;
   
   constructor(
@@ -84,20 +86,20 @@ export class CloseUpCharacterCamera {
   private applyDrag(dx: number, dy: number) {
     const yawSpeed = 0.005;
     const pitchSpeed = 0.005;
-    this.yaw -= dx * yawSpeed;
-    this.pitch = THREE.MathUtils.clamp(
-      this.pitch - dy * pitchSpeed,
-      0.05, // don’t look below horizon
-      0.45  // don’t look too high
+    this.horizontalAngle -= dx * yawSpeed;
+    this.verticalAngle = THREE.MathUtils.clamp(
+        this.verticalAngle - dy * pitchSpeed,
+        0.05, // Prevent looking underground
+        Math.PI / 2 - 0.05 // Allow looking up to see planet curvature when zoomed out
     );
   }
 
   private applyZoom(delta: number) {
-    const zoomSpeed = 0.002;
+    const zoomSpeed = 0.003; // Adjusted sensitivity
     this.distance = THREE.MathUtils.clamp(
       this.distance + delta * zoomSpeed,
-      0.05, // very close
-      this.planetRadius * 0.6 // max zoom relative to planet size
+      0.05,  // Very close to character
+      2.0    // Far enough to see significant planet curvature
     );
   }
 
@@ -166,38 +168,68 @@ export class CloseUpCharacterCamera {
   }
   
   update() {
-    // A. Stable local frame
-    const charPos = new THREE.Vector3();
-    this.character.getWorldPosition(charPos); // P
-
-    const planetPos = new THREE.Vector3();
-    this.planet.getWorldPosition(planetPos); // C
-
-    const upN = charPos.clone().sub(planetPos).normalize(); // n
+    const characterWorldPos = new THREE.Vector3();
+    this.character.getWorldPosition(characterWorldPos);
+  
+    // Get the planet container's world position and rotation (includes tilt)
+    const planetContainerWorldPos = new THREE.Vector3();
+    const planetContainerWorldQuat = new THREE.Quaternion();
+    this.planetContainer.getWorldPosition(planetContainerWorldPos);
+    this.planetContainer.getWorldQuaternion(planetContainerWorldQuat);
     
-    let east = new THREE.Vector3(0, 1, 0).cross(upN);
-    if (east.lengthSq() < 1e-4) { // at the pole
-      east = new THREE.Vector3(1, 0, 0).cross(upN);
+    // Get the character's position relative to the planet container
+    const characterLocalPos = characterWorldPos.clone().sub(planetContainerWorldPos);
+    
+    // Transform to planet container's local space to get "stable" coordinates
+    const inverseQuat = planetContainerWorldQuat.clone().invert();
+    characterLocalPos.applyQuaternion(inverseQuat);
+    
+    // Create stable coordinate system in planet container's local space
+    const surfaceNormal = characterLocalPos.clone().normalize();
+    
+    // Create stable local coordinate system
+    const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+    const right = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
+    const forward = new THREE.Vector3().crossVectors(right, surfaceNormal).normalize();
+    
+    // Calculate camera position following planet curvature
+    const arcDistance = this.distance;
+    const arcAngle = arcDistance / this.planetRadius;
+    
+    // Enhanced curvature calculation for better planet-relative zoom
+    const cameraHeight = this.planetRadius * (1 - Math.cos(arcAngle)) + this.height;
+    const horizontalDistance = this.planetRadius * Math.sin(arcAngle);
+    
+    // Apply both horizontal and vertical angles
+    const horizontalOffset = horizontalDistance * Math.cos(this.verticalAngle) * Math.sin(this.horizontalAngle);
+    const verticalOffset = cameraHeight + horizontalDistance * Math.sin(this.verticalAngle);
+    const depthOffset = horizontalDistance * Math.cos(this.verticalAngle) * Math.cos(this.horizontalAngle);
+    
+    // Create the camera offset in local space (unaffected by planet rotation)
+    const localOffset = right.clone().multiplyScalar(horizontalOffset)
+                       .add(surfaceNormal.clone().multiplyScalar(verticalOffset))
+                       .add(forward.clone().multiplyScalar(depthOffset));
+  
+    // Calculate camera position in local space
+    const localCameraPos = characterLocalPos.clone().add(localOffset);
+    
+    // Ensure camera doesn't go below planet surface
+    const distanceFromCenter = localCameraPos.length();
+    const minDistance = this.planetRadius + 0.01; // Small buffer
+    
+    if (distanceFromCenter < minDistance) {
+      localCameraPos.setLength(minDistance);
     }
-    east.normalize(); // e
     
-    const north = upN.clone().cross(east).normalize(); // f (forward)
-
-    // B. Apply yaw (around n) and pitch (around e)
-    const dir = north
-      .clone()
-      .applyAxisAngle(upN, this.yaw) // yaw
-      .applyAxisAngle(east, this.pitch) // pitch
-      .normalize(); // view direction *from* character
-
-    // C. Final camera position & orientation
-    const worldPos = charPos
-      .clone()
-      .add(dir.clone().multiplyScalar(this.distance * -this.planetRadius)) // back off
-      .add(upN.clone().multiplyScalar(this.height)); // eye level
-
-    this.camera.position.copy(worldPos);
-    this.camera.up.copy(upN); // keep horizon level
-    this.camera.lookAt(charPos); // look at character
+    // Transform camera position back to world space
+    const finalCamPos = localCameraPos.clone().applyQuaternion(planetContainerWorldQuat).add(planetContainerWorldPos);
+  
+    this.camera.position.copy(finalCamPos);
+    
+    // Calculate stable up vector in world space
+    const cameraUp = localCameraPos.clone().normalize().applyQuaternion(planetContainerWorldQuat);
+    this.camera.up.copy(cameraUp);
+  
+    this.camera.lookAt(characterWorldPos);
   }
 }
