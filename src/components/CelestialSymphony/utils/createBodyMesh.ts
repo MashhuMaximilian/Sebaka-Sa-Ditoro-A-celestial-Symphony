@@ -140,12 +140,45 @@ export const createBodyMesh = (
     const aoMap = paths?.ambient ? textureLoader.load(paths.ambient) : null;
 
     if (body.type === 'Star') {
-        material = new THREE.MeshPhongMaterial({
-            map: baseTexture,
-            color: body.color,
-            emissive: body.color,
-            emissiveIntensity: initialProps.emissiveIntensity,
-            shininess: 0
+        material = new THREE.ShaderMaterial({
+            uniforms: {
+                alphaStarPos: { value: new THREE.Vector3() },
+                twilightStarPos: { value: new THREE.Vector3() },
+                beaconStarPos: { value: new THREE.Vector3() },
+                alphaColor: { value: new THREE.Color(0xFFF4D4) },
+                twilightColor: { value: new THREE.Color(0xFFC8A2) },
+                beaconColor: { value: new THREE.Color(0xD4E5FF) },
+                alphaIntensity: { value: 1.0 },
+                twilightIntensity: { value: 0.7 },
+                beaconIntensity: { value: 200.0 },
+                emissiveIntensity: { value: initialProps.emissiveIntensity },
+
+                albedo: { value: initialProps.albedo },
+                planetTexture: { value: baseTexture },
+                gridTexture: { value: null as THREE.CanvasTexture | null },
+                useGrid: { value: false },
+                ambientLevel: { value: 0.1 }, // Stars should have higher ambient light
+                isBeaconPlanet: { value: false },
+
+                useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
+                normalMap: { value: normalMap },
+                normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
+
+                useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
+                displacementMap: { value: displacementMap },
+                displacementScale: { value: initialProps.displacementScale },
+
+                useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
+                specularMap: { value: specularMap },
+                specularIntensity: { value: initialProps.specularIntensity },
+                shininess: { value: initialProps.shininess },
+
+                useAoMap: { value: !!aoMap && initialProps.aoMapIntensity > 0 },
+                aoMap: { value: aoMap },
+                aoMapIntensity: { value: initialProps.aoMapIntensity },
+            },
+            vertexShader: planetShader.vertexShader,
+            fragmentShader: planetShader.fragmentShader,
         });
     } else {
         material = new THREE.ShaderMaterial({
