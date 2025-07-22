@@ -160,7 +160,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
     const coronaGeometry = new THREE.SphereGeometry(body.size - 0.1, 32, 32);
     const coronaMaterial = new THREE.MeshBasicMaterial({
         color: starColor,
-        side: THREE.BackSide,
+        side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.8
     });
