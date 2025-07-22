@@ -158,7 +158,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
 
     // 2. Pulsating Corona
     const coronaGeometry = new THREE.SphereGeometry(body.size - 0.1, 32, 32);
-    const coronaMaterial = new MeshBasicMaterial({
+    const coronaMaterial = new THREE.MeshBasicMaterial({
         color: starColor,
         side: THREE.BackSide,
         transparent: true,
@@ -380,6 +380,7 @@ export const createBodyMesh = (
     tiltAxis.add(mesh);
     return tiltAxis;
 };
+
 
 
 
