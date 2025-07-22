@@ -6,39 +6,36 @@ export class CloseUpCharacterCamera {
   public camera: THREE.PerspectiveCamera;
   public character: THREE.Object3D;
   public planet: THREE.Mesh;
-  public planetContainer: THREE.Object3D; // Add reference to the tilt axis container
+  public planetContainer: THREE.Object3D;
+  public domElement: HTMLElement;
   
+  // Public state controlled by input handlers
+  public yaw = Math.PI;   // Rotation around the planet's normal vector (up-down axis)
+  public pitch = 0.15;      // Angle above the horizon
+  public distance = 0.1;    // Distance from the character in planet radii
+
   private planetRadius: number;
-  private distance = 0.1; // Default to min zoom
   private height = eyeHeight;
-  
-  private isMouseDown = false;
-  private lastMouseX = 0;
-  private lastMouseY = 0;
-  private horizontalAngle = Math.PI; // Start behind the character
-  private verticalAngle = 0.1; // Slight upward angle
-
-  // Touch state
-  private lastTouchX = 0;
-  private lastTouchY = 0;
-  private lastPinchDist = 0;
-
 
   // Bound event handlers
   private onMouseDown: (event: MouseEvent) => void;
-  private onMouseUp: () => void;
+  private onMouseUp: (event: MouseEvent) => void;
   private onMouseMove: (event: MouseEvent) => void;
   private onWheel: (event: WheelEvent) => void;
   private onTouchStart: (event: TouchEvent) => void;
   private onTouchEnd: () => void;
   private onTouchMove: (event: TouchEvent) => void;
-  private domElement: HTMLElement;
+  
+  private isMouseDown = false;
+  private lastMouseX = 0;
+  private lastMouseY = 0;
+  private lastPinchDist = 0;
   
   constructor(
     camera: THREE.PerspectiveCamera, 
     character: THREE.Object3D, 
     planet: THREE.Mesh, 
-    planetContainer: THREE.Object3D, // Pass the tilt axis container
+    planetContainer: THREE.Object3D,
     domElement: HTMLElement
   ) {
     this.camera = camera;
@@ -47,12 +44,12 @@ export class CloseUpCharacterCamera {
     this.planetContainer = planetContainer;
     this.domElement = domElement;
     
-    // Ensure planetRadius is calculated correctly
     if (planet.geometry.boundingSphere === null) {
       planet.geometry.computeBoundingSphere();
     }
     this.planetRadius = planet.geometry.boundingSphere!.radius * planet.scale.x;
 
+    // Bind event handlers
     this.onMouseDown = this._onMouseDown.bind(this);
     this.onMouseUp = this._onMouseUp.bind(this);
     this.onMouseMove = this._onMouseMove.bind(this);
@@ -65,33 +62,47 @@ export class CloseUpCharacterCamera {
   }
   
   private setupEventListeners() {
-    // Mouse events
     this.domElement.addEventListener('mousedown', this.onMouseDown);
-    document.addEventListener('mouseup', this.onMouseUp);
-    document.addEventListener('mousemove', this.onMouseMove);
-    this.domElement.addEventListener('wheel', this.onWheel);
-
-    // Touch events
+    window.addEventListener('mouseup', this.onMouseUp);
+    window.addEventListener('mousemove', this.onMouseMove);
+    this.domElement.addEventListener('wheel', this.onWheel, { passive: false });
     this.domElement.addEventListener('touchstart', this.onTouchStart, { passive: false });
     this.domElement.addEventListener('touchend', this.onTouchEnd);
     this.domElement.addEventListener('touchmove', this.onTouchMove, { passive: false });
   }
 
   public dispose() {
-    // Mouse events
     this.domElement.removeEventListener('mousedown', this.onMouseDown);
-    document.removeEventListener('mouseup', this.onMouseUp);
-    document.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mouseup', this.onMouseUp);
+    window.removeEventListener('mousemove', this.onMouseMove);
     this.domElement.removeEventListener('wheel', this.onWheel);
-
-    // Touch events
     this.domElement.removeEventListener('touchstart', this.onTouchStart);
     this.domElement.removeEventListener('touchend', this.onTouchEnd);
     this.domElement.removeEventListener('touchmove', this.onTouchMove);
   }
 
+  private applyDrag(dx: number, dy: number) {
+    const yawSpeed = 0.005;
+    const pitchSpeed = 0.005;
+    this.yaw -= dx * yawSpeed;
+    this.pitch = THREE.MathUtils.clamp(
+      this.pitch - dy * pitchSpeed,
+      0.05, // don’t look below horizon
+      0.45  // don’t look too high
+    );
+  }
+
+  private applyZoom(delta: number) {
+    const zoomSpeed = 0.002;
+    this.distance = THREE.MathUtils.clamp(
+      this.distance + delta * zoomSpeed,
+      0.05, // very close
+      this.planetRadius * 0.6 // max zoom relative to planet size
+    );
+  }
+
   private _onMouseDown(event: MouseEvent) {
-    if (event.target !== this.domElement) return;
+    event.preventDefault();
     this.isMouseDown = true;
     this.lastMouseX = event.clientX;
     this.lastMouseY = event.clientY;
@@ -103,38 +114,26 @@ export class CloseUpCharacterCamera {
   
   private _onMouseMove(event: MouseEvent) {
     if (!this.isMouseDown) return;
-    
+    event.preventDefault();
     const deltaX = event.clientX - this.lastMouseX;
     const deltaY = event.clientY - this.lastMouseY;
-    
-    this.horizontalAngle -= deltaX * 0.005;
-    this.verticalAngle = THREE.MathUtils.clamp(
-      this.verticalAngle - deltaY * 0.005,
-      0.05, // Prevent looking underground
-      0.36 // Limit looking too high up
-    );
-    
     this.lastMouseX = event.clientX;
     this.lastMouseY = event.clientY;
+    this.applyDrag(deltaX, deltaY);
   }
   
   private _onWheel(event: WheelEvent) {
-    this.distance = THREE.MathUtils.clamp(
-      this.distance + event.deltaY * 0.002, // Slightly faster zoom
-      0.05,  // Very close
-      this.planetRadius * 0.6  // Max zoom relative to planet size
-    );
+    event.preventDefault();
+    this.applyZoom(event.deltaY);
   }
 
   private _onTouchStart(event: TouchEvent) {
-    if (event.target !== this.domElement) return;
-    event.preventDefault(); // Prevent default browser actions like scrolling
-
+    event.preventDefault();
     const touches = event.touches;
-    if (touches.length === 1) { // Single finger drag
+    if (touches.length === 1) {
         this.lastTouchX = touches[0].clientX;
         this.lastTouchY = touches[0].clientY;
-    } else if (touches.length === 2) { // Two finger pinch
+    } else if (touches.length === 2) {
         const dx = touches[0].clientX - touches[1].clientX;
         const dy = touches[0].clientY - touches[1].clientY;
         this.lastPinchDist = Math.sqrt(dx * dx + dy * dy);
@@ -142,98 +141,63 @@ export class CloseUpCharacterCamera {
   }
 
   private _onTouchEnd() {
-      this.lastPinchDist = 0; // Reset pinch distance
+    this.lastPinchDist = 0;
   }
   
   private _onTouchMove(event: TouchEvent) {
-    if (event.target !== this.domElement) return;
     event.preventDefault();
-
     const touches = event.touches;
-    if (touches.length === 1) { // Drag
+    if (touches.length === 1) {
         const deltaX = touches[0].clientX - this.lastTouchX;
         const deltaY = touches[0].clientY - this.lastTouchY;
-
-        this.horizontalAngle -= deltaX * 0.005;
-        this.verticalAngle = THREE.MathUtils.clamp(
-            this.verticalAngle - deltaY * 0.005,
-            0.05,
-            0.36
-        );
-
         this.lastTouchX = touches[0].clientX;
         this.lastTouchY = touches[0].clientY;
-
-    } else if (touches.length === 2) { // Pinch
+        this.applyDrag(deltaX, deltaY);
+    } else if (touches.length === 2) {
         const dx = touches[0].clientX - touches[1].clientX;
         const dy = touches[0].clientY - touches[1].clientY;
         const currentPinchDist = Math.sqrt(dx * dx + dy * dy);
-        
         if (this.lastPinchDist > 0) {
             const pinchDelta = this.lastPinchDist - currentPinchDist;
-            this.distance = THREE.MathUtils.clamp(
-                this.distance + pinchDelta * 0.001, // Adjust sensitivity
-                0.05,
-                this.planetRadius * 0.6
-            );
+            this.applyZoom(pinchDelta * 0.5); // Adjust sensitivity for touch
         }
-        
         this.lastPinchDist = currentPinchDist;
     }
   }
   
   update() {
-    const characterWorldPos = new THREE.Vector3();
-    this.character.getWorldPosition(characterWorldPos);
+    // A. Stable local frame
+    const charPos = new THREE.Vector3();
+    this.character.getWorldPosition(charPos); // P
 
-    const planetContainerWorldPos = new THREE.Vector3();
-    const planetContainerWorldQuat = new THREE.Quaternion();
-    this.planetContainer.getWorldPosition(planetContainerWorldPos);
-    this.planetContainer.getWorldQuaternion(planetContainerWorldQuat);
+    const planetPos = new THREE.Vector3();
+    this.planet.getWorldPosition(planetPos); // C
 
-    // 1. Surface normal (n)
-    const n = new THREE.Vector3().subVectors(characterWorldPos, planetContainerWorldPos).normalize();
-
-    // 2. Stable East vector
-    let east = new THREE.Vector3(0, 1, 0).cross(n);
-    if (east.lengthSq() < 1e-4) { // At the pole, fallback to X axis
-        east = new THREE.Vector3(1, 0, 0).cross(n);
+    const upN = charPos.clone().sub(planetPos).normalize(); // n
+    
+    let east = new THREE.Vector3(0, 1, 0).cross(upN);
+    if (east.lengthSq() < 1e-4) { // at the pole
+      east = new THREE.Vector3(1, 0, 0).cross(upN);
     }
-    east.normalize();
-
-    // 3. Stable North vector
-    const north = n.clone().cross(east).normalize();
-
-    // B. Derive the camera's 'back' vector from horizontal angle
-    const yawQuat = new THREE.Quaternion().setFromAxisAngle(n, this.horizontalAngle);
-    const back = north.clone().applyQuaternion(yawQuat).multiplyScalar(-1);
-
-    // C. Place the camera
-    const arcAngle = this.distance / this.planetRadius;
-    const axis = east.clone().cross(back).normalize();
-    const rot = new THREE.Matrix4().makeRotationAxis(axis, arcAngle);
+    east.normalize(); // e
     
-    const charSurface = n.clone().multiplyScalar(this.planetRadius);
-    const camSurface = charSurface.clone().applyMatrix4(rot);
+    const north = upN.clone().cross(east).normalize(); // f (forward)
 
-    // Elevate by eyeHeight
-    const camLocal = camSurface.add(n.clone().multiplyScalar(this.height));
+    // B. Apply yaw (around n) and pitch (around e)
+    const dir = north
+      .clone()
+      .applyAxisAngle(upN, this.yaw) // yaw
+      .applyAxisAngle(east, this.pitch) // pitch
+      .normalize(); // view direction *from* character
 
-    // Transform from planet container's local space to world space
-    const camWorld = camLocal.applyQuaternion(planetContainerWorldQuat)
-                             .add(planetContainerWorldPos);
+    // C. Final camera position & orientation
+    const worldPos = charPos
+      .clone()
+      .add(dir.clone().multiplyScalar(this.distance * -this.planetRadius)) // back off
+      .add(upN.clone().multiplyScalar(this.height)); // eye level
 
-    this.camera.position.copy(camWorld);
-    
-    // The point the camera looks at, pitched by verticalAngle
-    const lookAtPoint = characterWorldPos.clone();
-    const pitchAxis = east.clone().applyQuaternion(yawQuat); // The axis to rotate around for pitch
-    const pitchQuat = new THREE.Quaternion().setFromAxisAngle(pitchAxis, this.verticalAngle - (Math.PI / 2));
-    const lookAtDirection = n.clone().applyQuaternion(pitchQuat);
-    lookAtPoint.add(lookAtDirection);
-
-
-    this.camera.up.copy(n); // Keep camera upright relative to the surface
-    this.camera.lookAt(characterWorldPos);
+    this.camera.position.copy(worldPos);
+    this.camera.up.copy(upN); // keep horizon level
+    this.camera.lookAt(charPos); // look at character
   }
 }
