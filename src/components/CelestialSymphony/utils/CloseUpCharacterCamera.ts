@@ -97,8 +97,8 @@ export class CloseUpCharacterCamera {
   private _onWheel(event: WheelEvent) {
     this.distance = THREE.MathUtils.clamp(
       this.distance + event.deltaY * 0.002, // Slightly faster zoom
-      0.1,  // Very close
-      this.planetRadius * 0.5  // Max zoom relative to planet size
+      0.05,  // Very close
+      this.planetRadius * 0.6  // Max zoom relative to planet size
     );
   }
   
