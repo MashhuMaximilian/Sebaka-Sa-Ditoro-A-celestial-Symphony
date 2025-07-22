@@ -219,30 +219,42 @@ export class CloseUpCharacterCamera {
     characterLocalPos.applyQuaternion(inverseQuat);
     
     const surfaceNormal = characterLocalPos.clone().normalize();
+    
     const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
     const forward = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
     const right = new THREE.Vector3().crossVectors(forward, surfaceNormal).normalize();
     
-    // Calculate camera position using arc-based movement
-    const arcDistance = this.distance;
-    const arcAngle = arcDistance / this.planetRadius;
+    // ** MODIFIED: Much flatter curvature calculation **
     
-    const cameraHeight = this.planetRadius * (1 - Math.cos(arcAngle)) + this.height;
-    const horizontalDistance = this.planetRadius * Math.sin(arcAngle);
+    // Use a much smaller curvature factor
+    const curvatureFactor = 0.1; // Adjust this value: 0.05 = very flat, 0.2 = more curved
+    const arcAngle = (this.distance * curvatureFactor) / this.planetRadius;
     
+    // Linear height increase with minimal curve
+    const baseHeight = this.height;
+    const additionalHeight = this.distance * 0.2; // Linear height gain
+    const curveHeight = this.planetRadius * (1 - Math.cos(arcAngle)) * 0.3; // Much reduced curve
+    
+    const totalHeight = baseHeight + additionalHeight + curveHeight;
+    
+    // Calculate horizontal distance with reduced arc
+    const horizontalDistance = this.distance * 0.9; // More direct backward movement
+    
+    // Apply horizontal angle rotation
     const horizontalOffset = horizontalDistance * Math.sin(this.horizontalAngle);
     const depthOffset = horizontalDistance * Math.cos(this.horizontalAngle);
     
+    // Create the camera offset with minimal curve
     const localOffset = right.clone().multiplyScalar(horizontalOffset)
-                       .add(surfaceNormal.clone().multiplyScalar(cameraHeight))
+                       .add(surfaceNormal.clone().multiplyScalar(totalHeight))
                        .add(forward.clone().multiplyScalar(depthOffset));
 
-    let localCameraPos = characterLocalPos.clone().add(localOffset);
+    const localCameraPos = characterLocalPos.clone().add(localOffset);
     
-    // **NEW: Surface-aware collision detection**
-    localCameraPos = this.ensureSurfaceClearance(localCameraPos);
-    
-    const finalCamPos = localCameraPos.clone().applyQuaternion(planetContainerWorldQuat).add(planetContainerWorldPos);
+    // Transform camera position back to world space
+    const finalCamPos = localCameraPos.clone()
+      .applyQuaternion(planetContainerWorldQuat)
+      .add(planetContainerWorldPos);
 
     this.camera.position.copy(finalCamPos);
     
