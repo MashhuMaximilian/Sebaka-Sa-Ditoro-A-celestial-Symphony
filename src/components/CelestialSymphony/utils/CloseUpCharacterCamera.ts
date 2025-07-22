@@ -183,68 +183,72 @@ export class CloseUpCharacterCamera {
         this.lastPinchDist = currentPinchDist;
     }
   }
+
+  private ensureSurfaceClearance(localCameraPos: THREE.Vector3): THREE.Vector3 {
+    // Calculate the surface point directly below the camera position
+    const cameraToPlanetCenter = localCameraPos.clone();
+    const cameraDirection = cameraToPlanetCenter.clone().normalize();
+    
+    // Find the intersection point on the planet surface along this direction
+    const surfacePoint = cameraDirection.clone().multiplyScalar(this.planetRadius);
+    
+    // Calculate the minimum height above this surface point
+    const surfaceToCamera = localCameraPos.clone().sub(surfacePoint);
+    const heightAboveSurface = surfaceToCamera.length();
+    
+    // If camera is too close to surface, push it up
+    if (heightAboveSurface < this.height) {
+      const correction = cameraDirection.clone().multiplyScalar(this.height - heightAboveSurface);
+      return localCameraPos.add(correction);
+    }
+    
+    return localCameraPos;
+  }
   
   update() {
     const characterWorldPos = new THREE.Vector3();
     this.character.getWorldPosition(characterWorldPos);
-  
+
     const planetContainerWorldPos = new THREE.Vector3();
+    const planetContainerWorldQuat = new THREE.Quaternion();
     this.planetContainer.getWorldPosition(planetContainerWorldPos);
-  
-    const up = characterWorldPos.clone().sub(planetContainerWorldPos).normalize();
-    this.camera.up.copy(up);
-  
-    const { right, forward } = buildStableAxes(up);
-  
-    const yawQuat = new THREE.Quaternion().setFromAxisAngle(up, this.horizontalAngle);
-    const pitchQuat = new THREE.Quaternion().setFromAxisAngle(right, this.verticalAngle);
-  
-    const lookDir = forward.clone().applyQuaternion(yawQuat).applyQuaternion(pitchQuat).normalize();
+    this.planetContainer.getWorldQuaternion(planetContainerWorldQuat);
     
-    // Calculate ideal camera position
-    const cameraOffset = lookDir.clone().multiplyScalar(-this.distance);
-    let idealCamPos = characterWorldPos.clone().add(cameraOffset);
-  
-    // ** ENHANCED SURFACE COLLISION WITH SMOOTH SLIDING **
+    const characterLocalPos = characterWorldPos.clone().sub(planetContainerWorldPos);
+    const inverseQuat = planetContainerWorldQuat.clone().invert();
+    characterLocalPos.applyQuaternion(inverseQuat);
     
-    const planetToCameraVector = idealCamPos.clone().sub(planetContainerWorldPos);
-    const distanceFromPlanetCenter = planetToCameraVector.length();
+    const surfaceNormal = characterLocalPos.clone().normalize();
+    const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+    const forward = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
+    const right = new THREE.Vector3().crossVectors(forward, surfaceNormal).normalize();
     
-    const surfaceRadius = this.planetRadius;
-    const minHeight = 0.01;
-    const maxHeight = 1.0;
+    // Calculate camera position using arc-based movement
+    const arcDistance = this.distance;
+    const arcAngle = arcDistance / this.planetRadius;
     
-    const minDistance = surfaceRadius + minHeight;
-    const maxDistance = surfaceRadius + maxHeight;
+    const cameraHeight = this.planetRadius * (1 - Math.cos(arcAngle)) + this.height;
+    const horizontalDistance = this.planetRadius * Math.sin(arcAngle);
     
-    if (distanceFromPlanetCenter < minDistance) {
-      // Too low - clamp to min height
-      const minHeightPoint = planetToCameraVector.clone().setLength(minDistance);
-      idealCamPos = planetContainerWorldPos.clone().add(minHeightPoint);
-    } else if (distanceFromPlanetCenter > maxDistance) {
-      // Too high - clamp to max height
-      const maxHeightPoint = planetToCameraVector.clone().setLength(maxDistance);
-      idealCamPos = planetContainerWorldPos.clone().add(maxHeightPoint);
-    }
+    const horizontalOffset = horizontalDistance * Math.sin(this.horizontalAngle);
+    const depthOffset = horizontalDistance * Math.cos(this.horizontalAngle);
     
-    // Additional check: ensure camera doesn't intersect with character
-    const characterToCamera = idealCamPos.clone().sub(characterWorldPos);
-    const minCameraDistance = 0.05; // Minimum distance from character
+    const localOffset = right.clone().multiplyScalar(horizontalOffset)
+                       .add(surfaceNormal.clone().multiplyScalar(cameraHeight))
+                       .add(forward.clone().multiplyScalar(depthOffset));
+
+    let localCameraPos = characterLocalPos.clone().add(localOffset);
     
-    if (characterToCamera.length() < minCameraDistance) {
-      characterToCamera.setLength(minCameraDistance);
-      idealCamPos = characterWorldPos.clone().add(characterToCamera);
-      
-      // Re-check surface constraints after character collision adjustment
-      const finalPlanetDistance = idealCamPos.distanceTo(planetContainerWorldPos);
-      if (finalPlanetDistance < minDistance) {
-        const correctedPos = idealCamPos.clone().sub(planetContainerWorldPos);
-        correctedPos.setLength(minDistance);
-        idealCamPos = planetContainerWorldPos.clone().add(correctedPos);
-      }
-    }
-  
-    this.camera.position.copy(idealCamPos);
+    // **NEW: Surface-aware collision detection**
+    localCameraPos = this.ensureSurfaceClearance(localCameraPos);
+    
+    const finalCamPos = localCameraPos.clone().applyQuaternion(planetContainerWorldQuat).add(planetContainerWorldPos);
+
+    this.camera.position.copy(finalCamPos);
+    
+    const cameraUp = finalCamPos.clone().sub(planetContainerWorldPos).normalize();
+    this.camera.up.copy(cameraUp);
+
     this.camera.lookAt(characterWorldPos);
   }
 }
