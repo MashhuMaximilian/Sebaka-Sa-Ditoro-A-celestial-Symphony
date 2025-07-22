@@ -66,6 +66,7 @@ export const useAnimationLoop = ({
   useEffect(() => {
     if (!scene || !camera || !renderer || !controls || !bodyData.length || !isInitialized) return;
 
+    const sebakaContainer = allBodiesRef.current.find(b => b.name === 'Sebaka');
     const sebakaMesh = planetMeshesRef.current.find(b => b.name === 'Sebaka') as THREE.Mesh | undefined;
     
     if (thirdPersonCameraRef.current) {
@@ -77,9 +78,15 @@ export const useAnimationLoop = ({
         characterControllerRef.current = null;
     }
 
-    if (viewFromSebaka && sebakaMesh) {
+    if (viewFromSebaka && sebakaMesh && sebakaContainer) {
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
-      thirdPersonCameraRef.current = new CloseUpCharacterCamera(camera, characterControllerRef.current.characterMesh, sebakaMesh, renderer.domElement);
+      thirdPersonCameraRef.current = new CloseUpCharacterCamera(
+        camera, 
+        characterControllerRef.current.characterMesh, 
+        sebakaMesh,
+        sebakaContainer,
+        renderer.domElement
+      );
       controls.enabled = false;
     } else {
         controls.enabled = true;
@@ -233,5 +240,3 @@ export const useAnimationLoop = ({
     longitude, 
   ]);
 };
-
-    

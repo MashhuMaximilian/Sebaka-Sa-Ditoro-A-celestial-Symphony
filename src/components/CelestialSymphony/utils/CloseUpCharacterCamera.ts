@@ -6,6 +6,7 @@ export class CloseUpCharacterCamera {
   public camera: THREE.PerspectiveCamera;
   public character: THREE.Object3D;
   public planet: THREE.Mesh;
+  public planetContainer: THREE.Object3D; // Add reference to the tilt axis container
   
   private planetRadius: number;
   private distance = 0.1; // Default to min zoom
@@ -24,10 +25,17 @@ export class CloseUpCharacterCamera {
   private onWheel: (event: WheelEvent) => void;
   private domElement: HTMLElement;
   
-  constructor(camera: THREE.PerspectiveCamera, character: THREE.Object3D, planet: THREE.Mesh, domElement: HTMLElement) {
+  constructor(
+    camera: THREE.PerspectiveCamera, 
+    character: THREE.Object3D, 
+    planet: THREE.Mesh, 
+    planetContainer: THREE.Object3D, // Pass the tilt axis container
+    domElement: HTMLElement
+  ) {
     this.camera = camera;
     this.character = character;
     this.planet = planet;
+    this.planetContainer = planetContainer;
     this.domElement = domElement;
     
     // Ensure planetRadius is calculated correctly
@@ -98,43 +106,56 @@ export class CloseUpCharacterCamera {
     const characterWorldPos = new THREE.Vector3();
     this.character.getWorldPosition(characterWorldPos);
 
-    const planetWorldPos = new THREE.Vector3();
-    this.planet.getWorldPosition(planetWorldPos);
-
-    // Vector from planet center to character
-    const toCharacter = characterWorldPos.clone().sub(planetWorldPos);
+    // Get the planet container's world position and rotation (includes tilt)
+    const planetContainerWorldPos = new THREE.Vector3();
+    const planetContainerWorldQuat = new THREE.Quaternion();
+    this.planetContainer.getWorldPosition(planetContainerWorldPos);
+    this.planetContainer.getWorldQuaternion(planetContainerWorldQuat);
     
-    // Create a stable local coordinate system at the character's position
-    // This system is independent of the character's own rotation.
-    const surfaceNormal = toCharacter.clone().normalize(); // This is our "UP"
+    // Get the character's position relative to the planet container
+    const characterLocalPos = characterWorldPos.clone().sub(planetContainerWorldPos);
     
-    // To prevent gimbal lock, choose a vector that is not parallel to the surface normal
+    // Transform to planet container's local space to get "stable" coordinates
+    const inverseQuat = planetContainerWorldQuat.clone().invert();
+    characterLocalPos.applyQuaternion(inverseQuat);
+    
+    // Create stable coordinate system in planet container's local space
+    const surfaceNormal = characterLocalPos.clone().normalize();
+    
+    // Create stable local coordinate system
     const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
     const forward = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
     const right = new THREE.Vector3().crossVectors(forward, surfaceNormal).normalize();
     
-    // Calculate the camera's offset based on mouse input angles
+    // Calculate camera offset in local space
     const horizontalOffset = this.distance * Math.cos(this.verticalAngle) * Math.sin(this.horizontalAngle);
     const verticalOffset = this.distance * Math.sin(this.verticalAngle);
     const depthOffset = this.distance * Math.cos(this.verticalAngle) * Math.cos(this.horizontalAngle);
 
-    // Combine offsets based on our stable coordinate system
-    const offset = right.multiplyScalar(horizontalOffset)
-                   .add(surfaceNormal.multiplyScalar(verticalOffset))
-                   .add(forward.multiplyScalar(depthOffset));
+    const localOffset = right.clone().multiplyScalar(horizontalOffset)
+                       .add(surfaceNormal.clone().multiplyScalar(verticalOffset))
+                       .add(forward.clone().multiplyScalar(depthOffset));
 
-    const idealCameraPos = characterWorldPos.clone().add(offset);
+    // Calculate camera position in local space
+    const localCameraPos = characterLocalPos.clone().add(localOffset);
     
-    // --- Enforce Ground Pinning ---
-    // Ensure the final camera position is on the surface
-    const cameraToPlanetCenter = idealCameraPos.clone().sub(planetWorldPos);
-    const finalCamPos = planetWorldPos.clone().add(cameraToPlanetCenter.normalize().multiplyScalar(this.planetRadius + this.height));
+    // Ensure camera stays on surface in local space
+    const localCameraToPlanetCenter = localCameraPos.clone();
+    const distanceFromCenter = localCameraToPlanetCenter.length();
+    const minDistance = this.planetRadius + this.height;
+    
+    if (distanceFromCenter < minDistance) {
+        localCameraPos.setLength(minDistance);
+    }
+    
+    // Transform camera position back to world space
+    const finalCamPos = localCameraPos.clone().applyQuaternion(planetContainerWorldQuat).add(planetContainerWorldPos);
 
     this.camera.position.copy(finalCamPos);
     
     // --- Enforce Upright Orientation ---
-    // The "up" direction for the camera is always away from the planet's center
-    const cameraUp = this.camera.position.clone().sub(planetWorldPos).normalize();
+    // The "up" direction for the camera is always away from the planet's center in world space
+    const cameraUp = finalCamPos.clone().sub(planetContainerWorldPos).normalize();
     this.camera.up.copy(cameraUp);
 
     this.camera.lookAt(characterWorldPos);
