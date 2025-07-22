@@ -160,7 +160,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
     // 2. Pulsating Corona
     const coronaGeometry = new THREE.SphereGeometry(body.size - 0.1, 32, 32);
     const coronaMaterial = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(0xff0000), // Reddish, but will be animated
+        color: starColor,
         side: THREE.BackSide,
         transparent: true,
         opacity: 0.8
@@ -188,7 +188,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
             );
             v3.copy(p)
               .setLength(body.size)
-              .addScaledVector(p, ns * 0.4);
+              .addScaledVector(p, ns * 1.2);
             pos.setXYZ(i, v3.x, v3.y, v3.z);
         }
         pos.needsUpdate = true;
@@ -381,5 +381,6 @@ export const createBodyMesh = (
     tiltAxis.add(mesh);
     return tiltAxis;
 };
+
 
 
