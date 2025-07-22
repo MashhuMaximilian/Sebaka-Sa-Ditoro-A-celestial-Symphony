@@ -239,7 +239,7 @@ export default function Home() {
   const [goToTime, setGoToTime] = useState<number | null>(null);
   
   const [isInitialized, setIsInitialized] = useState(false);
-  const [fov, setFov] = useState(75);
+  const [fov, setFov] = useState(111);
 
 
   const handleApplyPalette = (newColors: string[]) => {
@@ -459,7 +459,7 @@ export default function Home() {
                     <Slider
                         id="fov-slider"
                         min={25}
-                        max={250}
+                        max={150}
                         step={1}
                         value={[fov]}
                         onValueChange={handleFovChange}
