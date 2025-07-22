@@ -44,7 +44,7 @@ export const spiderStrandShader = {
     
     void main() {
       vec3 viewDir = normalize(cameraPosition - vWorldPosition);
-      vec3 normal = normalize(cross(dFdx(vWorldWorldPosition), dFdy(vWorldPosition)));
+      vec3 normal = normalize(cross(dFdx(vWorldPosition), dFdy(vWorldPosition)));
       float fresnel = pow(1.0 - max(0.0, dot(normal, viewDir)), 2.0);
       
       // Use position and time to cycle through the color palette
