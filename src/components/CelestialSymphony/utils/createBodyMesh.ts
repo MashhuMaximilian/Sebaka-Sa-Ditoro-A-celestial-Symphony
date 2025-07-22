@@ -50,7 +50,7 @@ export const texturePaths: { [key: string]: { [key: string]: string | undefined 
         ambient: '/maps/goldenGiver_ambient.png',
         displacement: '/maps/goldenGiver_displacement.png',
         specular: '/maps/goldenGiver_specular.png',
-        normal: undefined,
+        normal: '/maps/goldenGiver_normal.png',
     },
     Twilight: {
         base: '/maps/TwilightTexture.jpg',
