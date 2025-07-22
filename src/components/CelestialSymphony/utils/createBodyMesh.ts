@@ -2,7 +2,6 @@
 import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { planetShader } from '../shaders/planetShader';
-import { spiderStrandShader } from '../shaders/spiderStrandShader';
 import { fresnelShader } from '../shaders/fresnelShader';
 import { ImprovedNoise } from './ImprovedNoise';
 import type { MaterialProperties } from '@/types';
@@ -159,7 +158,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
 
     // 2. Pulsating Corona
     const coronaGeometry = new THREE.SphereGeometry(body.size - 0.1, 32, 32);
-    const coronaMaterial = new THREE.MeshBasicMaterial({
+    const coronaMaterial = new MeshBasicMaterial({
         color: starColor,
         side: THREE.BackSide,
         transparent: true,
@@ -188,7 +187,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
             );
             v3.copy(p)
               .setLength(body.size)
-              .addScaledVector(p, ns * 1.2);
+              .addScaledVector(p, ns * body.size * 0.2);
             pos.setXYZ(i, v3.x, v3.y, v3.z);
         }
         pos.needsUpdate = true;
@@ -210,7 +209,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
         blending: THREE.AdditiveBlending,
     });
     const glowMesh = new THREE.Mesh(new THREE.SphereGeometry(body.size, 64, 64), glowMaterial);
-    glowMesh.scale.setScalar(1.2);
+    glowMesh.scale.setScalar(2.5);
     glowMesh.name = `${body.name}_glow`;
     starGroup.add(glowMesh);
 
@@ -381,6 +380,7 @@ export const createBodyMesh = (
     tiltAxis.add(mesh);
     return tiltAxis;
 };
+
 
 
 
