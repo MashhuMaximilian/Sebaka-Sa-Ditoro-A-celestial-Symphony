@@ -167,69 +167,62 @@ export class CloseUpCharacterCamera {
     }
   }
   
-  update() {
-    const characterWorldPos = new THREE.Vector3();
-    this.character.getWorldPosition(characterWorldPos);
+update() {
+  const characterWorldPos = new THREE.Vector3();
+  this.character.getWorldPosition(characterWorldPos);
+
+  const planetContainerWorldPos = new THREE.Vector3();
+  const planetContainerWorldQuat = new THREE.Quaternion();
+  this.planetContainer.getWorldPosition(planetContainerWorldPos);
+  this.planetContainer.getWorldQuaternion(planetContainerWorldQuat);
   
-    // Get the planet container's world position and rotation (includes tilt)
-    const planetContainerWorldPos = new THREE.Vector3();
-    const planetContainerWorldQuat = new THREE.Quaternion();
-    this.planetContainer.getWorldPosition(planetContainerWorldPos);
-    this.planetContainer.getWorldQuaternion(planetContainerWorldQuat);
-    
-    // Get the character's position relative to the planet container
-    const characterLocalPos = characterWorldPos.clone().sub(planetContainerWorldPos);
-    
-    // Transform to planet container's local space to get "stable" coordinates
-    const inverseQuat = planetContainerWorldQuat.clone().invert();
-    characterLocalPos.applyQuaternion(inverseQuat);
-    
-    // Create stable coordinate system in planet container's local space
-    const surfaceNormal = characterLocalPos.clone().normalize();
-    
-    // Create stable local coordinate system
-    const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
-    const right = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
-    const forward = new THREE.Vector3().crossVectors(right, surfaceNormal).normalize();
-    
-    // Calculate camera position following planet curvature
-    const arcDistance = this.distance;
-    const arcAngle = arcDistance / this.planetRadius;
-    
-    // Enhanced curvature calculation for better planet-relative zoom
-    const cameraHeight = this.planetRadius * (1 - Math.cos(arcAngle)) + this.height;
-    const horizontalDistance = this.planetRadius * Math.sin(arcAngle);
-    
-    // Apply both horizontal and vertical angles
-    const horizontalOffset = horizontalDistance * Math.cos(this.verticalAngle) * Math.sin(this.horizontalAngle);
-    const verticalOffset = cameraHeight + horizontalDistance * Math.sin(this.verticalAngle);
-    const depthOffset = horizontalDistance * Math.cos(this.verticalAngle) * Math.cos(this.horizontalAngle);
-    
-    // Create the camera offset in local space (unaffected by planet rotation)
-    const localOffset = right.clone().multiplyScalar(horizontalOffset)
-                       .add(surfaceNormal.clone().multiplyScalar(verticalOffset))
-                       .add(forward.clone().multiplyScalar(depthOffset));
+  // Get character position in planet's local space
+  const characterLocalPos = characterWorldPos.clone().sub(planetContainerWorldPos);
+  const inverseQuat = planetContainerWorldQuat.clone().invert();
+  characterLocalPos.applyQuaternion(inverseQuat);
   
-    // Calculate camera position in local space
-    const localCameraPos = characterLocalPos.clone().add(localOffset);
-    
-    // Ensure camera doesn't go below planet surface
-    const distanceFromCenter = localCameraPos.length();
-    const minDistance = this.planetRadius + 0.01; // Small buffer
-    
-    if (distanceFromCenter < minDistance) {
-      localCameraPos.setLength(minDistance);
-    }
-    
-    // Transform camera position back to world space
-    const finalCamPos = localCameraPos.clone().applyQuaternion(planetContainerWorldQuat).add(planetContainerWorldPos);
+  // Normalize to get position on unit sphere, then scale to planet surface
+  const characterSurfacePos = characterLocalPos.clone().normalize().multiplyScalar(this.planetRadius);
   
-    this.camera.position.copy(finalCamPos);
-    
-    // Calculate stable up vector in world space
-    const cameraUp = localCameraPos.clone().normalize().applyQuaternion(planetContainerWorldQuat);
-    this.camera.up.copy(cameraUp);
+  // Create local coordinate system at character's surface position
+  const surfaceNormal = characterSurfacePos.clone().normalize();
+  const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
+  const tangent1 = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
+  const tangent2 = new THREE.Vector3().crossVectors(surfaceNormal, tangent1).normalize();
   
-    this.camera.lookAt(characterWorldPos);
-  }
+  // Calculate arc angle from distance
+  const arcAngle = this.distance / this.planetRadius;
+  
+  // Calculate direction for camera offset (behind character)
+  const offsetDirection = tangent1.clone().multiplyScalar(Math.cos(this.horizontalAngle))
+                           .add(tangent2.clone().multiplyScalar(Math.sin(this.horizontalAngle)));
+  
+  // Rotate the character's surface position around planet center by arc angle
+  // Create rotation axis perpendicular to both surface normal and offset direction
+  const rotationAxis = new THREE.Vector3().crossVectors(surfaceNormal, offsetDirection).normalize();
+  
+  // Create rotation matrix for the arc movement
+  const rotationMatrix = new THREE.Matrix4().makeRotationAxis(rotationAxis, arcAngle);
+  
+  // Apply rotation to get new surface position
+  const cameraSurfacePos = characterSurfacePos.clone().applyMatrix4(rotationMatrix);
+  
+  // Add minimal height offset (just enough to avoid z-fighting)
+  const cameraLocalPos = cameraSurfacePos.clone().add(
+    cameraSurfacePos.clone().normalize().multiplyScalar(this.height)
+  );
+  
+  // Transform back to world space
+  const finalCamPos = cameraLocalPos.clone()
+    .applyQuaternion(planetContainerWorldQuat)
+    .add(planetContainerWorldPos);
+
+  this.camera.position.copy(finalCamPos);
+  
+  // Camera up vector points away from planet center
+  const cameraUp = finalCamPos.clone().sub(planetContainerWorldPos).normalize();
+  this.camera.up.copy(cameraUp);
+  
+  this.camera.lookAt(characterWorldPos);
+}
 }
