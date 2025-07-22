@@ -210,7 +210,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
         blending: THREE.AdditiveBlending,
     });
     const glowMesh = new THREE.Mesh(new THREE.SphereGeometry(body.size, 64, 64), glowMaterial);
-    glowMesh.scale.setScalar(1.1);
+    glowMesh.scale.setScalar(1.2);
     glowMesh.name = `${body.name}_glow`;
     starGroup.add(glowMesh);
 
@@ -381,4 +381,5 @@ export const createBodyMesh = (
     tiltAxis.add(mesh);
     return tiltAxis;
 };
+
 

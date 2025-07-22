@@ -30,12 +30,13 @@ export const useBodyClickHandler = ({ renderer, camera, allBodies, onBodyClick, 
             const intersects = raycaster.intersectObjects(allBodies, true);
             if (intersects.length > 0) {
                 let currentObject = intersects[0].object;
-                while(currentObject.parent && !currentObject.name) {
-                    if (currentObject.parent.name) {
+                // Traverse up the hierarchy to find the main body group, which has the name.
+                while(currentObject.parent && !allBodies.some(body => body.name === currentObject.name)) {
+                    if (currentObject.parent) {
                         currentObject = currentObject.parent;
-                        break;
+                    } else {
+                        break; // Reached the scene root without finding a named body
                     }
-                    currentObject = currentObject.parent;
                 }
                 if (currentObject.name) onBodyClick(currentObject.name);
             }
