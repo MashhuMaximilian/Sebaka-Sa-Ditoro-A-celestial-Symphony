@@ -145,9 +145,9 @@ export const useAnimationLoop = ({
                   mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
               }
           }
-          // Animate the star itself via its userData update function
           if (currentBodyData?.type === 'Star') {
-            bodyObject.userData.update?.(elapsedHoursRef.current);
+            const starGroup = bodyObject.children[0] as THREE.Group | undefined;
+            starGroup?.userData?.update?.(elapsedHoursRef.current);
           }
       });
       

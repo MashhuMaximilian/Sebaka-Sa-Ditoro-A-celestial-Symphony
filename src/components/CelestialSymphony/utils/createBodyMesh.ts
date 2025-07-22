@@ -126,7 +126,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
     const starColor = new THREE.Color(body.color);
     const paths = texturePaths[body.name];
 
-    // 1. Textured Core (using planetShader for advanced maps)
+    // 1. Textured Core
     const coreGeometry = new THREE.SphereGeometry(body.size, 64, 64);
     coreGeometry.computeTangents();
 
@@ -153,11 +153,10 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
         fragmentShader: planetShader.fragmentShader,
     });
     const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
-    coreMesh.name = body.name; // Keep name on core for raycasting
+    coreMesh.name = body.name;
     starGroup.add(coreMesh);
 
-
-    // 2. Pulsating Corona
+    // 2. Pulsating Corona (Flare Animation)
     const coronaGeometry = new THREE.SphereGeometry(body.size - 0.1, 32, 32);
     const coronaMaterial = new THREE.MeshBasicMaterial({
         color: starColor,
@@ -175,7 +174,6 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
     pos.usage = THREE.DynamicDrawUsage;
     const len = pos.count;
     
-    // Attach update function to the mesh's userData for the animation loop
     coronaMesh.userData.update = (time: number) => {
         const t = time * 0.1;
         for (let i = 0; i < len; i++) {
@@ -188,14 +186,14 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
             );
             v3.copy(p)
               .setLength(body.size)
-              .addScaledVector(p, ns * body.size * 0.2);
+              .addScaledVector(p, ns * body.size * 0.05); // Way smaller corona
             pos.setXYZ(i, v3.x, v3.y, v3.z);
         }
         pos.needsUpdate = true;
     };
     starGroup.add(coronaMesh);
 
-    // 3. Glow Layer
+    // 3. Glow Layer (Corona Aura)
     const glowMaterial = new THREE.ShaderMaterial({
         uniforms: {
             color1: { value: new THREE.Color('black') },
@@ -210,7 +208,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
         blending: THREE.AdditiveBlending,
     });
     const glowMesh = new THREE.Mesh(new THREE.SphereGeometry(body.size, 64, 64), glowMaterial);
-    glowMesh.scale.setScalar(2.5);
+    glowMesh.scale.setScalar(1.2); // Smaller corona
     glowMesh.name = `${body.name}_glow`;
     starGroup.add(glowMesh);
 
@@ -234,10 +232,10 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
     starGroup.add(rimMesh);
 
     // 5. Point Light
-    const pointLight = new THREE.PointLight(starColor, 2, 0, 0); // High intensity
+    const pointLight = new THREE.PointLight(starColor, 2, 0, 0);
     starGroup.add(pointLight);
 
-    // Attach master update function to the group
+    // Attach master update function to the group's userData
     starGroup.userData.update = (time: number) => {
         coronaMesh.userData.update?.(time);
     };
@@ -253,17 +251,14 @@ export const createBodyMesh = (
     initialProps: MaterialProperties[string]
 ): THREE.Object3D => {
     
+    // This is the main container for the body, including any tilt.
+    const tiltAxis = new THREE.Object3D();
+    tiltAxis.name = body.name; 
+
     if (body.type === 'Star') {
         const starGroup = createStar(body, initialProps);
-        const tiltAxis = new THREE.Object3D();
-        tiltAxis.name = body.name; // Name the group for camera targeting
         tiltAxis.add(starGroup);
-        // The main update function for the star is now attached to the starGroup's userData
-        const masterUpdate = (elapsedHours: number) => {
-             starGroup.userData.update?.(elapsedHours);
-        };
-        // We'll attach this to the tiltAxis so the main animation loop can find it.
-        tiltAxis.userData.update = masterUpdate;
+        // The main animation loop will find and call starGroup.userData.update
         return tiltAxis;
     }
     
@@ -271,9 +266,6 @@ export const createBodyMesh = (
     geometry.computeTangents();
     let material: THREE.Material;
     
-    const tiltAxis = new THREE.Object3D();
-    tiltAxis.name = body.name;
-
     let mesh: THREE.Mesh;
     const paths = texturePaths[body.name];
 
@@ -381,6 +373,7 @@ export const createBodyMesh = (
     tiltAxis.add(mesh);
     return tiltAxis;
 };
+
 
 
 
