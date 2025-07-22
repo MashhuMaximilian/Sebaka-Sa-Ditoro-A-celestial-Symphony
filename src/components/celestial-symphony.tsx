@@ -81,6 +81,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     stars: props.stars,
     planets: props.planets,
     allMeshes: allMeshesRef,
+    allBodies: allBodiesRef,
     isViridisAnimationActive: props.isViridisAnimationActive,
     viewFromSebaka: props.viewFromSebaka,
     materialProperties: props.materialProperties,

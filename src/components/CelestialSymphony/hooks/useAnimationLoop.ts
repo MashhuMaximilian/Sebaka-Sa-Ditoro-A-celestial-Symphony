@@ -136,27 +136,33 @@ export const useAnimationLoop = ({
         onTimeUpdate(elapsedHoursRef.current);
       }
       
-      if (isSebakaRotatingRef.current) {
-        allBodiesRef.current.forEach(bodyObject => {
+      allBodiesRef.current.forEach(bodyObject => {
           const currentBodyData = bodyData.find(d => d.name === bodyObject.name);
-          if (currentBodyData?.type === 'Planet' && 'rotationPeriodHours' in currentBodyData && currentBodyData.rotationPeriodHours) {
-            const mesh = bodyObject.children[0] as THREE.Mesh | undefined;
-            if (mesh) {
-                const rotationPerHour = (2 * Math.PI) / currentBodyData.rotationPeriodHours;
-                mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
+          if (currentBodyData?.type === 'Planet' && 'rotationPeriodHours' in currentBodyData && currentBodyData.rotationPeriodHours && isSebakaRotatingRef.current) {
+              const mesh = bodyObject.children[0] as THREE.Mesh | undefined;
+              if (mesh) {
+                  const rotationPerHour = (2 * Math.PI) / currentBodyData.rotationPeriodHours;
+                  mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
+              }
+          }
+          // Animate the star corona
+          if (currentBodyData?.type === 'Star') {
+            const corona = bodyObject.getObjectByName(`${bodyObject.name}_corona`);
+            if (corona && corona.userData.update) {
+              corona.userData.update(elapsedHoursRef.current);
             }
           }
-        });
-      }
+      });
+      
 
       const alphaStarBody = allBodiesRef.current.find(b => b.name === 'Alpha');
       const twilightStarBody = allBodiesRef.current.find(b => b.name === 'Twilight');
       const beaconStarBody = allBodiesRef.current.find(b => b.name === 'Beacon');
       
       if (alphaStarBody && twilightStarBody && beaconStarBody) {
-          const allMeshes = planetMeshesRef.current;
-          allMeshes.forEach(mesh => {
-              if (mesh.material instanceof THREE.ShaderMaterial) {
+          const allPlanetMeshes = planetMeshesRef.current;
+          allPlanetMeshes.forEach(mesh => {
+              if (mesh.material instanceof THREE.ShaderMaterial && 'isBeaconPlanet' in mesh.material.uniforms) {
                   mesh.material.uniforms.alphaStarPos.value.copy(alphaStarBody.position);
                   mesh.material.uniforms.twilightStarPos.value.copy(twilightStarBody.position);
                   mesh.material.uniforms.beaconStarPos.value.copy(beaconStarBody.position);

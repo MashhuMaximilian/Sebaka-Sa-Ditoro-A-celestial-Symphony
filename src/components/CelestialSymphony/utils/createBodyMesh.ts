@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import type { BodyData } from '../hooks/useBodyData';
 import { planetShader } from '../shaders/planetShader';
 import { spiderStrandShader } from '../shaders/spiderStrandShader';
+import { fresnelShader } from '../shaders/fresnelShader';
+import { ImprovedNoise } from './ImprovedNoise';
 import type { MaterialProperties } from '@/types';
 
 const textureLoader = new THREE.TextureLoader();
@@ -117,12 +119,117 @@ export const texturePaths: { [key: string]: { [key: string]: string | undefined 
     }
 };
 
+const createStar = (body: BodyData, initialProps: MaterialProperties[string]) => {
+    const starGroup = new THREE.Group();
+    const starColor = new THREE.Color(body.color);
+    
+    // 1. Textured Core (using planetShader)
+    const coreMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(body.size, 64, 64),
+        new THREE.MeshBasicMaterial({ color: starColor, emissive: starColor, emissiveIntensity: 1.5 })
+    );
+    coreMesh.name = body.name; // Keep the name on the core mesh for raycasting
+    starGroup.add(coreMesh);
+
+
+    // 2. Pulsating Corona
+    const coronaGeometry = new THREE.SphereGeometry(body.size - 0.1, 32, 32);
+    const coronaMaterial = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(0xff0000), // Reddish, but will be animated
+        side: THREE.BackSide,
+        transparent: true,
+        opacity: 0.8
+    });
+    const coronaMesh = new THREE.Mesh(coronaGeometry, coronaMaterial);
+    coronaMesh.name = `${body.name}_corona`;
+    
+    const coronaNoise = new ImprovedNoise();
+    let v3 = new THREE.Vector3();
+    let p = new THREE.Vector3();
+    const pos = coronaGeometry.attributes.position as THREE.BufferAttribute;
+    pos.usage = THREE.DynamicDrawUsage;
+    const len = pos.count;
+    
+    coronaMesh.userData.update = (time: number) => {
+        const t = time * 0.1;
+        for (let i = 0; i < len; i++) {
+            p.fromBufferAttribute(pos, i).normalize();
+            v3.copy(p).multiplyScalar(body.size);
+            let ns = coronaNoise.noise(
+                v3.x + Math.cos(t),
+                v3.y + Math.sin(t),
+                v3.z + t
+            );
+            v3.copy(p)
+              .setLength(body.size)
+              .addScaledVector(p, ns * 0.4);
+            pos.setXYZ(i, v3.x, v3.y, v3.z);
+        }
+        pos.needsUpdate = true;
+    };
+    starGroup.add(coronaMesh);
+
+    // 3. Glow Layer
+    const glowMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            color1: { value: new THREE.Color('black') },
+            color2: { value: starColor },
+            fresnelBias: { value: 0.2 },
+            fresnelScale: { value: 1.5 },
+            fresnelPower: { value: 4.0 },
+        },
+        vertexShader: fresnelShader.vertexShader,
+        fragmentShader: fresnelShader.fragmentShader,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+    });
+    const glowMesh = new THREE.Mesh(new THREE.SphereGeometry(body.size, 64, 64), glowMaterial);
+    glowMesh.scale.setScalar(1.1);
+    glowMesh.name = `${body.name}_glow`;
+    starGroup.add(glowMesh);
+
+    // 4. Rim Layer
+    const rimMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            color1: { value: starColor },
+            color2: { value: new THREE.Color('black') },
+            fresnelBias: { value: 0.2 },
+            fresnelScale: { value: 1.5 },
+            fresnelPower: { value: 4.0 },
+        },
+        vertexShader: fresnelShader.vertexShader,
+        fragmentShader: fresnelShader.fragmentShader,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+    });
+    const rimMesh = new THREE.Mesh(new THREE.SphereGeometry(body.size, 64, 64), rimMaterial);
+    rimMesh.scale.setScalar(1.01);
+    rimMesh.name = `${body.name}_rim`;
+    starGroup.add(rimMesh);
+
+    // 5. Point Light
+    const pointLight = new THREE.PointLight(starColor, 2, 0, 0); // High intensity
+    starGroup.add(pointLight);
+
+    return starGroup;
+}
+
+
 export const createBodyMesh = (
     body: BodyData,
     viewFromSebaka: boolean,
     sebakaGridTexture: THREE.CanvasTexture | null,
     initialProps: MaterialProperties[string]
 ): THREE.Object3D => {
+    
+    if (body.type === 'Star') {
+        const starGroup = createStar(body, initialProps);
+        const tiltAxis = new THREE.Object3D();
+        tiltAxis.name = body.name; // Name the group for camera targeting
+        tiltAxis.add(starGroup);
+        return tiltAxis;
+    }
+    
     const geometry = new THREE.SphereGeometry(body.size, 64, 64);
     geometry.computeTangents();
     let material: THREE.Material;
@@ -138,91 +245,48 @@ export const createBodyMesh = (
     const displacementMap = paths?.displacement ? textureLoader.load(paths.displacement) : null;
     const specularMap = paths?.specular ? textureLoader.load(paths.specular) : null;
     const aoMap = paths?.ambient ? textureLoader.load(paths.ambient) : null;
+    
+    material = new THREE.ShaderMaterial({
+        uniforms: {
+            alphaStarPos: { value: new THREE.Vector3() },
+            twilightStarPos: { value: new THREE.Vector3() },
+            beaconStarPos: { value: new THREE.Vector3() },
+            alphaColor: { value: new THREE.Color(0xFFF4D4) },
+            twilightColor: { value: new THREE.Color(0xFFC8A2) },
+            beaconColor: { value: new THREE.Color(0xD4E5FF) },
+            alphaIntensity: { value: 1.0 },
+            twilightIntensity: { value: 0.7 },
+            beaconIntensity: { value: 200.0 },
+            emissiveIntensity: { value: initialProps.emissiveIntensity },
 
-    if (body.type === 'Star') {
-        material = new THREE.ShaderMaterial({
-            uniforms: {
-                alphaStarPos: { value: new THREE.Vector3() },
-                twilightStarPos: { value: new THREE.Vector3() },
-                beaconStarPos: { value: new THREE.Vector3() },
-                alphaColor: { value: new THREE.Color(0xFFF4D4) },
-                twilightColor: { value: new THREE.Color(0xFFC8A2) },
-                beaconColor: { value: new THREE.Color(0xD4E5FF) },
-                alphaIntensity: { value: 1.0 },
-                twilightIntensity: { value: 0.7 },
-                beaconIntensity: { value: 200.0 },
-                emissiveIntensity: { value: initialProps.emissiveIntensity },
+            albedo: { value: initialProps.albedo },
+            planetTexture: { value: baseTexture },
+            gridTexture: { value: null as THREE.CanvasTexture | null },
+            useGrid: { value: false },
+            ambientLevel: { value: 0.02 },
+            isBeaconPlanet: { value: body.name === 'Gelidis' || body.name === 'Liminis' },
 
-                albedo: { value: initialProps.albedo },
-                planetTexture: { value: baseTexture },
-                gridTexture: { value: null as THREE.CanvasTexture | null },
-                useGrid: { value: false },
-                ambientLevel: { value: 0.1 }, // Stars should have higher ambient light
-                isBeaconPlanet: { value: false },
+            useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
+            normalMap: { value: normalMap },
+            normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
 
-                useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
-                normalMap: { value: normalMap },
-                normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
+            useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
+            displacementMap: { value: displacementMap },
+            displacementScale: { value: initialProps.displacementScale },
 
-                useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
-                displacementMap: { value: displacementMap },
-                displacementScale: { value: initialProps.displacementScale },
+            useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
+            specularMap: { value: specularMap },
+            specularIntensity: { value: initialProps.specularIntensity },
+            shininess: { value: initialProps.shininess },
 
-                useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
-                specularMap: { value: specularMap },
-                specularIntensity: { value: initialProps.specularIntensity },
-                shininess: { value: initialProps.shininess },
-
-                useAoMap: { value: !!aoMap && initialProps.aoMapIntensity > 0 },
-                aoMap: { value: aoMap },
-                aoMapIntensity: { value: initialProps.aoMapIntensity },
-            },
-            vertexShader: planetShader.vertexShader,
-            fragmentShader: planetShader.fragmentShader,
-        });
-    } else {
-        material = new THREE.ShaderMaterial({
-            uniforms: {
-                alphaStarPos: { value: new THREE.Vector3() },
-                twilightStarPos: { value: new THREE.Vector3() },
-                beaconStarPos: { value: new THREE.Vector3() },
-                alphaColor: { value: new THREE.Color(0xFFF4D4) },
-                twilightColor: { value: new THREE.Color(0xFFC8A2) },
-                beaconColor: { value: new THREE.Color(0xD4E5FF) },
-                alphaIntensity: { value: 1.0 },
-                twilightIntensity: { value: 0.7 },
-                beaconIntensity: { value: 200.0 },
-                emissiveIntensity: { value: initialProps.emissiveIntensity },
-
-                albedo: { value: initialProps.albedo },
-                planetTexture: { value: baseTexture },
-                gridTexture: { value: null as THREE.CanvasTexture | null },
-                useGrid: { value: false },
-                ambientLevel: { value: 0.02 },
-                isBeaconPlanet: { value: body.name === 'Gelidis' || body.name === 'Liminis' },
-
-                useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
-                normalMap: { value: normalMap },
-                normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
-
-                useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
-                displacementMap: { value: displacementMap },
-                displacementScale: { value: initialProps.displacementScale },
-
-                useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
-                specularMap: { value: specularMap },
-                specularIntensity: { value: initialProps.specularIntensity },
-                shininess: { value: initialProps.shininess },
-
-                useAoMap: { value: !!aoMap && initialProps.aoMapIntensity > 0 },
-                aoMap: { value: aoMap },
-                aoMapIntensity: { value: initialProps.aoMapIntensity },
-            },
-            vertexShader: planetShader.vertexShader,
-            fragmentShader: planetShader.fragmentShader,
-            transparent: body.name === 'Spectris' || body.name === 'Aetheris',
-        });
-    }
+            useAoMap: { value: !!aoMap && initialProps.aoMapIntensity > 0 },
+            aoMap: { value: aoMap },
+            aoMapIntensity: { value: initialProps.aoMapIntensity },
+        },
+        vertexShader: planetShader.vertexShader,
+        fragmentShader: planetShader.fragmentShader,
+        transparent: body.name === 'Spectris' || body.name === 'Aetheris',
+    });
     
     if(body.name === 'Sebaka' && (material instanceof THREE.ShaderMaterial)){
         material.uniforms.gridTexture.value = sebakaGridTexture;

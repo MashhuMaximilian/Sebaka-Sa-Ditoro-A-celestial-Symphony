@@ -8,6 +8,7 @@ interface UpdateBodyMaterialsProps {
     stars: StarData[];
     planets: PlanetData[];
     allMeshes: React.MutableRefObject<THREE.Mesh[]>;
+    allBodies: React.MutableRefObject<THREE.Object3D[]>;
     isViridisAnimationActive: boolean;
     viewFromSebaka: boolean;
     materialProperties: MaterialProperties;
@@ -17,6 +18,7 @@ export const useUpdateBodyMaterials = ({
     stars,
     planets,
     allMeshes,
+    allBodies,
     isViridisAnimationActive,
     viewFromSebaka,
     materialProperties,
@@ -31,22 +33,17 @@ export const useUpdateBodyMaterials = ({
         planetMeshes.forEach((mesh) => {
             const planetData = planets.find(p => p.name === mesh.name);
             if (!planetData) return;
-            // This logic is currently not used but might be useful later.
-            // if (mesh.material instanceof THREE.ShaderMaterial) {
-            //     const planetColor = new THREE.Color(planetData.color);
-            //     mesh.material.uniforms.baseColor.value.set(planetColor);
-            // }
         });
     }, [planets, allMeshes]);
 
     useEffect(() => {
-        if (!allMeshes.current.length) return; // Guard against running before initialization
+        if (!allBodies.current.length) return; // Guard against running before initialization
 
+        // Update all planets
         allMeshes.current.forEach((mesh) => {
-            if (!mesh) return;
-
+             if (!mesh || !(mesh.material instanceof THREE.ShaderMaterial) || !('isBeaconPlanet' in mesh.material.uniforms)) return;
             const props = materialProperties[mesh.name];
-            if (!props || !(mesh.material instanceof THREE.ShaderMaterial)) return;
+            if (!props) return;
             
             const uniforms = mesh.material.uniforms;
             
@@ -90,7 +87,7 @@ export const useUpdateBodyMaterials = ({
                 uniforms.aoMapIntensity.value = props.aoMapIntensity;
             }
         });
-    }, [materialProperties, allMeshes]);
+    }, [materialProperties, allMeshes, allBodies]);
 
 
     useEffect(() => {
