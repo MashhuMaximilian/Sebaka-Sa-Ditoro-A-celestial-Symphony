@@ -27,7 +27,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
 
 
     const allBodiesRef = useRef<THREE.Object3D[]>([]);
-    const planetMeshesRef = useRef<THREE.Mesh[]>([]);
+    const allMeshesRef = useRef<THREE.Mesh[]>([]);
     const orbitMeshesRef = useRef<THREE.Mesh[]>([]);
     const beaconPositionRef = useRef(new THREE.Vector3());
     const sebakaRadiusRef = useRef(0);
@@ -74,7 +74,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         controlsRef.current = controls;
         
         allBodiesRef.current = [];
-        planetMeshesRef.current = [];
+        allMeshesRef.current = [];
         orbitMeshesRef.current = [];
         
         bodyData.forEach(body => {
@@ -86,7 +86,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
             }
             scene.add(bodyObject);
             allBodiesRef.current.push(bodyObject);
-            if (mesh && body.type !== 'Star') planetMeshesRef.current.push(mesh);
+            if (mesh) allMeshesRef.current.push(mesh);
             
             if (showOrbits) {
                 const orbit = createOrbitMesh(body, usePlainOrbits);
@@ -145,12 +145,10 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         rendererRef,
         controlsRef,
         allBodiesRef,
-        planetMeshesRef,
+        allMeshesRef: allMeshesRef,
         orbitMeshesRef,
         beaconPositionRef,
         sebakaRadiusRef,
         originalCameraPosRef,
     };
 };
-
-    

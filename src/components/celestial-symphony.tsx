@@ -41,7 +41,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     rendererRef,
     controlsRef,
     allBodiesRef,
-    planetMeshesRef,
+    allMeshesRef,
     orbitMeshesRef,
     beaconPositionRef,
     sebakaRadiusRef,
@@ -69,7 +69,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     cameraTarget: props.cameraTarget,
     viewFromSebaka: props.viewFromSebaka,
     allBodiesRef,
-    planetMeshesRef,
+    planetMeshesRef: allMeshesRef,
     bodyData,
     beaconPositionRef,
     originalCameraPosRef,
@@ -78,8 +78,9 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
   });
 
   useUpdateBodyMaterials({
+    stars: props.stars,
     planets: props.planets,
-    planetMeshesRef,
+    allMeshes: allMeshesRef,
     isViridisAnimationActive: props.isViridisAnimationActive,
     viewFromSebaka: props.viewFromSebaka,
     materialProperties: props.materialProperties,
@@ -93,7 +94,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     renderer: rendererRef.current,
     controls: controlsRef.current,
     allBodiesRef,
-    planetMeshesRef,
+    planetMeshesRef: allMeshesRef,
     orbitMeshesRef,
     beaconPositionRef,
   });

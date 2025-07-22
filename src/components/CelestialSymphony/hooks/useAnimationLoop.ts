@@ -154,11 +154,12 @@ export const useAnimationLoop = ({
       const beaconStarBody = allBodiesRef.current.find(b => b.name === 'Beacon');
       
       if (alphaStarBody && twilightStarBody && beaconStarBody) {
-          planetMeshesRef.current.forEach(planetMesh => {
-              if (planetMesh.material instanceof THREE.ShaderMaterial) {
-                  planetMesh.material.uniforms.alphaStarPos.value.copy(alphaStarBody.position);
-                  planetMesh.material.uniforms.twilightStarPos.value.copy(twilightStarBody.position);
-                  planetMesh.material.uniforms.beaconStarPos.value.copy(beaconStarBody.position);
+          const allMeshes = planetMeshesRef.current;
+          allMeshes.forEach(mesh => {
+              if (mesh.material instanceof THREE.ShaderMaterial) {
+                  mesh.material.uniforms.alphaStarPos.value.copy(alphaStarBody.position);
+                  mesh.material.uniforms.twilightStarPos.value.copy(twilightStarBody.position);
+                  mesh.material.uniforms.beaconStarPos.value.copy(beaconStarBody.position);
               }
           });
           

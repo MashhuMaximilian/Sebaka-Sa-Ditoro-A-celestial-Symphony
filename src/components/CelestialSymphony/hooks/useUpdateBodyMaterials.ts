@@ -1,20 +1,22 @@
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import type { PlanetData, MaterialProperties } from "@/types";
+import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 
 interface UpdateBodyMaterialsProps {
+    stars: StarData[];
     planets: PlanetData[];
-    planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
+    allMeshes: React.MutableRefObject<THREE.Mesh[]>;
     isViridisAnimationActive: boolean;
     viewFromSebaka: boolean;
     materialProperties: MaterialProperties;
 }
 
 export const useUpdateBodyMaterials = ({
+    stars,
     planets,
-    planetMeshesRef,
+    allMeshes,
     isViridisAnimationActive,
     viewFromSebaka,
     materialProperties,
@@ -25,21 +27,22 @@ export const useUpdateBodyMaterials = ({
     const clockRef = useRef(new THREE.Clock());
 
     useEffect(() => {
-        planetMeshesRef.current.forEach((mesh) => {
+        const planetMeshes = allMeshes.current.filter(m => planets.some(p => p.name === m.name));
+        planetMeshes.forEach((mesh) => {
             const planetData = planets.find(p => p.name === mesh.name);
             if (!planetData) return;
-            const planetColor = new THREE.Color(planetData.color);
-            if (mesh.material instanceof THREE.ShaderMaterial) {
-                // This logic is currently not used but might be useful later.
-                // mesh.material.uniforms.baseColor.value.set(planetColor);
-            }
+            // This logic is currently not used but might be useful later.
+            // if (mesh.material instanceof THREE.ShaderMaterial) {
+            //     const planetColor = new THREE.Color(planetData.color);
+            //     mesh.material.uniforms.baseColor.value.set(planetColor);
+            // }
         });
-    }, [planets, planetMeshesRef]);
+    }, [planets, allMeshes]);
 
     useEffect(() => {
-        if (!planetMeshesRef.current.length) return; // Guard against running before initialization
+        if (!allMeshes.current.length) return; // Guard against running before initialization
 
-        planetMeshesRef.current.forEach((mesh) => {
+        allMeshes.current.forEach((mesh) => {
             if (!mesh) return;
 
             const props = materialProperties[mesh.name];
@@ -65,6 +68,10 @@ export const useUpdateBodyMaterials = ({
                 uniforms.albedo.value = props.albedo;
             }
 
+            if (uniforms.emissiveIntensity && props.emissiveIntensity !== undefined && uniforms.emissiveIntensity.value !== props.emissiveIntensity) {
+                uniforms.emissiveIntensity.value = props.emissiveIntensity;
+            }
+
             if (uniforms.useSpecularMap && uniforms.specularMap.value) {
                 uniforms.useSpecularMap.value = true;
             }
@@ -83,11 +90,11 @@ export const useUpdateBodyMaterials = ({
                 uniforms.aoMapIntensity.value = props.aoMapIntensity;
             }
         });
-    }, [materialProperties, planetMeshesRef]);
+    }, [materialProperties, allMeshes]);
 
 
     useEffect(() => {
-        const viridisMesh = planetMeshesRef.current.find(p => p.name === 'Viridis');
+        const viridisMesh = allMeshes.current.find(p => p.name === 'Viridis');
         if (!viridisMesh || !(viridisMesh.material instanceof THREE.ShaderMaterial)) return;
 
         let isCancelled = false;
@@ -140,15 +147,15 @@ export const useUpdateBodyMaterials = ({
                 cancelAnimationFrame(animationFrameId.current);
             }
         };
-    }, [isViridisAnimationActive, planetMeshesRef]);
+    }, [isViridisAnimationActive, allMeshes]);
 
     // This effect handles toggling the grid view on Sebaka
     useEffect(() => {
-        const sebakaMesh = planetMeshesRef.current.find(p => p.name === 'Sebaka');
+        const sebakaMesh = allMeshes.current.find(p => p.name === 'Sebaka');
         if (sebakaMesh && sebakaMesh.material instanceof THREE.ShaderMaterial) {
             const uniforms = (sebakaMesh.material as THREE.ShaderMaterial).uniforms;
             uniforms.useGrid.value = viewFromSebaka;
         }
-    }, [viewFromSebaka, planetMeshesRef]);
+    }, [viewFromSebaka, allMeshes]);
 
 };
