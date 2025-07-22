@@ -18,7 +18,6 @@ export const useBodyClickHandler = ({ renderer, camera, allBodies, onBodyClick, 
         const mouse = new THREE.Vector2();
 
         const onClick = (event: MouseEvent | TouchEvent) => {
-            if (viewFromSebaka) return;
             const rect = renderer.domElement.getBoundingClientRect();
             let x, y;
             if (event instanceof MouseEvent) { x = event.clientX; y = event.clientY; } 
@@ -38,7 +37,11 @@ export const useBodyClickHandler = ({ renderer, camera, allBodies, onBodyClick, 
                         break; // Reached the scene root without finding a named body
                     }
                 }
-                if (currentObject.name) onBodyClick(currentObject.name);
+                
+                // When in Sebaka view, allow clicking on any body except Sebaka itself.
+                if (currentObject.name && (!viewFromSebaka || currentObject.name !== 'Sebaka')) {
+                    onBodyClick(currentObject.name);
+                }
             }
         };
 
