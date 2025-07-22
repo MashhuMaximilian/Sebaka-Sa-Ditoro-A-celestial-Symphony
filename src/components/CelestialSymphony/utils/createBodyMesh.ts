@@ -121,14 +121,39 @@ export const texturePaths: { [key: string]: { [key: string]: string | undefined 
 
 const createStar = (body: BodyData, initialProps: MaterialProperties[string]) => {
     const starGroup = new THREE.Group();
+    starGroup.name = body.name;
+
     const starColor = new THREE.Color(body.color);
-    
-    // 1. Textured Core (using planetShader)
-    const coreMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(body.size, 64, 64),
-        new THREE.MeshBasicMaterial({ color: starColor, emissive: starColor, emissiveIntensity: 1.5 })
-    );
-    coreMesh.name = body.name; // Keep the name on the core mesh for raycasting
+    const paths = texturePaths[body.name];
+
+    // 1. Textured Core (using planetShader for advanced maps)
+    const coreGeometry = new THREE.SphereGeometry(body.size, 64, 64);
+    coreGeometry.computeTangents();
+
+    const coreMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            ...THREE.UniformsUtils.clone(planetShader.uniforms),
+            planetTexture: { value: paths?.base ? textureLoader.load(paths.base) : null },
+            normalMap: { value: paths?.normal ? textureLoader.load(paths.normal) : null },
+            displacementMap: { value: paths?.displacement ? textureLoader.load(paths.displacement) : null },
+            specularMap: { value: paths?.specular ? textureLoader.load(paths.specular) : null },
+            aoMap: { value: paths?.ambient ? textureLoader.load(paths.ambient) : null },
+            emissiveIntensity: { value: initialProps.emissiveIntensity },
+            useNormalMap: { value: !!paths?.normal && initialProps.normalScale > 0 },
+            normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
+            useDisplacementMap: { value: !!paths?.displacement && initialProps.displacementScale > 0 },
+            displacementScale: { value: initialProps.displacementScale },
+            useSpecularMap: { value: !!paths?.specular && initialProps.specularIntensity > 0 },
+            specularIntensity: { value: initialProps.specularIntensity },
+            shininess: { value: initialProps.shininess },
+            useAoMap: { value: !!paths?.ambient && initialProps.aoMapIntensity > 0 },
+            aoMapIntensity: { value: initialProps.aoMapIntensity },
+        },
+        vertexShader: planetShader.vertexShader,
+        fragmentShader: planetShader.fragmentShader,
+    });
+    const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
+    coreMesh.name = body.name; // Keep name on core for raycasting
     starGroup.add(coreMesh);
 
 
@@ -150,6 +175,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
     pos.usage = THREE.DynamicDrawUsage;
     const len = pos.count;
     
+    // Attach update function to the mesh's userData for the animation loop
     coronaMesh.userData.update = (time: number) => {
         const t = time * 0.1;
         for (let i = 0; i < len; i++) {
@@ -211,6 +237,11 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
     const pointLight = new THREE.PointLight(starColor, 2, 0, 0); // High intensity
     starGroup.add(pointLight);
 
+    // Attach master update function to the group
+    starGroup.userData.update = (time: number) => {
+        coronaMesh.userData.update?.(time);
+    };
+
     return starGroup;
 }
 
@@ -227,6 +258,12 @@ export const createBodyMesh = (
         const tiltAxis = new THREE.Object3D();
         tiltAxis.name = body.name; // Name the group for camera targeting
         tiltAxis.add(starGroup);
+        // The main update function for the star is now attached to the starGroup's userData
+        const masterUpdate = (elapsedHours: number) => {
+             starGroup.userData.update?.(elapsedHours);
+        };
+        // We'll attach this to the tiltAxis so the main animation loop can find it.
+        tiltAxis.userData.update = masterUpdate;
         return tiltAxis;
     }
     
@@ -248,39 +285,27 @@ export const createBodyMesh = (
     
     material = new THREE.ShaderMaterial({
         uniforms: {
-            alphaStarPos: { value: new THREE.Vector3() },
-            twilightStarPos: { value: new THREE.Vector3() },
-            beaconStarPos: { value: new THREE.Vector3() },
-            alphaColor: { value: new THREE.Color(0xFFF4D4) },
-            twilightColor: { value: new THREE.Color(0xFFC8A2) },
-            beaconColor: { value: new THREE.Color(0xD4E5FF) },
-            alphaIntensity: { value: 1.0 },
-            twilightIntensity: { value: 0.7 },
-            beaconIntensity: { value: 200.0 },
-            emissiveIntensity: { value: initialProps.emissiveIntensity },
-
-            albedo: { value: initialProps.albedo },
+            ...THREE.UniformsUtils.clone(planetShader.uniforms),
             planetTexture: { value: baseTexture },
             gridTexture: { value: null as THREE.CanvasTexture | null },
             useGrid: { value: false },
-            ambientLevel: { value: 0.02 },
             isBeaconPlanet: { value: body.name === 'Gelidis' || body.name === 'Liminis' },
 
-            useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
             normalMap: { value: normalMap },
-            normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
-
-            useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
             displacementMap: { value: displacementMap },
-            displacementScale: { value: initialProps.displacementScale },
-
-            useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
             specularMap: { value: specularMap },
+            aoMap: { value: aoMap },
+
+            emissiveIntensity: { value: initialProps.emissiveIntensity },
+            albedo: { value: initialProps.albedo },
+            useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
+            normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
+            useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
+            displacementScale: { value: initialProps.displacementScale },
+            useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
             specularIntensity: { value: initialProps.specularIntensity },
             shininess: { value: initialProps.shininess },
-
             useAoMap: { value: !!aoMap && initialProps.aoMapIntensity > 0 },
-            aoMap: { value: aoMap },
             aoMapIntensity: { value: initialProps.aoMapIntensity },
         },
         vertexShader: planetShader.vertexShader,
@@ -349,8 +374,6 @@ export const createBodyMesh = (
         const tiltDegrees = parseFloat(body.axialTilt.replace('°', ''));
         if (!isNaN(tiltDegrees)) {
             const tiltRadians = THREE.MathUtils.degToRad(tiltDegrees);
-            // We tilt the container object. The planet inside will rotate on its own Y-axis.
-            // A positive tilt on the Z-axis tilts the North Pole "towards" the camera at z=+.
             tiltAxis.rotation.set(0, 0, tiltRadians, 'XYZ');
         }
     }
@@ -358,3 +381,4 @@ export const createBodyMesh = (
     tiltAxis.add(mesh);
     return tiltAxis;
 };
+

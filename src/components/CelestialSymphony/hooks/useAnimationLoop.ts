@@ -145,12 +145,9 @@ export const useAnimationLoop = ({
                   mesh.rotation.y += rotationPerHour * hoursPassedThisFrame;
               }
           }
-          // Animate the star corona
+          // Animate the star itself via its userData update function
           if (currentBodyData?.type === 'Star') {
-            const corona = bodyObject.getObjectByName(`${bodyObject.name}_corona`);
-            if (corona && corona.userData.update) {
-              corona.userData.update(elapsedHoursRef.current);
-            }
+            bodyObject.userData.update?.(elapsedHoursRef.current);
           }
       });
       
