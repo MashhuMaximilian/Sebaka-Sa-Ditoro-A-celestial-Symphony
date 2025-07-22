@@ -8,7 +8,7 @@ export class CloseUpCharacterCamera {
   public planet: THREE.Mesh;
   
   private planetRadius: number;
-  private distance = 1.03; // Default to min zoom
+  private distance = 0.1; // Default to min zoom
   private height = eyeHeight;
   
   private isMouseDown = false;
@@ -89,8 +89,8 @@ export class CloseUpCharacterCamera {
   private _onWheel(event: WheelEvent) {
     this.distance = THREE.MathUtils.clamp(
       this.distance + event.deltaY * 0.001,
-      1.03,  // Min zoom (point blank)
-      40     // Max zoom
+      0.1,  // Min zoom (point blank)
+      1    // Max zoom
     );
   }
   
