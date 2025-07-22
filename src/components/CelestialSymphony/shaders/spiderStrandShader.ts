@@ -17,7 +17,7 @@ const iridescentPalette = [
 export const spiderStrandShader = {
   uniforms: {
     time: { value: 0 },
-    iridescenceStrength: { value: 1.0 },
+    iridescenceStrength: { value: 12.0 },
     opacity: { value: 0.85 },
     colors: { value: iridescentPalette },
     numColors: { value: iridescentPalette.length },

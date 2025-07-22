@@ -57,7 +57,7 @@ export const createOrbitMesh = (body: BodyData, usePlainOrbits: boolean): THREE.
                 blending: THREE.AdditiveBlending,
             });
             (orbitMaterial as THREE.ShaderMaterial).uniforms.iridescenceStrength.value = 1;
-            (orbitMaterial as THREE.ShaderMaterial).uniforms.opacity.value = 0.85;
+            (orbitMaterial as THREE.ShaderMaterial).uniforms.opacity.value = 0.585;
         }
         
         const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);

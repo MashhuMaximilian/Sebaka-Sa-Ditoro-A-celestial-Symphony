@@ -26,9 +26,9 @@ export class SphericalCharacterController {
     const geometry = new THREE.BoxGeometry(0.02, 0.02, 0.02);
     
     const uniforms = THREE.UniformsUtils.clone(spiderStrandShader.uniforms);
-    uniforms.baseColor.value = new THREE.Color(0xffffff);
+    uniforms.baseColor.value = new THREE.Color(0x8c52ff);
     uniforms.opacity.value = 1.0;
-    uniforms.iridescenceStrength.value = 5.0;
+    uniforms.iridescenceStrength.value = 8.0;
 
     const material = new THREE.ShaderMaterial({
         uniforms: uniforms,
