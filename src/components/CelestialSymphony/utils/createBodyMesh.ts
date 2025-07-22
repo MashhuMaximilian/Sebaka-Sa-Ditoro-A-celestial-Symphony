@@ -186,7 +186,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
             );
             v3.copy(p)
               .setLength(body.size)
-              .addScaledVector(p, ns * body.size * 0.2); // Flare scales with star size
+              .addScaledVector(p, ns * body.size * 0.1); // Flare scales with star size
             pos.setXYZ(i, v3.x, v3.y, v3.z);
         }
         pos.needsUpdate = true;
@@ -198,9 +198,9 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
         uniforms: {
             color1: { value: new THREE.Color('black') },
             color2: { value: starColor },
-            fresnelBias: { value: 0.2 },
+            fresnelBias: { value: 0.3 },
             fresnelScale: { value: 1.5 },
-            fresnelPower: { value: 6.0 },
+            fresnelPower: { value: 2.0 },
         },
         vertexShader: fresnelShader.vertexShader,
         fragmentShader: fresnelShader.fragmentShader,
