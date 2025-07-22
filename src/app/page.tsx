@@ -239,7 +239,7 @@ export default function Home() {
   const [goToTime, setGoToTime] = useState<number | null>(null);
   
   const [isInitialized, setIsInitialized] = useState(false);
-  const [fov, setFov] = useState(111);
+  const [fov, setFov] = useState(70);
 
 
   const handleApplyPalette = (newColors: string[]) => {
@@ -295,6 +295,7 @@ export default function Home() {
     if (viewFromSebaka) {
       setIsInitialized(false);
       setViewFromSebaka(false);
+      setFov(70);
     }
     resetSpeed();
     setIsSebakaRotating(true);
@@ -306,6 +307,7 @@ export default function Home() {
       if (!viewFromSebaka) {
           setIsInitialized(false);
           setViewFromSebaka(true);
+          setFov(111);
           setLongitude(0);
           setLatitude(0);
           setActiveSebakaPanel(null);
@@ -346,6 +348,7 @@ export default function Home() {
     if (viewFromSebaka) {
         setIsInitialized(false);
         setViewFromSebaka(false);
+        setFov(70);
         setShowOrbits(true);
     }
     setCameraTarget(target);
