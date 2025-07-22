@@ -200,7 +200,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
             color2: { value: starColor },
             fresnelBias: { value: 0.2 },
             fresnelScale: { value: 1.5 },
-            fresnelPower: { value: 4.0 },
+            fresnelPower: { value: 6.0 },
         },
         vertexShader: fresnelShader.vertexShader,
         fragmentShader: fresnelShader.fragmentShader,
@@ -208,7 +208,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
         blending: THREE.AdditiveBlending,
     });
     const glowMesh = new THREE.Mesh(new THREE.SphereGeometry(body.size, 64, 64), glowMaterial);
-    glowMesh.scale.setScalar(1.2);
+    glowMesh.scale.setScalar(1.8);
     glowMesh.name = `${body.name}_glow`;
     starGroup.add(glowMesh);
 
