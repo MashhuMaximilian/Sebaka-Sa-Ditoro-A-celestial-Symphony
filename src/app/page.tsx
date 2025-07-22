@@ -204,7 +204,7 @@ const initialMaterialProperties: MaterialProperties = {
   Twilight: { albedo: 1.0, normalScale: 1, displacementScale: 0.2, emissiveIntensity: 1.2, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
   Beacon: { albedo: 1.0, normalScale: 1, displacementScale: 2.95, emissiveIntensity: 10, shininess: 10, specularIntensity: 1, aoMapIntensity: 1 },
   Rutilus: { albedo: 3.08, normalScale: 0.00, displacementScale: 3.20, emissiveIntensity: 0, shininess: 21, specularIntensity: 0.00, aoMapIntensity: 2.00 },
-  Sebaka: { albedo: 1.96, normalScale: 0.00, displacementScale: 0.94, emissiveIntensity: 0, shininess: 36, specularIntensity: 0.00, aoMapIntensity: 1.25 },
+  Sebaka: { albedo: 1.96, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 36, specularIntensity: 0.00, aoMapIntensity: 1.25 },
   Spectris: { albedo: 1.59, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 1, specularIntensity: 0.46, aoMapIntensity: 0.17 },
   Viridis: { albedo: 3.04, normalScale: 0.75, displacementScale: 13.02, emissiveIntensity: 0, shininess: 5, specularIntensity: 1.41, aoMapIntensity: 0.00 },
   Aetheris: { albedo: 4.51, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 19, specularIntensity: 0.00, aoMapIntensity: 0.00 },
