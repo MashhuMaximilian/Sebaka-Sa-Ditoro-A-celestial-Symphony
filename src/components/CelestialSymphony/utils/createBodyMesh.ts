@@ -186,7 +186,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
             );
             v3.copy(p)
               .setLength(body.size)
-              .addScaledVector(p, ns * body.size * 0.1); // Flare scales with star size
+              .addScaledVector(p, ns * body.size * 0.25); // Flare scales with star size
             pos.setXYZ(i, v3.x, v3.y, v3.z);
         }
         pos.needsUpdate = true;
