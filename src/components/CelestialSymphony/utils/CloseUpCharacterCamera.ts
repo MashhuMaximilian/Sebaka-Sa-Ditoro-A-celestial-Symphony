@@ -111,7 +111,7 @@ export class CloseUpCharacterCamera {
     this.verticalAngle = THREE.MathUtils.clamp(
       this.verticalAngle - deltaY * 0.005,
       0.05, // Prevent looking underground
-      0.05// Limit looking too high up
+      0.36 // Limit looking too high up
     );
     
     this.lastMouseX = event.clientX;
@@ -158,7 +158,7 @@ export class CloseUpCharacterCamera {
         this.verticalAngle = THREE.MathUtils.clamp(
             this.verticalAngle - deltaY * 0.005,
             0.05,
-            0.05
+            0.36
         );
 
         this.lastTouchX = touches[0].clientX;
@@ -185,68 +185,55 @@ export class CloseUpCharacterCamera {
   update() {
     const characterWorldPos = new THREE.Vector3();
     this.character.getWorldPosition(characterWorldPos);
-  
-    // Get the planet container's world position and rotation (includes tilt)
+
     const planetContainerWorldPos = new THREE.Vector3();
     const planetContainerWorldQuat = new THREE.Quaternion();
     this.planetContainer.getWorldPosition(planetContainerWorldPos);
     this.planetContainer.getWorldQuaternion(planetContainerWorldQuat);
-    
-    // Get the character's position relative to the planet container
-    const characterLocalPos = characterWorldPos.clone().sub(planetContainerWorldPos);
-    
-    // Transform to planet container's local space to get "stable" coordinates
-    const inverseQuat = planetContainerWorldQuat.clone().invert();
-    characterLocalPos.applyQuaternion(inverseQuat);
-    
-    // Create stable coordinate system in planet container's local space
-    const surfaceNormal = characterLocalPos.clone().normalize();
-    
-    // Create stable local coordinate system
-    const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
-    const forward = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
-    
-    // ** CORRECTED: Calculate circumferential camera position **
-    
-    // Calculate the arc angle for the zoom distance
+
+    // 1. Surface normal (n)
+    const n = new THREE.Vector3().subVectors(characterWorldPos, planetContainerWorldPos).normalize();
+
+    // 2. Stable East vector
+    let east = new THREE.Vector3(0, 1, 0).cross(n);
+    if (east.lengthSq() < 1e-4) { // At the pole, fallback to X axis
+        east = new THREE.Vector3(1, 0, 0).cross(n);
+    }
+    east.normalize();
+
+    // 3. Stable North vector
+    const north = n.clone().cross(east).normalize();
+
+    // B. Derive the camera's 'back' vector from horizontal angle
+    const yawQuat = new THREE.Quaternion().setFromAxisAngle(n, this.horizontalAngle);
+    const back = north.clone().applyQuaternion(yawQuat).multiplyScalar(-1);
+
+    // C. Place the camera
     const arcAngle = this.distance / this.planetRadius;
+    const axis = east.clone().cross(back).normalize();
+    const rot = new THREE.Matrix4().makeRotationAxis(axis, arcAngle);
     
-    // Calculate the direction vector for camera placement
-    // Rotate the "back" direction around the surface normal by horizontalAngle
-    const backDirection = forward.clone().multiplyScalar(-1); // Start facing backward
-    const rotationAxis = surfaceNormal.clone();
-    const rotationMatrix = new THREE.Matrix4().makeRotationAxis(rotationAxis, this.horizontalAngle);
-    const cameraDirection = backDirection.clone().applyMatrix4(rotationMatrix);
+    const charSurface = n.clone().multiplyScalar(this.planetRadius);
+    const camSurface = charSurface.clone().applyMatrix4(rot);
+
+    // Elevate by eyeHeight
+    const camLocal = camSurface.add(n.clone().multiplyScalar(this.height));
+
+    // Transform from planet container's local space to world space
+    const camWorld = camLocal.applyQuaternion(planetContainerWorldQuat)
+                             .add(planetContainerWorldPos);
+
+    this.camera.position.copy(camWorld);
     
-    // Calculate position along the planet's circumference
-    // Move the character position along the surface by the arc angle
-    const characterOnSurface = surfaceNormal.clone().multiplyScalar(this.planetRadius);
-    
-    // Rotate the character's surface position by the arc angle in the camera direction
-    const arcRotationAxis = new THREE.Vector3().crossVectors(surfaceNormal, cameraDirection).normalize();
-    const arcRotationMatrix = new THREE.Matrix4().makeRotationAxis(arcRotationAxis, arcAngle);
-    
-    // Calculate the new surface position
-    const cameraOnSurface = characterOnSurface.clone().applyMatrix4(arcRotationMatrix);
-    
-    // Add height above surface
-    const finalCameraLocalPos = cameraOnSurface.clone().add(
-      cameraOnSurface.clone().normalize().multiplyScalar(this.height)
-    );
-    
-    // Transform camera position back to world space
-    const finalCamPos = finalCameraLocalPos.clone()
-      .applyQuaternion(planetContainerWorldQuat)
-      .add(planetContainerWorldPos);
-  
-    this.camera.position.copy(finalCamPos);
-    
-    // The "up" direction for the camera is always away from the planet's center
-    const cameraUp = finalCamPos.clone().sub(planetContainerWorldPos).normalize();
-    this.camera.up.copy(cameraUp);
-  
+    // The point the camera looks at, pitched by verticalAngle
+    const lookAtPoint = characterWorldPos.clone();
+    const pitchAxis = east.clone().applyQuaternion(yawQuat); // The axis to rotate around for pitch
+    const pitchQuat = new THREE.Quaternion().setFromAxisAngle(pitchAxis, this.verticalAngle - (Math.PI / 2));
+    const lookAtDirection = n.clone().applyQuaternion(pitchQuat);
+    lookAtPoint.add(lookAtDirection);
+
+
+    this.camera.up.copy(n); // Keep camera upright relative to the surface
     this.camera.lookAt(characterWorldPos);
   }
-  
-
 }
