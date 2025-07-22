@@ -18,11 +18,20 @@ export class CloseUpCharacterCamera {
   private horizontalAngle = Math.PI; // Start behind the character
   private verticalAngle = 0.1; // Slight upward angle
 
+  // Touch state
+  private lastTouchX = 0;
+  private lastTouchY = 0;
+  private lastPinchDist = 0;
+
+
   // Bound event handlers
   private onMouseDown: (event: MouseEvent) => void;
   private onMouseUp: () => void;
   private onMouseMove: (event: MouseEvent) => void;
   private onWheel: (event: WheelEvent) => void;
+  private onTouchStart: (event: TouchEvent) => void;
+  private onTouchEnd: () => void;
+  private onTouchMove: (event: TouchEvent) => void;
   private domElement: HTMLElement;
   
   constructor(
@@ -48,22 +57,37 @@ export class CloseUpCharacterCamera {
     this.onMouseUp = this._onMouseUp.bind(this);
     this.onMouseMove = this._onMouseMove.bind(this);
     this.onWheel = this._onWheel.bind(this);
+    this.onTouchStart = this._onTouchStart.bind(this);
+    this.onTouchEnd = this._onTouchEnd.bind(this);
+    this.onTouchMove = this._onTouchMove.bind(this);
     
     this.setupEventListeners();
   }
   
   private setupEventListeners() {
+    // Mouse events
     this.domElement.addEventListener('mousedown', this.onMouseDown);
     document.addEventListener('mouseup', this.onMouseUp);
     document.addEventListener('mousemove', this.onMouseMove);
     this.domElement.addEventListener('wheel', this.onWheel);
+
+    // Touch events
+    this.domElement.addEventListener('touchstart', this.onTouchStart, { passive: false });
+    this.domElement.addEventListener('touchend', this.onTouchEnd);
+    this.domElement.addEventListener('touchmove', this.onTouchMove, { passive: false });
   }
 
   public dispose() {
+    // Mouse events
     this.domElement.removeEventListener('mousedown', this.onMouseDown);
     document.removeEventListener('mouseup', this.onMouseUp);
     document.removeEventListener('mousemove', this.onMouseMove);
     this.domElement.removeEventListener('wheel', this.onWheel);
+
+    // Touch events
+    this.domElement.removeEventListener('touchstart', this.onTouchStart);
+    this.domElement.removeEventListener('touchend', this.onTouchEnd);
+    this.domElement.removeEventListener('touchmove', this.onTouchMove);
   }
 
   private _onMouseDown(event: MouseEvent) {
@@ -101,6 +125,62 @@ export class CloseUpCharacterCamera {
       this.planetRadius * 0.6  // Max zoom relative to planet size
     );
   }
+
+  private _onTouchStart(event: TouchEvent) {
+    if (event.target !== this.domElement) return;
+    event.preventDefault(); // Prevent default browser actions like scrolling
+
+    const touches = event.touches;
+    if (touches.length === 1) { // Single finger drag
+        this.lastTouchX = touches[0].clientX;
+        this.lastTouchY = touches[0].clientY;
+    } else if (touches.length === 2) { // Two finger pinch
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        this.lastPinchDist = Math.sqrt(dx * dx + dy * dy);
+    }
+  }
+
+  private _onTouchEnd() {
+      this.lastPinchDist = 0; // Reset pinch distance
+  }
+  
+  private _onTouchMove(event: TouchEvent) {
+    if (event.target !== this.domElement) return;
+    event.preventDefault();
+
+    const touches = event.touches;
+    if (touches.length === 1) { // Drag
+        const deltaX = touches[0].clientX - this.lastTouchX;
+        const deltaY = touches[0].clientY - this.lastTouchY;
+
+        this.horizontalAngle -= deltaX * 0.005;
+        this.verticalAngle = THREE.MathUtils.clamp(
+            this.verticalAngle - deltaY * 0.005,
+            0.05,
+            0.05
+        );
+
+        this.lastTouchX = touches[0].clientX;
+        this.lastTouchY = touches[0].clientY;
+
+    } else if (touches.length === 2) { // Pinch
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        const currentPinchDist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (this.lastPinchDist > 0) {
+            const pinchDelta = this.lastPinchDist - currentPinchDist;
+            this.distance = THREE.MathUtils.clamp(
+                this.distance + pinchDelta * 0.001, // Adjust sensitivity
+                0.05,
+                this.planetRadius * 0.6
+            );
+        }
+        
+        this.lastPinchDist = currentPinchDist;
+    }
+  }
   
   update() {
     const characterWorldPos = new THREE.Vector3();
@@ -125,7 +205,6 @@ export class CloseUpCharacterCamera {
     // Create stable local coordinate system
     const arbitraryVec = Math.abs(surfaceNormal.y) > 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
     const forward = new THREE.Vector3().crossVectors(surfaceNormal, arbitraryVec).normalize();
-    const right = new THREE.Vector3().crossVectors(forward, surfaceNormal).normalize();
     
     // ** CORRECTED: Calculate circumferential camera position **
     
