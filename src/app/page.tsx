@@ -199,7 +199,7 @@ const initialPlanets: PlanetData[] = [
   },
 ];
 
-const initialMaterialProperties: MaterialProperties = {
+export const initialMaterialProperties: MaterialProperties = {
   Alpha: { albedo: 1.0, normalScale: 1.00, displacementScale: 0.60, emissiveIntensity: 18.5, shininess: 10, specularIntensity: 0.00, aoMapIntensity: 1.82 },
   Twilight: { albedo: 1.0, normalScale: 1.00, displacementScale: 0.20, emissiveIntensity: 15.5, shininess: 10, specularIntensity: 0.00, aoMapIntensity: 0.88 },
   Beacon: { albedo: 1.0, normalScale: 2.11, displacementScale: 5.27, emissiveIntensity: 20.0, shininess: 1, specularIntensity: 0.00, aoMapIntensity: 0.00 },
@@ -237,7 +237,6 @@ export default function Home() {
   const [latitude, setLatitude] = useState(0);
   const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
-  const [materialProperties, setMaterialProperties] = useState(initialMaterialProperties);
   const [usePlainOrbits, setUsePlainOrbits] = useState(false);
   const [showOrbits, setShowOrbits] = useState(true);
 
@@ -514,10 +513,11 @@ export default function Home() {
         cameraTarget={cameraTarget}
         isInitialized={isInitialized}
         setIsInitialized={setIsInitialized}
-        materialProperties={materialProperties}
+        initialMaterialProperties={initialMaterialProperties}
         usePlainOrbits={usePlainOrbits}
         showOrbits={showOrbits}
         fov={fov}
+        selectedBody={selectedBody}
       />
 
       <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
@@ -530,10 +530,7 @@ export default function Home() {
             </SheetHeader>
             {selectedBody && (
                 <InfoPanel 
-                  data={selectedBody} 
-                  materialProperties={materialProperties}
-                  onPropertiesChange={setMaterialProperties}
-                  onReset={() => setMaterialProperties(initialMaterialProperties)}
+                  data={selectedBody}
                 />
             )}
         </SheetContent>

@@ -120,8 +120,8 @@ export const useUpdateBodyMaterials = ({
         });
         if (characterMesh) {
             const props = materialProperties[characterMesh.name];
-            if (props) {
-                updateMaterialProperties(characterMesh as THREE.Mesh, props);
+            if (props && characterMesh instanceof THREE.Mesh) {
+                updateMaterialProperties(characterMesh, props);
             }
         }
     }, [materialProperties, allMeshes, allBodies, characterMesh]);

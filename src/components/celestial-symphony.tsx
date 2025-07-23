@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from "react";
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import { useAnimationLoop } from "./CelestialSymphony/hooks/useAnimationLoop";
 import { useBodyClickHandler } from "./CelestialSymphony/hooks/useBodyClickHandler";
@@ -25,14 +26,16 @@ export interface CelestialSymphonyProps {
   cameraTarget: string | null;
   isInitialized: boolean;
   setIsInitialized: (isInitialized: boolean) => void;
-  materialProperties: MaterialProperties;
+  initialMaterialProperties: MaterialProperties;
   usePlainOrbits: boolean;
   showOrbits: boolean;
   fov: number;
+  selectedBody: PlanetData | StarData | { name: string } | null
 }
 
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
   const bodyData = useBodyData(props.stars, props.planets);
+  const [materialProperties, setMaterialProperties] = useState(props.initialMaterialProperties);
 
   const {
     mountRef,
@@ -53,7 +56,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     viewFromSebaka: props.viewFromSebaka,
     usePlainOrbits: props.usePlainOrbits,
     showOrbits: props.showOrbits,
-    materialProperties: props.materialProperties,
+    materialProperties: materialProperties,
   });
 
   useBodyClickHandler({
@@ -87,7 +90,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     characterMesh: characterMeshRef.current,
     isViridisAnimationActive: props.isViridisAnimationActive,
     viewFromSebaka: props.viewFromSebaka,
-    materialProperties: props.materialProperties,
+    materialProperties: materialProperties,
   });
 
   useAnimationLoop({
@@ -104,7 +107,43 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     characterMeshRef
   });
 
-  return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;
+  return (
+    <>
+      <div ref={mountRef} className="absolute inset-0 w-full h-full" />
+      <div style={{ display: 'none' }}>
+        {/* Hidden component to pass state to InfoPanel without causing re-renders of the main component */}
+        <InfoPanelContext
+          selectedBody={props.selectedBody}
+          materialProperties={materialProperties}
+          onPropertiesChange={setMaterialProperties}
+          onReset={() => setMaterialProperties(props.initialMaterialProperties)}
+        />
+      </div>
+    </>
+  );
 };
+
+// A simple context provider to pass props to the InfoPanel
+// This is a pattern to avoid passing state through a component that should not re-render
+let InfoPanelContextComponent: React.FC<any> = () => null;
+export const setInfoPanelContextComponent = (Component: React.FC<any>) => {
+  InfoPanelContextComponent = Component;
+}
+const InfoPanelContext: React.FC<{
+  selectedBody: any;
+  materialProperties: MaterialProperties;
+  onPropertiesChange: React.Dispatch<React.SetStateAction<MaterialProperties>>;
+  onReset: () => void;
+}> = ({ selectedBody, materialProperties, onPropertiesChange, onReset }) => {
+  return (
+    <InfoPanelContextComponent
+      data={selectedBody}
+      materialProperties={materialProperties}
+      onPropertiesChange={onPropertiesChange}
+      onReset={onReset}
+    />
+  );
+};
+
 
 export default CelestialSymphony;

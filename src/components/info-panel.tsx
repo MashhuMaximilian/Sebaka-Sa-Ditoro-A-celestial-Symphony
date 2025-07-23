@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useEffect } from 'react';
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import DataDisplay from "./data-display";
 import { Separator } from "./ui/separator";
@@ -15,15 +16,18 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "./ui/button";
 import { texturePaths } from "./CelestialSymphony/utils/createBodyMesh";
+import { setInfoPanelContextComponent } from './celestial-symphony';
 
-interface InfoPanelProps {
-  data: PlanetData | StarData | { name: string };
-  materialProperties: MaterialProperties;
-  onPropertiesChange: React.Dispatch<React.SetStateAction<MaterialProperties>>;
-  onReset: () => void;
-}
+let currentOnPropertiesChange: React.Dispatch<React.SetStateAction<MaterialProperties>> | null = null;
+let currentOnReset: (() => void) | null = null;
+let currentMaterialProperties: MaterialProperties | null = null;
 
-const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: InfoPanelProps) => {
+const InfoPanelContent = ({ data }: { data: PlanetData | StarData | { name: string } }) => {
+  const onPropertiesChange = currentOnPropertiesChange;
+  const onReset = currentOnReset;
+  const materialProperties = currentMaterialProperties;
+
+  if (!onPropertiesChange || !onReset || !materialProperties) return null;
 
   const handleSliderChange = (bodyName: string, propName: keyof MaterialProperties[string], value: number[]) => {
     onPropertiesChange(prevProps => ({
@@ -114,6 +118,34 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                       />
                       <span className="text-xs font-mono w-12 text-center">
                         {(bodyProps.iridescenceStrength ?? 8.0).toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label>Rim Power</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                         min={0} max={10} step={0.1}
+                        value={[bodyProps.rimPower ?? 4.0]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'rimPower', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">
+                        {(bodyProps.rimPower ?? 4.0).toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label>Color Speed</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                         min={0} max={5} step={0.1}
+                        value={[bodyProps.colorSpeed ?? 0.5]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'colorSpeed', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">
+                        {(bodyProps.colorSpeed ?? 0.5).toFixed(1)}
                       </span>
                     </div>
                   </div>
@@ -315,5 +347,28 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
     </ScrollArea>
   );
 };
+
+interface InfoPanelProps {
+  data: PlanetData | StarData | { name: string };
+  materialProperties?: MaterialProperties;
+  onPropertiesChange?: React.Dispatch<React.SetStateAction<MaterialProperties>>;
+  onReset?: () => void;
+}
+
+const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: InfoPanelProps) => {
+  // This is a bridge component.
+  // We use a bit of a hack to get the state from CelestialSymphony into here
+  // without causing re-renders of the main three.js canvas.
+  useEffect(() => {
+    setInfoPanelContextComponent(() => InfoPanelContent);
+  }, []);
+
+  if (onPropertiesChange) currentOnPropertiesChange = onPropertiesChange;
+  if (onReset) currentOnReset = onReset;
+  if (materialProperties) currentMaterialProperties = materialProperties;
+
+  return <InfoPanelContent data={data} />;
+};
+
 
 export default InfoPanel;
