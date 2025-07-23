@@ -218,6 +218,7 @@ export const initialMaterialProperties: MaterialProperties = {
     colorSpeed: 0.5,
     rimPower: 4.0,
     opacity: 1.0,
+    height: 0.01,
   }
 };
 
@@ -232,8 +233,6 @@ export default function Home() {
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
   const [isSebakaRotating, setIsSebakaRotating] = useState(true);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
-  const [longitude, setLongitude] = useState(0);
-  const [latitude, setLatitude] = useState(0);
   const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [usePlainOrbits, setUsePlainOrbits] = useState(false);
@@ -248,6 +247,9 @@ export default function Home() {
   
   const [isInitialized, setIsInitialized] = useState(false);
   const [fov, setFov] = useState(70);
+
+  const [characterLatitude, setCharacterLatitude] = useState(0);
+  const [characterLongitude, setCharacterLongitude] = useState(0);
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -272,14 +274,6 @@ export default function Home() {
     }
   };
 
-  const handleLongitudeChange = (value: number[]) => {
-    setLongitude(value[0]);
-  };
-
-  const handleLatitudeChange = (value: number[]) => {
-    setLatitude(value[0]);
-  };
-
   const handleFovChange = (value: number[]) => {
     setFov(value[0]);
   };
@@ -290,12 +284,7 @@ export default function Home() {
   };
   
   const handleBodyClick = (bodyName: string) => {
-    if (bodyName === 'Character') {
-        setSelectedBody({ name: 'Character' });
-        setInfoPanelOpen(true);
-        return;
-    }
-    const allBodies = [...initialStars, ...planets];
+    const allBodies = [...initialStars, ...planets, { name: 'Character' }];
     const body = allBodies.find(p => p.name === bodyName);
     if (body) {
       setSelectedBody(body);
@@ -320,8 +309,8 @@ export default function Home() {
           setIsInitialized(false);
           setViewFromSebaka(true);
           setFov(111);
-          setLongitude(0);
-          setLatitude(0);
+          setCharacterLatitude(0);
+          setCharacterLongitude(0);
           setActiveSebakaPanel(null);
           setSpeedMultiplier(2);
           setSpeedInput('2');
@@ -446,11 +435,11 @@ export default function Home() {
                         min={-90}
                         max={90}
                         step={1}
-                        value={[latitude]}
-                        onValueChange={handleLatitudeChange}
+                        value={[characterLatitude]}
+                        onValueChange={(v) => setCharacterLatitude(v[0])}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{latitude.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{characterLatitude.toFixed(0)}°</span>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="longitude-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
@@ -461,11 +450,11 @@ export default function Home() {
                         min={0}
                         max={360}
                         step={1}
-                        value={[longitude]}
-                        onValueChange={handleLongitudeChange}
+                        value={[characterLongitude]}
+                        onValueChange={(v) => setCharacterLongitude(v[0])}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{longitude.toFixed(0)}°</span>
+                    <span className="text-sm font-medium text-foreground w-10 text-center">{characterLongitude.toFixed(0)}°</span>
                 </div>
                 <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="fov-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
@@ -495,16 +484,15 @@ export default function Home() {
 
   return (
     <main className="relative h-screen w-screen overflow-hidden">
-      <CelestialSymphony 
-        key={String(viewFromSebaka) + String(usePlainOrbits) + String(showOrbits)}
+      <CelestialSymphony
         stars={initialStars} 
         planets={planets} 
         speedMultiplier={speedMultiplier} 
         onBodyClick={handleBodyClick}
         viewFromSebaka={viewFromSebaka}
         isSebakaRotating={isSebakaRotating}
-        longitude={longitude}
-        latitude={latitude}
+        characterLongitude={characterLongitude}
+        characterLatitude={characterLatitude}
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
@@ -519,6 +507,10 @@ export default function Home() {
         selectedBody={selectedBody}
         isInfoPanelOpen={isInfoPanelOpen}
         setInfoPanelOpen={setInfoPanelOpen}
+        onCharacterLatLongChange={(lat, long) => {
+            setCharacterLatitude(lat);
+            setCharacterLongitude(long);
+        }}
       />
 
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">

@@ -20,8 +20,9 @@ export interface CelestialSymphonyProps {
   onBodyClick: (name: string) => void;
   viewFromSebaka: boolean;
   isSebakaRotating: boolean;
-  longitude: number;
-  latitude: number;
+  characterLongitude: number;
+  characterLatitude: number;
+  onCharacterLatLongChange: (lat: number, long: number) => void;
   isViridisAnimationActive: boolean;
   onTimeUpdate: (elapsedHours: number) => void;
   goToTime: number | null;
@@ -41,6 +42,15 @@ export interface CelestialSymphonyProps {
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
   const bodyData = useBodyData(props.stars, props.planets);
   const [materialProperties, setMaterialProperties] = useState(props.initialMaterialProperties);
+  
+  // Isolate character-specific state to prevent top-level re-renders
+  const [characterLatitude, setCharacterLatitude] = useState(0);
+  const [characterLongitude, setCharacterLongitude] = useState(0);
+  
+  const charProps = materialProperties.Character;
+  const [characterHeight, setCharacterHeight] = useState(charProps.height ?? 0.01);
+  const [characterOpacity, setCharacterOpacity] = useState(charProps.opacity ?? 1.0);
+
 
   const {
     mountRef,
@@ -100,6 +110,10 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
 
   useAnimationLoop({
     ...props,
+    characterLatitude: props.viewFromSebaka ? props.characterLatitude : characterLatitude,
+    characterLongitude: props.viewFromSebaka ? props.characterLongitude : characterLongitude,
+    characterHeight,
+    characterOpacity,
     bodyData,
     scene: sceneRef.current,
     camera: cameraRef.current,
@@ -129,6 +143,15 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
                   materialProperties={materialProperties}
                   onPropertiesChange={setMaterialProperties}
                   onReset={() => setMaterialProperties(props.initialMaterialProperties)}
+                  characterLatitude={characterLatitude}
+                  onCharacterLatitudeChange={setCharacterLatitude}
+                  characterLongitude={characterLongitude}
+                  onCharacterLongitudeChange={setCharacterLongitude}
+                  characterHeight={characterHeight}
+                  onCharacterHeightChange={setCharacterHeight}
+                  characterOpacity={characterOpacity}
+                  onCharacterOpacityChange={setCharacterOpacity}
+                  viewFromSebaka={props.viewFromSebaka}
                 />
             )}
         </SheetContent>

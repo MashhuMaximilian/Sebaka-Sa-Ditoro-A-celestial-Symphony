@@ -22,9 +22,25 @@ interface InfoPanelProps {
   materialProperties: MaterialProperties;
   onPropertiesChange: React.Dispatch<React.SetStateAction<MaterialProperties>>;
   onReset: () => void;
+  characterLatitude: number;
+  onCharacterLatitudeChange: (value: number) => void;
+  characterLongitude: number;
+  onCharacterLongitudeChange: (value: number) => void;
+  characterHeight: number;
+  onCharacterHeightChange: (value: number) => void;
+  characterOpacity: number;
+  onCharacterOpacityChange: (value: number) => void;
+  viewFromSebaka: boolean;
 }
 
-const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: InfoPanelProps) => {
+const InfoPanel = ({ 
+    data, materialProperties, onPropertiesChange, onReset,
+    characterLatitude, onCharacterLatitudeChange,
+    characterLongitude, onCharacterLongitudeChange,
+    characterHeight, onCharacterHeightChange,
+    characterOpacity, onCharacterOpacityChange,
+    viewFromSebaka
+}: InfoPanelProps) => {
 
   const handleSliderChange = (bodyName: string, propName: keyof MaterialProperties[string], value: number[]) => {
     onPropertiesChange(prevProps => ({
@@ -146,6 +162,20 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                       </span>
                     </div>
                   </div>
+                  
+                  <div className="grid gap-2">
+                    <Label>Opacity</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                         min={0} max={1} step={0.01}
+                        value={[characterOpacity]}
+                        onValueChange={(v) => onCharacterOpacityChange(v[0])}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">
+                        {characterOpacity.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
 
                 <Button onClick={onReset} variant="outline" className="w-full">
                   Reset All to Defaults
@@ -153,6 +183,56 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
               </div>
             </AccordionContent>
           </AccordionItem>
+          {!viewFromSebaka && (
+             <AccordionItem value="item-2">
+                <AccordionTrigger>
+                    <h3 className="text-lg font-bold">Position</h3>
+                </AccordionTrigger>
+                <AccordionContent>
+                    <div className="space-y-4 pt-2">
+                        <div className="grid gap-2">
+                            <Label>Latitude</Label>
+                            <div className="flex items-center gap-2">
+                                <Slider
+                                    min={-90} max={90} step={1}
+                                    value={[characterLatitude]}
+                                    onValueChange={(v) => onCharacterLatitudeChange(v[0])}
+                                />
+                                <span className="text-xs font-mono w-12 text-center">
+                                    {characterLatitude.toFixed(0)}°
+                                </span>
+                            </div>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Longitude</Label>
+                            <div className="flex items-center gap-2">
+                                <Slider
+                                    min={0} max={360} step={1}
+                                    value={[characterLongitude]}
+                                    onValueChange={(v) => onCharacterLongitudeChange(v[0])}
+                                />
+                                <span className="text-xs font-mono w-12 text-center">
+                                    {characterLongitude.toFixed(0)}°
+                                </span>
+                            </div>
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Height From Surface</Label>
+                            <div className="flex items-center gap-2">
+                                <Slider
+                                    min={0.01} max={0.5} step={0.01}
+                                    value={[characterHeight]}
+                                    onValueChange={(v) => onCharacterHeightChange(v[0])}
+                                />
+                                <span className="text-xs font-mono w-12 text-center">
+                                    {characterHeight.toFixed(2)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </AccordionContent>
+             </AccordionItem>
+          )}
         </Accordion>
       )
     }

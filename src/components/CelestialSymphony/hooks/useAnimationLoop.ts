@@ -6,14 +6,16 @@ import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
 import type { BodyData } from "./useBodyData";
 import { SphericalCharacterController } from '../utils/SphericalCharacterController';
 import { CloseUpCharacterCamera } from '../utils/CloseUpCharacterCamera';
+import { MaterialProperties } from "@/types";
 
 interface AnimationLoopParams {
     speedMultiplier?: number;
     viewFromSebaka: boolean;
     isSebakaRotating: boolean;
-    longitude: number;
-    latitude: number;
-    isViridisAnimationActive: boolean;
+    characterLongitude: number;
+    characterLatitude: number;
+    characterHeight: number;
+    characterOpacity: number;
     onTimeUpdate: (elapsedHours: number) => void;
     goToTime: number | null;
     onGoToTimeComplete: () => void;
@@ -35,8 +37,10 @@ export const useAnimationLoop = ({
   speedMultiplier = 24,
   viewFromSebaka,
   isSebakaRotating,
-  longitude,
-  latitude,
+  characterLongitude,
+  characterLatitude,
+  characterHeight,
+  characterOpacity,
   onTimeUpdate,
   goToTime,
   onGoToTimeComplete,
@@ -213,7 +217,7 @@ export const useAnimationLoop = ({
       }
 
       if (viewFromSebaka && characterControllerRef.current && thirdPersonCameraRef.current) {
-          characterControllerRef.current.update(longitude, latitude);
+          characterControllerRef.current.update(characterLongitude, characterLatitude, characterHeight, characterOpacity);
           thirdPersonCameraRef.current.update();
           controls.enabled = false;
       } else {
@@ -247,7 +251,9 @@ export const useAnimationLoop = ({
     onTimeUpdate,
     isInitialized,
     viewFromSebaka,
-    latitude, 
-    longitude, 
+    characterLatitude, 
+    characterLongitude,
+    characterHeight,
+    characterOpacity,
   ]);
 };

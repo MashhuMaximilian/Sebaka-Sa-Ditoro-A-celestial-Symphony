@@ -1,6 +1,7 @@
 
 
 
+
 interface CelestialBody {
     name: string;
     color: string;
@@ -64,5 +65,6 @@ export interface MaterialProperties {
     rimPower?: number;
     colorSpeed?: number;
     opacity?: number;
+    height?: number;
   };
 }

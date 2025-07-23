@@ -1,6 +1,5 @@
 
 import * as THREE from 'three';
-import { eyeHeight } from '../constants/config';
 import { blobShader } from '../shaders/blobShader';
 
 /**
@@ -52,12 +51,12 @@ export class SphericalCharacterController {
     this.planetMesh.add(this.characterMesh);
   }
 
-  public update(longitude: number, latitude: number) {
+  public update(longitude: number, latitude: number, height: number, opacity: number) {
     const latRad = THREE.MathUtils.degToRad(90 - latitude);
     const lonRad = THREE.MathUtils.degToRad(longitude);   
     
     const localPosition = new THREE.Vector3().setFromSphericalCoords(
-      this.planetRadius + eyeHeight,
+      this.planetRadius + height,
       latRad,
       lonRad
     );
@@ -66,6 +65,7 @@ export class SphericalCharacterController {
     // Update shader time for blob animation
     if (this.characterMesh instanceof THREE.Mesh && this.characterMesh.material instanceof THREE.ShaderMaterial) {
       this.characterMesh.material.uniforms.time.value = this.clock.getElapsedTime();
+      this.characterMesh.material.uniforms.opacity.value = opacity;
     }
   }
 
