@@ -153,14 +153,37 @@ export const volcanoShader = {
       vec3 pos = position;
 
       // Apply standard displacement map first
+      vec3 displacedNormal = normal;
       if (useDisplacementMap) {
         float displacementValue = texture2D(displacementMap, uv).r;
         pos += normal * pow(displacementValue, 4.0) * displacementScale;
+        
+        // Recalculate normals for correct lighting after displacement
+        float eps = 0.01; // Small offset for sampling
+        vec2 du = vec2(eps, 0.0);
+        vec2 dv = vec2(0.0, eps);
+
+        float H = texture2D(displacementMap, vUv).r * displacementScale;
+        float H_u = texture2D(displacementMap, vUv + du).r * displacementScale;
+        float H_v = texture2D(displacementMap, vUv + dv).r * displacementScale;
+
+        vec3 p = position;
+        vec3 p_u = position + tangent.xyz * eps;
+        vec3 p_v = cross(normal, tangent.xyz) * eps;
+
+        vec3 displaced_p = p + normal * H;
+        vec3 displaced_p_u = p_u + normal * H_u;
+        vec3 displaced_p_v = p_v + normal * H_v;
+
+        vec3 dP_du = displaced_p_u - displaced_p;
+        vec3 dP_dv = displaced_p_v - displaced_p;
+
+        displacedNormal = normalize(cross(dP_du, dP_dv));
       }
       
       // Calculate TBN matrix for normal mapping based on the potentially displaced position
       vec3 t = normalize( mat3(modelMatrix) * tangent.xyz );
-      vec3 n = normalize( mat3(modelMatrix) * normal );
+      vec3 n = normalize( mat3(modelMatrix) * displacedNormal );
       vec3 b = cross( n, t );
       vTBN = mat3( t, b, n );
 
@@ -267,7 +290,7 @@ export const volcanoShader = {
 
       if (u_time < u_phaseSplit.x) { // Phase 1: Eruption and cool down
           if (u_time < phase1Midpoint) {
-              // Ramp up to peak albedo
+              // Ramp up to peak albedo (4.2)
               animatedAlbedo = mix(albedo, 4.2, u_time / phase1Midpoint);
           } else {
               // Ramp down to cool albedo (1.8)
@@ -289,11 +312,11 @@ export const volcanoShader = {
       float eruptionFactor = 1.0 - smoothstep(u_phaseSplit.x - transitionWidth, u_phaseSplit.x, u_time);
       
       // --- Lava Color Calculation ---
-      vec3 magentaRed = vec3(0.8, 0.1, 0.3);
-      vec3 hotWhite = vec3(1.0, 1.0, 0.8);
+      vec3 lavaBaseColor = vec3(1.0, 1.0, 1.0);
+      vec3 hotWhite = vec3(1.0, 1.0, 1.0);
       float softLavaMask = smoothstep(u_lavaSoftnessMin, u_lavaSoftnessMax, v_lavaMask);
       float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, v_lavaMask); // A sharper step for the core
-      vec3 lavaColor = mix(magentaRed, hotWhite, hotCoreMask);
+      vec3 lavaColor = mix(lavaBaseColor, hotWhite, hotCoreMask);
       vec3 lavaEmission = lavaColor * softLavaMask * eruptionFactor;
       
       // Phase 2: Smoke (fades in, then fades out)
@@ -343,3 +366,4 @@ export const volcanoShader = {
     }
   `
 };
+
