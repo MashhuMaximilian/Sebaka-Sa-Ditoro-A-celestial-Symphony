@@ -91,7 +91,7 @@ export const volcanoShader = {
     u_phaseSplit: { value: new THREE.Vector3(0.33, 0.66, 1.0) },
 
     // Lava and smoke properties
-    u_lavaColor: { value: new THREE.Color(0xff4500) },
+    u_lavaColor: { value: new THREE.Color(0x00FFFF) }, // Cyan lava
     u_noiseScale: { value: 3.5 },
     u_smokeDensity: { value: 1.5 },
     u_lavaSoftnessMin: { value: 0.4 },
@@ -306,3 +306,5 @@ export const volcanoShader = {
     }
   `
 };
+
+    

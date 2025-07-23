@@ -324,10 +324,10 @@ const InfoPanel = ({
                       <Slider
                         id="viridis-noise-scale"
                         min={0.1} max={10} step={0.1}
-                        value={[viridisProps.noiseScale ?? 3.0]}
+                        value={[viridisProps.noiseScale ?? 5.9]}
                         onValueChange={(value) => handleMaterialSliderChange(data.name, 'noiseScale', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.noiseScale ?? 3.0).toFixed(1)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.noiseScale ?? 5.9).toFixed(1)}</span>
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -335,11 +335,11 @@ const InfoPanel = ({
                     <div className="flex items-center gap-2">
                       <Slider
                         id="viridis-smoke-density"
-                        min={0} max={5} step={0.1}
-                        value={[viridisProps.smokeDensity ?? 2.8]}
+                        min={0} max={10} step={0.1}
+                        value={[viridisProps.smokeDensity ?? 5.0]}
                         onValueChange={(value) => handleMaterialSliderChange(data.name, 'smokeDensity', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.smokeDensity ?? 2.8).toFixed(1)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.smokeDensity ?? 5.0).toFixed(1)}</span>
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -421,3 +421,5 @@ const InfoPanel = ({
 
 
 export default InfoPanel;
+
+    
