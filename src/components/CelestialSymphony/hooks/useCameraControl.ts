@@ -16,6 +16,7 @@ interface CameraControlProps {
     originalCameraPosRef: React.MutableRefObject<THREE.Vector3>;
     orbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     fov: number;
+    isInitialized: boolean;
 }
 
 export const useCameraControl = ({
@@ -30,10 +31,11 @@ export const useCameraControl = ({
     originalCameraPosRef,
     orbitMeshesRef,
     fov,
+    isInitialized,
 }: CameraControlProps) => {
 
     useEffect(() => {
-        if (!camera || !controls || viewFromSebaka) return;
+        if (!camera || !controls || viewFromSebaka || !isInitialized) return;
 
         const followTarget = () => {
             if (cameraTarget) {
@@ -57,10 +59,10 @@ export const useCameraControl = ({
 
         return () => cancelAnimationFrame(animationId);
 
-    }, [cameraTarget, viewFromSebaka, allBodiesRef, camera, controls, beaconPositionRef]);
+    }, [cameraTarget, viewFromSebaka, allBodiesRef, camera, controls, beaconPositionRef, isInitialized]);
 
     useEffect(() => {
-        if (!camera || !controls || viewFromSebaka) return;
+        if (!camera || !controls || viewFromSebaka || !isInitialized) return;
         
         let targetPosition = new THREE.Vector3(0, 0, 0);
         let desiredCameraPosition: THREE.Vector3 | null = null;
@@ -86,10 +88,10 @@ export const useCameraControl = ({
           controls.target.copy(targetPosition);
           controls.update();
         }
-      }, [cameraTarget, bodyData, viewFromSebaka, allBodiesRef, beaconPositionRef, camera, controls, originalCameraPosRef]);
+      }, [cameraTarget, bodyData, viewFromSebaka, allBodiesRef, beaconPositionRef, camera, controls, originalCameraPosRef, isInitialized]);
 
     useEffect(() => {
-        if (!camera || !controls) return;
+        if (!camera || !controls || !isInitialized) return;
         
         if (viewFromSebaka) {
             camera.near = 0.01;
@@ -103,7 +105,7 @@ export const useCameraControl = ({
             camera.position.copy(originalCameraPosRef.current);
         }
         camera.updateProjectionMatrix();
-    }, [viewFromSebaka, camera, controls, originalCameraPosRef]);
+    }, [viewFromSebaka, camera, controls, originalCameraPosRef, isInitialized]);
 
     useEffect(() => {
         if (camera) {

@@ -43,11 +43,12 @@ export interface CelestialSymphonyProps {
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
   const bodyData = useBodyData(props.stars, props.planets);
   const [materialProperties, setMaterialProperties] = useState(props.initialMaterialProperties);
-  const characterHitboxRef = useRef<THREE.Mesh | null>(null);
   
   // Isolate character-specific state to prevent top-level re-renders
-  const [characterLatitude, setCharacterLatitude] = useState(0);
-  const [characterLongitude, setCharacterLongitude] = useState(0);
+  const [characterLatitude, setCharacterLatitude] = useState(props.initialMaterialProperties.Character.height ?? 0);
+  const [characterLongitude, setCharacterLongitude] = useState(props.initialMaterialProperties.Character.height ?? 0);
+  const [characterOpacity, setCharacterOpacity] = useState(props.initialMaterialProperties.Character.opacity ?? 1.0);
+  const [characterHeight, setCharacterHeight] = useState(props.initialMaterialProperties.Character.height ?? 0.01);
   
   useEffect(() => {
     // When entering Sebaka view, sync the external props to the internal state
@@ -68,6 +69,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     allMeshesRef,
     orbitMeshesRef,
     beaconPositionRef,
+    originalCameraPosRef,
     characterMeshRef
   } = useInitializeScene({ 
     bodyData, 
@@ -75,15 +77,14 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     viewFromSebaka: props.viewFromSebaka,
     usePlainOrbits: props.usePlainOrbits,
     showOrbits: props.showOrbits,
-    materialProperties: materialProperties,
-    characterHitboxRef,
+    materialProperties,
   });
 
   useBodyClickHandler({
     renderer: rendererRef.current,
     camera: cameraRef.current,
     allBodies: allBodiesRef.current,
-    characterHitbox: characterHitboxRef.current,
+    characterMesh: characterMeshRef.current,
     onBodyClick: props.onBodyClick,
     viewFromSebaka: props.viewFromSebaka,
   });
@@ -97,8 +98,10 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     planetMeshesRef: allMeshesRef,
     bodyData,
     beaconPositionRef,
+    originalCameraPosRef,
     orbitMeshesRef,
     fov: props.fov,
+    isInitialized: props.isInitialized,
   });
 
   useUpdateBodyMaterials({
@@ -114,6 +117,8 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
 
   useAnimationLoop({
     ...props,
+    characterHeight,
+    characterOpacity,
     characterLatitude: props.viewFromSebaka ? props.characterLatitude : characterLatitude,
     characterLongitude: props.viewFromSebaka ? props.characterLongitude : characterLongitude,
     bodyData,
@@ -125,8 +130,16 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     planetMeshesRef: allMeshesRef,
     orbitMeshesRef,
     beaconPositionRef,
-    characterMeshRef
+    isInitialized: props.isInitialized,
+    characterMeshRef,
   });
+
+  const handleCharacterPropChange = (prop: 'latitude' | 'longitude' | 'height' | 'opacity', value: number) => {
+    if (prop === 'latitude') setCharacterLatitude(value);
+    if (prop === 'longitude') setCharacterLongitude(value);
+    if (prop === 'height') setCharacterHeight(value);
+    if (prop === 'opacity') setCharacterOpacity(value);
+  }
 
   return (
     <>
@@ -146,9 +159,13 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
                   onPropertiesChange={setMaterialProperties}
                   onReset={() => setMaterialProperties(props.initialMaterialProperties)}
                   characterLatitude={characterLatitude}
-                  onCharacterLatitudeChange={setCharacterLatitude}
+                  onCharacterLatitudeChange={(v) => handleCharacterPropChange('latitude', v)}
                   characterLongitude={characterLongitude}
-                  onCharacterLongitudeChange={setCharacterLongitude}
+                  onCharacterLongitudeChange={(v) => handleCharacterPropChange('longitude', v)}
+                  characterHeight={characterHeight}
+                  onCharacterHeightChange={(v) => handleCharacterPropChange('height', v)}
+                  characterOpacity={characterOpacity}
+                  onCharacterOpacityChange={(v) => handleCharacterPropChange('opacity', v)}
                   viewFromSebaka={props.viewFromSebaka}
                 />
             )}

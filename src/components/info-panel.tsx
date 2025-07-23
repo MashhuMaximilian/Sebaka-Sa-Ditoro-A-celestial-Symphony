@@ -25,6 +25,10 @@ interface InfoPanelProps {
   onCharacterLatitudeChange: (value: number) => void;
   characterLongitude: number;
   onCharacterLongitudeChange: (value: number) => void;
+  characterHeight: number;
+  onCharacterHeightChange: (value: number) => void;
+  characterOpacity: number;
+  onCharacterOpacityChange: (value: number) => void;
   viewFromSebaka: boolean;
 }
 
@@ -32,6 +36,8 @@ const InfoPanel = ({
     data, materialProperties, onPropertiesChange, onReset,
     characterLatitude, onCharacterLatitudeChange,
     characterLongitude, onCharacterLongitudeChange,
+    characterHeight, onCharacterHeightChange,
+    characterOpacity, onCharacterOpacityChange,
     viewFromSebaka
 }: InfoPanelProps) => {
 
@@ -163,11 +169,11 @@ const InfoPanel = ({
                     <div className="flex items-center gap-2">
                       <Slider
                          min={0} max={1} step={0.01}
-                        value={[charProps.opacity ?? 1.0]}
-                        onValueChange={(v) => handleSliderChange(data.name, 'opacity', v)}
+                        value={[characterOpacity]}
+                        onValueChange={(v) => onCharacterOpacityChange(v[0])}
                       />
                       <span className="text-xs font-mono w-12 text-center">
-                        {(charProps.opacity ?? 1.0).toFixed(2)}
+                        {characterOpacity.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -216,11 +222,11 @@ const InfoPanel = ({
                             <div className="flex items-center gap-2">
                                 <Slider
                                     min={0.01} max={0.5} step={0.01}
-                                    value={[charProps.height ?? 0.01]}
-                                    onValueChange={(v) => handleSliderChange(data.name, 'height', v)}
+                                    value={[characterHeight]}
+                                    onValueChange={(v) => onCharacterHeightChange(v[0])}
                                 />
                                 <span className="text-xs font-mono w-12 text-center">
-                                    {(charProps.height ?? 0.01).toFixed(2)}
+                                    {characterHeight.toFixed(2)}
                                 </span>
                             </div>
                         </div>
