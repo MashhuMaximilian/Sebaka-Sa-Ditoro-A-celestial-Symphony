@@ -106,7 +106,7 @@ export class CloseUpCharacterCamera {
 
     this.verticalAngle = THREE.MathUtils.clamp(
       this.verticalAngle - dy * pitchSpeed,
-      0.05, // Prevent looking underground
+      0.01, // Prevent looking underground
       Math.PI / 2 - 0.05 // Allow looking up to see planet curvature when zoomed out
     );
   }
