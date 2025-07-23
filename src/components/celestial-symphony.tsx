@@ -46,6 +46,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     beaconPositionRef,
     sebakaRadiusRef,
     originalCameraPosRef,
+    characterMeshRef
   } = useInitializeScene({ 
     bodyData, 
     setIsInitialized: props.setIsInitialized,
@@ -59,6 +60,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     renderer: rendererRef.current,
     camera: cameraRef.current,
     allBodies: allBodiesRef.current,
+    characterMesh: characterMeshRef.current,
     onBodyClick: props.onBodyClick,
     viewFromSebaka: props.viewFromSebaka,
   });
@@ -82,6 +84,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     planets: props.planets,
     allMeshes: allMeshesRef,
     allBodies: allBodiesRef,
+    characterMesh: characterMeshRef.current,
     isViridisAnimationActive: props.isViridisAnimationActive,
     viewFromSebaka: props.viewFromSebaka,
     materialProperties: props.materialProperties,
@@ -98,6 +101,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     planetMeshesRef: allMeshesRef,
     orbitMeshesRef,
     beaconPositionRef,
+    characterMeshRef
   });
 
   return <div ref={mountRef} className="absolute inset-0 w-full h-full" />;

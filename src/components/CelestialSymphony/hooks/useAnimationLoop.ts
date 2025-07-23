@@ -28,6 +28,7 @@ interface AnimationLoopParams {
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     isInitialized: boolean;
     cameraTarget: string | null;
+    characterMeshRef: React.MutableRefObject<THREE.Object3D | null>;
 };
 
 export const useAnimationLoop = ({
@@ -49,6 +50,7 @@ export const useAnimationLoop = ({
   orbitMeshesRef,
   beaconPositionRef,
   isInitialized,
+  characterMeshRef,
 }: AnimationLoopParams) => {
   const clockRef = useRef(new THREE.Clock());
   const elapsedHoursRef = useRef(0);
@@ -80,6 +82,7 @@ export const useAnimationLoop = ({
 
     if (viewFromSebaka && sebakaMesh && sebakaContainer) {
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
+      characterMeshRef.current = characterControllerRef.current.characterMesh; // Store character mesh
       thirdPersonCameraRef.current = new CloseUpCharacterCamera(
         camera, 
         characterControllerRef.current.characterMesh, 
@@ -90,6 +93,10 @@ export const useAnimationLoop = ({
       controls.enabled = false;
     } else {
         controls.enabled = true;
+        if(characterMeshRef.current) {
+            characterMeshRef.current.parent?.remove(characterMeshRef.current);
+            characterMeshRef.current = null;
+        }
     }
 
     return () => {
@@ -102,7 +109,7 @@ export const useAnimationLoop = ({
         characterControllerRef.current = null;
       }
     };
-  }, [viewFromSebaka, scene, camera, renderer, bodyData, isInitialized, planetMeshesRef, controls, allBodiesRef]);
+  }, [viewFromSebaka, scene, camera, renderer, bodyData, isInitialized, planetMeshesRef, controls, allBodiesRef, characterMeshRef]);
 
 
   useEffect(() => {

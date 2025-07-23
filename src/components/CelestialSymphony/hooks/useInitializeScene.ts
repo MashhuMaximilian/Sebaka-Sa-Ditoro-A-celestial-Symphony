@@ -7,6 +7,7 @@ import { createOrbitMesh } from "../utils/createOrbitMesh";
 import type { BodyData } from "./useBodyData";
 import { createStarfield } from "../utils/createStarfield";
 import { MaterialProperties } from "@/types";
+import { SphericalCharacterController } from "../utils/SphericalCharacterController";
 
 interface InitializeSceneProps {
     bodyData: BodyData[];
@@ -32,6 +33,8 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
     const beaconPositionRef = useRef(new THREE.Vector3());
     const sebakaRadiusRef = useRef(0);
     const originalCameraPosRef = useRef(new THREE.Vector3(0, 400, 800));
+    const characterMeshRef = useRef<THREE.Object3D | null>(null);
+
 
     useEffect(() => {
         setSebakaGridTexture(createGridTexture());
@@ -76,6 +79,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         allBodiesRef.current = [];
         allMeshesRef.current = [];
         orbitMeshesRef.current = [];
+        characterMeshRef.current = null;
         
         bodyData.forEach(body => {
             const bodyObject = createBodyMesh(body, viewFromSebaka, sebakaGridTexture, materialProperties[body.name]);
@@ -96,6 +100,12 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 }
             }
         });
+        
+        const sebakaMesh = allMeshesRef.current.find(m => m.name === "Sebaka") as THREE.Mesh;
+        if (viewFromSebaka && sebakaMesh) {
+            const characterController = new SphericalCharacterController(sebakaMesh);
+            characterMeshRef.current = characterController.characterMesh;
+        }
 
         const initialBeaconData = bodyData.find(d => d.name === 'Beacon');
         if (initialBeaconData?.orbitRadius) {
@@ -136,7 +146,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 mountRef.current.removeChild(rendererRef.current.domElement);
             }
         };
-    }, [bodyData, viewFromSebaka, usePlainOrbits, showOrbits, sebakaGridTexture]);
+    }, [bodyData, viewFromSebaka, usePlainOrbits, showOrbits, sebakaGridTexture, materialProperties]);
 
     return {
         mountRef,
@@ -150,5 +160,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         beaconPositionRef,
         sebakaRadiusRef,
         originalCameraPosRef,
+        characterMeshRef,
     };
 };

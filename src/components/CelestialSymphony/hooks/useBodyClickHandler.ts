@@ -6,16 +6,22 @@ interface BodyClickHandlerProps {
     renderer: THREE.WebGLRenderer | undefined;
     camera: THREE.PerspectiveCamera | undefined;
     allBodies: THREE.Object3D[];
+    characterMesh: THREE.Object3D | null;
     onBodyClick: (name: string) => void;
     viewFromSebaka: boolean;
 }
 
-export const useBodyClickHandler = ({ renderer, camera, allBodies, onBodyClick, viewFromSebaka }: BodyClickHandlerProps) => {
+export const useBodyClickHandler = ({ renderer, camera, allBodies, characterMesh, onBodyClick, viewFromSebaka }: BodyClickHandlerProps) => {
     useEffect(() => {
-        if (!renderer || !camera || allBodies.length === 0) return;
+        if (!renderer || !camera || (allBodies.length === 0 && !characterMesh)) return;
 
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
+        
+        const objectsToIntersect = [...allBodies];
+        if (characterMesh) {
+            objectsToIntersect.push(characterMesh);
+        }
 
         const onClick = (event: MouseEvent | TouchEvent) => {
             const rect = renderer.domElement.getBoundingClientRect();
@@ -26,10 +32,19 @@ export const useBodyClickHandler = ({ renderer, camera, allBodies, onBodyClick, 
             mouse.x = ((x - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((y - rect.top) / rect.height) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(allBodies, true);
+
+            const intersects = raycaster.intersectObjects(objectsToIntersect, true);
+
             if (intersects.length > 0) {
                 let currentObject = intersects[0].object;
-                // Traverse up the hierarchy to find the main body group, which has the name.
+                
+                // For the character, the name is on the mesh itself.
+                if (currentObject.name === 'Character') {
+                    onBodyClick('Character');
+                    return;
+                }
+                
+                // For other bodies, traverse up the hierarchy to find the main body group, which has the name.
                 while(currentObject.parent && !allBodies.some(body => body.name === currentObject.name)) {
                     if (currentObject.parent) {
                         currentObject = currentObject.parent;
@@ -53,5 +68,5 @@ export const useBodyClickHandler = ({ renderer, camera, allBodies, onBodyClick, 
             currentDomElement.removeEventListener('click', onClick);
             currentDomElement.removeEventListener('touchstart', onClick);
         };
-    }, [renderer, camera, allBodies, onBodyClick, viewFromSebaka]);
+    }, [renderer, camera, allBodies, characterMesh, onBodyClick, viewFromSebaka]);
 };

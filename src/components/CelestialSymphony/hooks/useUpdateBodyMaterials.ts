@@ -80,6 +80,7 @@ interface UpdateBodyMaterialsProps {
     planets: PlanetData[];
     allMeshes: React.MutableRefObject<THREE.Mesh[]>;
     allBodies: React.MutableRefObject<THREE.Object3D[]>;
+    characterMesh: THREE.Object3D | null;
     isViridisAnimationActive: boolean;
     viewFromSebaka: boolean;
     materialProperties: MaterialProperties;
@@ -90,6 +91,7 @@ export const useUpdateBodyMaterials = ({
     planets,
     allMeshes,
     allBodies,
+    characterMesh,
     isViridisAnimationActive,
     viewFromSebaka,
     materialProperties,
@@ -108,7 +110,7 @@ export const useUpdateBodyMaterials = ({
     }, [planets, allMeshes]);
 
     useEffect(() => {
-        if (!allBodies.current.length) return;
+        if (!allBodies.current.length && !characterMesh) return;
 
         allMeshes.current.forEach((mesh) => {
             const props = materialProperties[mesh.name];
@@ -116,7 +118,13 @@ export const useUpdateBodyMaterials = ({
                 updateMaterialProperties(mesh, props);
             }
         });
-    }, [materialProperties, allMeshes, allBodies]);
+        if (characterMesh) {
+            const props = materialProperties[characterMesh.name];
+            if (props) {
+                updateMaterialProperties(characterMesh as THREE.Mesh, props);
+            }
+        }
+    }, [materialProperties, allMeshes, allBodies, characterMesh]);
 
 
     useEffect(() => {
