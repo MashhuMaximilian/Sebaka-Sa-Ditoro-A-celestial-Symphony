@@ -116,7 +116,9 @@ export class CloseUpCharacterCamera {
     this.distance = THREE.MathUtils.clamp(
       this.distance + delta * zoomSpeed,
       0.05,  // Very close to character
-      this.planetRadius *0.2,    // Far enough to see significant planet curvature
+      // USER-EDITABLE: This is the maximum zoom distance when in character view.
+      // It's a multiplier of the planet's radius. 0.2 means 20% of the planet's radius.
+      this.planetRadius * 0.2,
     );
   }
 

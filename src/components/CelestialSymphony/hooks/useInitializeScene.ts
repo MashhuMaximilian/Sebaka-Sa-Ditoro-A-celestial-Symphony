@@ -74,6 +74,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         controls.dampingFactor = 0.05;
         controls.screenSpacePanning = true; 
         controls.minDistance = 1;
+        // USER-EDITABLE: This is the maximum zoom out distance for the main orbital camera.
         controls.maxDistance = 200000;
         controlsRef.current = controls;
         
