@@ -12,10 +12,8 @@ interface AnimationLoopParams {
     speedMultiplier?: number;
     viewFromSebaka: boolean;
     isSebakaRotating: boolean;
-    characterLongitude: number;
-    characterLatitude: number;
-    characterHeight: number;
-    characterOpacity: number;
+    characterStateRef: React.MutableRefObject<{ latitude: number, longitude: number, height: number }>;
+    materialProperties: MaterialProperties;
     onTimeUpdate: (elapsedHours: number) => void;
     goToTime: number | null;
     onGoToTimeComplete: () => void;
@@ -37,10 +35,8 @@ export const useAnimationLoop = ({
   speedMultiplier = 24,
   viewFromSebaka,
   isSebakaRotating,
-  characterLongitude,
-  characterLatitude,
-  characterHeight,
-  characterOpacity,
+  characterStateRef,
+  materialProperties,
   onTimeUpdate,
   goToTime,
   onGoToTimeComplete,
@@ -168,12 +164,17 @@ export const useAnimationLoop = ({
       const beaconStarBody = allBodiesRef.current.find(b => b.name === 'Beacon');
       
       if (alphaStarBody && twilightStarBody && beaconStarBody) {
-          const allPlanetMeshes = planetMeshesRef.current;
-          allPlanetMeshes.forEach(mesh => {
-              if (mesh.material instanceof THREE.ShaderMaterial && 'isBeaconPlanet' in mesh.material.uniforms) {
-                  mesh.material.uniforms.alphaStarPos.value.copy(alphaStarBody.position);
-                  mesh.material.uniforms.twilightStarPos.value.copy(twilightStarBody.position);
-                  mesh.material.uniforms.beaconStarPos.value.copy(beaconStarBody.position);
+          const allPlanetAndCharacterMeshes = [...planetMeshesRef.current];
+          if (characterMeshRef.current) {
+              allPlanetAndCharacterMeshes.push(characterMeshRef.current as THREE.Mesh);
+          }
+
+          allPlanetAndCharacterMeshes.forEach(mesh => {
+              if (mesh.material instanceof THREE.ShaderMaterial) {
+                  const uniforms = mesh.material.uniforms;
+                  if (uniforms.alphaStarPos) uniforms.alphaStarPos.value.copy(alphaStarBody.position);
+                  if (uniforms.twilightStarPos) uniforms.twilightStarPos.value.copy(twilightStarBody.position);
+                  if (uniforms.beaconStarPos) uniforms.beaconStarPos.value.copy(beaconStarBody.position);
               }
           });
           
@@ -217,7 +218,8 @@ export const useAnimationLoop = ({
       }
 
       if (viewFromSebaka && characterControllerRef.current && thirdPersonCameraRef.current) {
-          characterControllerRef.current.update(characterLongitude, characterLatitude, characterHeight, characterOpacity);
+          const { latitude, longitude, height } = characterStateRef.current;
+          characterControllerRef.current.update(longitude, latitude, height, materialProperties.Character);
           thirdPersonCameraRef.current.update();
           controls.enabled = false;
       } else {
@@ -251,9 +253,7 @@ export const useAnimationLoop = ({
     onTimeUpdate,
     isInitialized,
     viewFromSebaka,
-    characterLatitude, 
-    characterLongitude,
-    characterHeight,
-    characterOpacity,
+    characterStateRef,
+    materialProperties,
   ]);
 };

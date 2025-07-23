@@ -97,6 +97,7 @@ float fbm(vec3 x, int octaves) {
   float v = 0.0;
   float a = 0.5;
   vec3 shift = vec3(100);
+  // Use a loop that respects the number of octaves (complexity)
   for (int i = 0; i < 10; ++i) {
     if (i >= octaves) break;
     v += a * snoise(x);
@@ -114,7 +115,7 @@ export const blobShader = {
     displacementScale: { value: 0.3 },
     noiseFrequency: { value: 4.0 },
     noiseSpeed: { value: 0.8 },
-    blobComplexity: { value: 4.0 }, // Now an integer, but sent as float
+    blobComplexity: { value: 4.0 }, // Sent as float, used as int
 
     // Iridescence & Color
     iridescenceStrength: { value: 8.0 },
@@ -134,7 +135,7 @@ export const blobShader = {
     beaconColor: { value: new THREE.Color(0xaaccff) },
     alphaIntensity: { value: 1.8 },
     twilightIntensity: { value: 1.2 },
-    beaconIntensity: { value: 150.0 }, // Lower for character
+    beaconIntensity: { value: 150.0 },
     ambientLevel: { value: 0.05 },
     shininess: { value: 30.0 },
   },
@@ -226,7 +227,8 @@ export const blobShader = {
     vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir) {
         vec3 lightDir = normalize(starPos - vWorldPosition);
         float dist = length(starPos - vWorldPosition);
-        float attenuation = 1.0 / (1.0 + dist * dist * 0.001); // Custom attenuation for character
+        // Attenuation for the character should be gentle to keep it lit
+        float attenuation = 1.0 / (1.0 + dist * dist * 0.0001); 
         
         // Diffuse
         float diff = max(dot(normal, lightDir), 0.0);
@@ -235,7 +237,7 @@ export const blobShader = {
         // Specular
         vec3 halfwayDir = normalize(lightDir + viewDir);
         float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
-        vec3 specular = starColor * spec * starIntensity; // Specular not tied to albedo
+        vec3 specular = starColor * spec * starIntensity;
         
         return (diffuse + specular) * attenuation;
     }

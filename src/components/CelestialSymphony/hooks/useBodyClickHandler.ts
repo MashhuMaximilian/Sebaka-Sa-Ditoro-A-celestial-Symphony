@@ -6,24 +6,25 @@ interface BodyClickHandlerProps {
     renderer: THREE.WebGLRenderer | undefined;
     camera: THREE.PerspectiveCamera | undefined;
     allBodies: THREE.Object3D[];
-    characterMesh: THREE.Object3D | null;
+    characterHitboxRef: React.RefObject<THREE.Mesh | null>;
     onBodyClick: (name: string) => void;
     viewFromSebaka: boolean;
 }
 
-export const useBodyClickHandler = ({ renderer, camera, allBodies, characterMesh, onBodyClick, viewFromSebaka }: BodyClickHandlerProps) => {
+export const useBodyClickHandler = ({ renderer, camera, allBodies, characterHitboxRef, onBodyClick, viewFromSebaka }: BodyClickHandlerProps) => {
     useEffect(() => {
-        if (!renderer || !camera || (allBodies.length === 0 && !characterMesh)) return;
+        if (!renderer || !camera || (allBodies.length === 0 && !characterHitboxRef.current)) return;
 
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
         
         const objectsToIntersect = [...allBodies];
-        if (characterMesh) {
-            objectsToIntersect.push(characterMesh);
+        if (characterHitboxRef.current) {
+            objectsToIntersect.push(characterHitboxRef.current);
         }
 
         const onClick = (event: MouseEvent | TouchEvent) => {
+            if (!renderer) return;
             const rect = renderer.domElement.getBoundingClientRect();
             let x, y;
             if (event instanceof MouseEvent) { x = event.clientX; y = event.clientY; } 
@@ -38,8 +39,8 @@ export const useBodyClickHandler = ({ renderer, camera, allBodies, characterMesh
             if (intersects.length > 0) {
                 let currentObject = intersects[0].object;
                 
-                // For the character, the name is on the mesh itself.
-                if (currentObject.name === 'Character') {
+                // If we hit the hitbox, we know it's the character.
+                if (currentObject.name === 'CharacterHitbox') {
                     onBodyClick('Character');
                     return;
                 }
@@ -65,8 +66,10 @@ export const useBodyClickHandler = ({ renderer, camera, allBodies, characterMesh
         currentDomElement.addEventListener('touchstart', onClick, { passive: true });
 
         return () => {
-            currentDomElement.removeEventListener('click', onClick);
-            currentDomElement.removeEventListener('touchstart', onClick);
+            if (currentDomElement) {
+                currentDomElement.removeEventListener('click', onClick);
+                currentDomElement.removeEventListener('touchstart', onClick);
+            }
         };
-    }, [renderer, camera, allBodies, characterMesh, onBodyClick, viewFromSebaka]);
+    }, [renderer, camera, allBodies, characterHitboxRef, onBodyClick, viewFromSebaka]);
 };

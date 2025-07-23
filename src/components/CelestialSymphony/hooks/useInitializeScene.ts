@@ -34,6 +34,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
     const sebakaRadiusRef = useRef(0);
     const originalCameraPosRef = useRef(new THREE.Vector3(0, 400, 800));
     const characterMeshRef = useRef<THREE.Object3D | null>(null);
+    const characterHitboxRef = useRef<THREE.Mesh | null>(null);
 
 
     useEffect(() => {
@@ -80,6 +81,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         allMeshesRef.current = [];
         orbitMeshesRef.current = [];
         characterMeshRef.current = null;
+        characterHitboxRef.current = null;
         
         bodyData.forEach(body => {
             const bodyObject = createBodyMesh(body, viewFromSebaka, sebakaGridTexture, materialProperties[body.name]);
@@ -105,6 +107,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         if (viewFromSebaka && sebakaMesh) {
             const characterController = new SphericalCharacterController(sebakaMesh);
             characterMeshRef.current = characterController.characterMesh;
+            characterHitboxRef.current = characterController.characterHitbox;
         }
 
         const initialBeaconData = bodyData.find(d => d.name === 'Beacon');
@@ -161,5 +164,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         sebakaRadiusRef,
         originalCameraPosRef,
         characterMeshRef,
+        characterHitboxRef
     };
 };

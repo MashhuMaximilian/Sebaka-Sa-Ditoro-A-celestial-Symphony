@@ -1,6 +1,7 @@
 
 import * as THREE from 'three';
 import { blobShader } from '../shaders/blobShader';
+import { MaterialProperties } from '@/types';
 
 /**
  * A controller to manage a character object that is "stuck" to the surface
@@ -12,6 +13,7 @@ export class SphericalCharacterController {
   private planetMesh: THREE.Mesh;
   private planetRadius: number;
   private clock = new THREE.Clock();
+  public characterHitbox: THREE.Mesh;
 
   constructor(planetMesh: THREE.Mesh) {
     this.planetMesh = planetMesh;
@@ -23,20 +25,11 @@ export class SphericalCharacterController {
         this.planetRadius = box.getSize(new THREE.Vector3()).x / 2;
     }
     
-    // Change from BoxGeometry to SphereGeometry with high detail
     const geometry = new THREE.SphereGeometry(0.015, 64, 64);
-    geometry.computeTangents(); // Required for proper normal calculations
+    geometry.computeTangents(); 
 
     const uniforms = THREE.UniformsUtils.clone(blobShader.uniforms);
-    uniforms.baseColor.value = new THREE.Color(0x8c52ff);
-    uniforms.opacity.value = 1.0;
-    uniforms.iridescenceStrength.value = 8.0;
     
-    // Set blob-specific properties
-    uniforms.displacementScale.value = 0.3;
-    uniforms.noiseFrequency.value = 4.0;
-    uniforms.noiseSpeed.value = 0.8;
-
     const material = new THREE.ShaderMaterial({
         uniforms: uniforms,
         vertexShader: blobShader.vertexShader,
@@ -49,9 +42,16 @@ export class SphericalCharacterController {
     this.characterMesh.name = "Character";
 
     this.planetMesh.add(this.characterMesh);
+
+    // Create the hitbox
+    const hitboxGeometry = new THREE.SphereGeometry(0.05, 16, 16);
+    const hitboxMaterial = new THREE.MeshBasicMaterial({ visible: false }); 
+    this.characterHitbox = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
+    this.characterHitbox.name = "CharacterHitbox";
+    this.characterMesh.add(this.characterHitbox); // Attach hitbox to character
   }
 
-  public update(longitude: number, latitude: number, height: number, opacity: number) {
+  public update(longitude: number, latitude: number, height: number, materialProps: MaterialProperties['Character']) {
     const latRad = THREE.MathUtils.degToRad(90 - latitude);
     const lonRad = THREE.MathUtils.degToRad(longitude);   
     
@@ -62,10 +62,22 @@ export class SphericalCharacterController {
     );
     this.characterMesh.position.copy(localPosition);
 
-    // Update shader time for blob animation
+    // Update shader uniforms for animation and material properties
     if (this.characterMesh instanceof THREE.Mesh && this.characterMesh.material instanceof THREE.ShaderMaterial) {
-      this.characterMesh.material.uniforms.time.value = this.clock.getElapsedTime();
-      this.characterMesh.material.uniforms.opacity.value = opacity;
+      const uniforms = this.characterMesh.material.uniforms;
+      uniforms.time.value = this.clock.getElapsedTime();
+      
+      // Update all material properties from the panel
+      if (materialProps) {
+        uniforms.displacementScale.value = materialProps.displacementScale ?? 0.05;
+        uniforms.noiseFrequency.value = materialProps.noiseFrequency ?? 8.3;
+        uniforms.noiseSpeed.value = materialProps.noiseSpeed ?? 0.5;
+        uniforms.blobComplexity.value = materialProps.blobComplexity ?? 0.5;
+        uniforms.iridescenceStrength.value = materialProps.iridescenceStrength ?? 14.3;
+        uniforms.rimPower.value = materialProps.rimPower ?? 1.9;
+        uniforms.colorSpeed.value = materialProps.colorSpeed ?? 2.2;
+        uniforms.opacity.value = materialProps.opacity ?? 1.0;
+      }
     }
   }
 

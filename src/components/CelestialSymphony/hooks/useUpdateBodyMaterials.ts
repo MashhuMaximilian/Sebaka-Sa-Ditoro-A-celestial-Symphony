@@ -4,8 +4,8 @@ import * as THREE from "three";
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 
-const updateMaterialProperties = (mesh: THREE.Mesh, props: MaterialProperties[string]) => {
-  if (!mesh || !props || !(mesh.material instanceof THREE.ShaderMaterial)) return;
+const updateMaterialProperties = (mesh: THREE.Mesh | THREE.Object3D, props: MaterialProperties[string]) => {
+  if (!mesh || !props || !('material' in mesh) || !(mesh.material instanceof THREE.ShaderMaterial)) return;
   
   const uniforms = mesh.material.uniforms;
   
@@ -137,7 +137,7 @@ export const useUpdateBodyMaterials = ({
         });
         if (characterMesh) {
             const props = materialProperties['Character'];
-            if (props && characterMesh instanceof THREE.Mesh) {
+            if (props) {
                 updateMaterialProperties(characterMesh, props);
             }
         }
