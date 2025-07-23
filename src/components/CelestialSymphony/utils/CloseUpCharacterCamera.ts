@@ -116,7 +116,7 @@ export class CloseUpCharacterCamera {
     this.distance = THREE.MathUtils.clamp(
       this.distance + delta * zoomSpeed,
       0.05,  // Very close to character
-      2.0    // Far enough to see significant planet curvature
+      this.planetRadius *0.2,    // Far enough to see significant planet curvature
     );
   }
 
@@ -232,13 +232,13 @@ export class CloseUpCharacterCamera {
     
     // Linear height increase with minimal curve
     const baseHeight = this.height;
-    const additionalHeight = this.distance * 0.2; // Linear height gain
-    const curveHeight = this.planetRadius * (1 - Math.cos(arcAngle)) * 0.3; // Much reduced curve
+    const additionalHeight = this.distance * 0.001; // Linear height gain
+    const curveHeight = this.planetRadius * (1 - Math.cos(arcAngle)) * 0.2; // Much reduced curve
     
     const totalHeight = baseHeight + additionalHeight + curveHeight;
     
     // Calculate horizontal distance with reduced arc
-    const horizontalDistance = this.distance * 0.9; // More direct backward movement
+    const horizontalDistance = this.distance * 0.7; // More direct backward movement
     
     // Apply horizontal angle rotation
     const horizontalOffset = horizontalDistance * Math.sin(this.horizontalAngle);
