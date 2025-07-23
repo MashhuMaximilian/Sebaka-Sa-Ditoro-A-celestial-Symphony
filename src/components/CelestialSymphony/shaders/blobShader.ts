@@ -114,9 +114,9 @@ export const blobShader = {
     displacementScale: { value: 0.05 },
     noiseFrequency: { value: 8.3 },
     noiseSpeed: { value: 0.5 },
-    blobComplexity: { value: 1.0 },
+    blobComplexity: { value: 4.0 }, // Note: now a float for the loop condition
 
-    // Iridescence & Color
+    // Iridescence & Color - matching spiderStrandShader
     iridescenceStrength: { value: 14.3 },
     opacity: { value: 1.0 },
     baseColor: { value: new THREE.Color(0xffffff) },
@@ -132,7 +132,7 @@ export const blobShader = {
     uniform float displacementScale;
     uniform float noiseFrequency;
     uniform float noiseSpeed;
-    uniform float blobComplexity;
+    uniform float blobComplexity; // Changed to float
 
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
@@ -144,7 +144,7 @@ export const blobShader = {
       float noise = (fbm(p * noiseFrequency + time * noiseSpeed, int(blobComplexity)) + 1.0) * 0.5;
       vec3 displacedPosition = p + normal * noise * displacementScale;
       
-      // Recalculate normals for correct lighting
+      // Recalculate normals for correct lighting by sampling nearby points
       float eps = 0.001;
       vec3 tangent = normalize(cross(normal, vec3(0.0, 1.0, 0.0)));
       if (length(tangent) < eps) {
@@ -176,7 +176,7 @@ export const blobShader = {
       vec4 worldPosition = modelMatrix * vec4(displacedPosition, 1.0);
       vWorldPosition = worldPosition.xyz;
       
-      vNormal = normalize(mat3(modelMatrix) * displacedNormal);
+      vNormal = normalize(normalMatrix * displacedNormal);
       vViewDirection = normalize(cameraPosition - vWorldPosition);
 
       gl_Position = projectionMatrix * viewMatrix * worldPosition;
@@ -197,12 +197,13 @@ export const blobShader = {
     varying vec3 vViewDirection;
 
     void main() {
+      // Use the corrected normal from the vertex shader
       vec3 normal = normalize(vNormal);
 
-      // --- Iridescence Calculation (like the rings) ---
+      // --- Iridescence Calculation (EXACTLY like the rings/orbits) ---
       float fresnel = pow(1.0 - max(0.0, dot(normal, vViewDirection)), rimPower);
       
-      // Iridescent color cycling
+      // Iridescent color cycling based on world position and time
       float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.y) * 0.1 + time * colorSpeed, float(numColors));
       int colorIndex1 = int(colorIndexFloat);
       int colorIndex2 = (colorIndex1 + 1) % numColors;
@@ -211,7 +212,10 @@ export const blobShader = {
       // Mix the base color (white) with the iridescent color based on the fresnel effect
       vec3 finalColor = mix(baseColor, iridescentColor, fresnel * iridescenceStrength);
       
-      gl_FragColor = vec4(finalColor, opacity);
+      // Use the same alpha logic as the orbit lines to preserve 3D shape
+      float finalAlpha = opacity * (0.35 + fresnel * 0.65);
+      
+      gl_FragColor = vec4(finalColor, finalAlpha);
     }
   `,
 };

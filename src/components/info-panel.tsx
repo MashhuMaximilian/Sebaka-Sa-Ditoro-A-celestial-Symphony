@@ -51,13 +51,13 @@ const InfoPanel = ({
       const charProps = materialProperties.Character;
       
       const characterSliders = [
-        { label: "Blob Deformation", prop: "displacementScale", min: 0, max: 0.5, step: 0.01, defaultValue: 0.05 },
-        { label: "Noise Frequency", prop: "noiseFrequency", min: 0.1, max: 15, step: 0.1, defaultValue: 8.3 },
-        { label: "Animation Speed", prop: "noiseSpeed", min: 0.1, max: 5, step: 0.1, defaultValue: 0.5 },
-        { label: "Blob Complexity (Layers)", prop: "blobComplexity", min: 1, max: 8, step: 1, defaultValue: 1 },
-        { label: "Iridescence Strength", prop: "iridescenceStrength", min: 0, max: 20, step: 0.1, defaultValue: 14.3 },
-        { label: "Rim Power", prop: "rimPower", min: 0, max: 10, step: 0.1, defaultValue: 1.9 },
-        { label: "Color Speed", prop: "colorSpeed", min: 0, max: 5, step: 0.1, defaultValue: 2.2 },
+        { label: "Blob Deformation", prop: "displacementScale", min: 0, max: 0.5, step: 0.01, defaultValue: 0.02 },
+        { label: "Noise Frequency", prop: "noiseFrequency", min: 0.1, max: 20, step: 0.1, defaultValue: 14.5 },
+        { label: "Animation Speed", prop: "noiseSpeed", min: 0.1, max: 5, step: 0.1, defaultValue: 1.1 },
+        { label: "Blob Complexity (Layers)", prop: "blobComplexity", min: 1, max: 8, step: 1, defaultValue: 5 },
+        { label: "Iridescence Strength", prop: "iridescenceStrength", min: 0, max: 20, step: 0.1, defaultValue: 18.9 },
+        { label: "Rim Power", prop: "rimPower", min: 0, max: 10, step: 0.1, defaultValue: 9.1 },
+        { label: "Color Speed", prop: "colorSpeed", min: 0, max: 5, step: 0.1, defaultValue: 3.8 },
         { label: "Opacity", prop: "opacity", min: 0, max: 1, step: 0.01, defaultValue: 1.0 },
       ] as const;
 
