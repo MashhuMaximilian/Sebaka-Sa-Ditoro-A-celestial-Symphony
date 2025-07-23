@@ -169,6 +169,13 @@ export const volcanoShader = {
   fragmentShader: `
     ${noiseGLSL}
 
+    // Produces 0-1 white noise per-pixel from UV
+    float hash21(vec2 p) {
+        p = fract(p * vec2(123.34, 456.21));
+        p += dot(p, p + 78.233);
+        return fract(p.x * p.y);
+    }
+
     uniform float u_time;
     uniform vec3 u_phaseSplit;
     uniform float u_noiseScale;
@@ -263,33 +270,23 @@ export const volcanoShader = {
       // --- Eruption Effect (Flashing Dots) ---
       vec3 lavaEmission = vec3(0.0);
       if (u_time < u_phaseSplit.x) {
-        float phase_progress = u_time / u_phaseSplit.x;
-        float eruptionFactor = sin(phase_progress * 3.14159); // Simple sine fade in/out for the whole phase
 
-        // Generate multiple layers of noise for complexity and variance
-        float noise1 = noise3D(vWorldPosition * u_lavaDotSize + u_time * 15.0);
-        float noise2 = noise3D(vWorldPosition * u_lavaDotSizeVariance + u_time * 5.0);
-        
-        // Combine noise to create varied dots
-        float combined_noise = (noise1 + 1.0) * 0.5 * ((noise2 + 1.0) * 0.5);
+          float phase = u_time / u_phaseSplit.x;         // 0-1 across Phase 1
+          float eruptionAmp = sin(phase * 3.14159);      // smooth fade in/out
 
-        // Use density to set a sharp threshold for points to appear
-        float threshold = 1.0 - u_lavaDensity;
-        float flashing_points = smoothstep(threshold, threshold + 0.01, combined_noise);
-        
-        // Make the points flash over time
-        float flash_speed = sin(u_time * 50.0 + vWorldPosition.x * 2.0) * 0.5 + 0.5;
-        flashing_points *= flash_speed;
-        
-        // Create a color gradient based on intensity
-        vec3 red = vec3(1.0, 0.1, 0.0);
-        vec3 yellow = vec3(1.0, 0.8, 0.2);
-        vec3 white = vec3(1.0, 1.0, 1.0);
-        
-        vec3 point_color = mix(red, yellow, smoothstep(0.0, 0.5, flashing_points));
-        point_color = mix(point_color, white, smoothstep(0.5, 1.0, flashing_points));
+          // Pure random mask (static in space)
+          float rnd = hash21(vUv * u_lavaDotSize);
 
-        lavaEmission = point_color * flashing_points * eruptionFactor * u_lavaBrightness;
+          // Flashing over time – higher freq for sparkle
+          float flash = step(1.0 - u_lavaDensity, rnd) *  // density slider
+                        step(0.5, hash21(vec2(rnd, u_time * 15.0)));
+
+          // Colour ramp – hotter core, cooler rim
+          vec3 hot = vec3(1.0, 0.9, 0.6);   // white-hot
+          vec3 cool = vec3(1.0, 0.2, 0.0);  // red-orange
+          vec3 dotCol = mix(cool, hot, rnd);
+
+          lavaEmission = dotCol * flash * eruptionAmp * u_lavaBrightness;
       }
       
       // --- Smoke & Haze ---
