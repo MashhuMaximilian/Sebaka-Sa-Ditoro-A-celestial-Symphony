@@ -152,10 +152,10 @@ export const volcanoShader = {
       vUv = uv;
       
       // Calculate TBN matrix for normal mapping
-      vec3 T = normalize( mat3(modelMatrix) * tangent.xyz );
-      vec3 N = normalize( mat3(modelMatrix) * normal );
-      vec3 B = cross( N, T );
-      vTBN = mat3( T, B, N );
+      vec3 t = normalize( mat3(modelMatrix) * tangent.xyz );
+      vec3 n = normalize( mat3(modelMatrix) * normal );
+      vec3 b = cross( n, t );
+      vTBN = mat3( t, b, n );
 
       // Apply standard displacement map first
       vec3 displacedPos = position;
@@ -176,7 +176,7 @@ export const volcanoShader = {
       float slow_noise = noise3D(position * 0.5 + u_time * 0.2);
       v_lavaMask = pow(base_noise, 4.0) + pow(slow_noise, 2.0);
       
-      vNormal = normalize(mat3(modelMatrix) * normal);
+      vNormal = n; // Pass world-space normal to fragment shader
       vWorldPosition = (modelMatrix * vec4(displacedPos, 1.0)).xyz;
       gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPosition, 1.0);
     }
@@ -205,7 +205,7 @@ export const volcanoShader = {
     uniform float twilightIntensity;
     uniform float beaconIntensity;
     uniform float ambientLevel;
-    uniform float albedo;
+    uniform float albedo; // Base albedo (3.04)
     
     // Maps
     uniform bool useNormalMap;
@@ -227,7 +227,7 @@ export const volcanoShader = {
     varying mat3 vTBN;
     
     // Standard lighting function from planetShader
-    vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir, bool isDistantSource) {
+    vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir, float currentAlbedo) {
         vec3 lightDir = normalize(starPos - vWorldPosition);
         float attenuation = 1.0 / (1.0 + length(starPos - vWorldPosition) * length(starPos - vWorldPosition) * 0.00001);
         
@@ -244,7 +244,7 @@ export const volcanoShader = {
             specular = starColor * spec * specularIntensity * specularMask;
         }
 
-        return (diffuse * albedo + specular) * attenuation;
+        return (diffuse * currentAlbedo + specular) * attenuation;
     }
 
 
@@ -259,9 +259,22 @@ export const volcanoShader = {
           mapN.xy *= normalScale;
           normal = normalize(vTBN * mapN);
       }
+
+      // --- Albedo Animation ---
+      float animatedAlbedo = albedo;
+      if (u_time < u_phaseSplit.x) { // Eruption: 3.04 -> 4.2
+        float phase_time = u_time / u_phaseSplit.x;
+        animatedAlbedo = mix(albedo, 4.2, phase_time);
+      } else if (u_time < u_phaseSplit.y) { // Thickening Smoke: 4.2 -> 0.9
+        float phase_time = (u_time - u_phaseSplit.x) / (u_phaseSplit.y - u_phaseSplit.x);
+        animatedAlbedo = mix(4.2, 0.9, phase_time);
+      } else { // Easing Smoke: 0.9 -> 3.04
+        float phase_time = (u_time - u_phaseSplit.y) / (u_phaseSplit.z - u_phaseSplit.y);
+        animatedAlbedo = mix(0.9, albedo, phase_time);
+      }
       
       // --- Phase Blending ---
-      float transitionWidth = 0.1; // 10% transition time
+      float transitionWidth = 0.1;
 
       // Phase 1: Eruption (fades out at the end of its phase)
       float eruptionFactor = 1.0 - smoothstep(u_phaseSplit.x - transitionWidth, u_phaseSplit.x, u_time);
@@ -282,9 +295,9 @@ export const volcanoShader = {
       // Add lighting to base color
       vec3 viewDir = normalize(cameraPosition - vWorldPosition);
       vec3 lighting = vec3(0.0);
-      lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, normal, viewDir, false);
-      lighting += getStarContribution(twilightStarPos, twilightColor, twilightIntensity, normal, viewDir, false);
-      lighting += getStarContribution(beaconStarPos, beaconColor, beaconIntensity, normal, viewDir, false);
+      lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, normal, viewDir, animatedAlbedo);
+      lighting += getStarContribution(twilightStarPos, twilightColor, twilightIntensity, normal, viewDir, animatedAlbedo);
+      lighting += getStarContribution(beaconStarPos, beaconColor, beaconIntensity, normal, viewDir, animatedAlbedo);
 
       // Ambient Occlusion
       float ao = 1.0;
@@ -293,13 +306,12 @@ export const volcanoShader = {
         ao = mix(1.0, ao, aoMapIntensity);
       }
 
-      vec3 litSurface = surfaceColor * (lighting + ambientLevel * albedo * ao);
+      vec3 litSurface = surfaceColor * (lighting + ambientLevel * animatedAlbedo * ao);
       
       vec3 finalColor = litSurface + lavaEmission;
       finalColor *= ao;
 
       // --- Mix Smoke and Haze ---
-      // Use different noise patterns for smoke vs haze for more variety
       vec3 smokeNoiseP = vec3(vUv * u_noiseScale, u_time * 5.0);
       float smokeMask = pow(noise3D(smokeNoiseP), 2.0) * smokeIntensity * u_smokeDensity;
       
@@ -317,5 +329,3 @@ export const volcanoShader = {
     }
   `
 };
-
-    
