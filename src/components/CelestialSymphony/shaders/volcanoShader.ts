@@ -150,24 +150,26 @@ export const volcanoShader = {
     void main() {
       vUv = uv;
       
-      // Calculate TBN matrix for normal mapping
+      vec3 pos = position;
+
+      // Apply standard displacement map first
+      if (useDisplacementMap) {
+        float displacementValue = texture2D(displacementMap, uv).r;
+        pos += normal * pow(displacementValue, 4.0) * displacementScale;
+      }
+      
+      // Calculate TBN matrix for normal mapping based on the potentially displaced position
       vec3 t = normalize( mat3(modelMatrix) * tangent.xyz );
       vec3 n = normalize( mat3(modelMatrix) * normal );
       vec3 b = cross( n, t );
       vTBN = mat3( t, b, n );
 
-      // Apply standard displacement map first
-      vec3 displacedPos = position;
-      if (useDisplacementMap) {
-        float displacementValue = texture2D(displacementMap, uv).r;
-        displacedPos += normal * pow(displacementValue, 4.0) * displacementScale;
-      }
       
       // Now, apply volcanic displacement on top of the already displaced position
       if(u_time < u_phaseSplit.x){
           float displacementStrength = smoothstep(0.0, u_phaseSplit.x, u_time) * (1.0 - smoothstep(u_phaseSplit.x - 0.1, u_phaseSplit.x, u_time));
-          float noise = noise3D(displacedPos * u_noiseScale * 0.5 + u_time * 5.0);
-          displacedPos += normal * noise * displacementStrength * 0.5;
+          float noise = noise3D(pos * u_noiseScale * 0.5 + u_time * 5.0);
+          pos += n * noise * displacementStrength * 0.5;
       }
       
       // Calculate lava mask based on the original, non-displaced position so it's stable
@@ -176,8 +178,9 @@ export const volcanoShader = {
       v_lavaMask = pow(base_noise, 4.0) + pow(slow_noise, 2.0);
       
       vNormal = n; // Pass world-space normal to fragment shader
-      vWorldPosition = (modelMatrix * vec4(displacedPos, 1.0)).xyz;
-      gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPosition, 1.0);
+      vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+      vWorldPosition = worldPos.xyz;
+      gl_Position = projectionMatrix * viewMatrix * worldPos;
     }
   `,
 
@@ -260,11 +263,18 @@ export const volcanoShader = {
 
       // --- Albedo Animation ---
       float animatedAlbedo = albedo; // Start with default albedo
-      if (u_time < u_phaseSplit.x) { // Phase 1: Eruption
-        float phase_time = u_time / u_phaseSplit.x;
-        animatedAlbedo = mix(albedo, 4.2, phase_time);
+      float phase1Midpoint = u_phaseSplit.x / 2.0;
+
+      if (u_time < u_phaseSplit.x) { // Phase 1: Eruption and cool down
+          if (u_time < phase1Midpoint) {
+              // Ramp up to peak albedo
+              animatedAlbedo = mix(albedo, 4.2, u_time / phase1Midpoint);
+          } else {
+              // Ramp down to base albedo
+              animatedAlbedo = mix(4.2, albedo, (u_time - phase1Midpoint) / phase1Midpoint);
+          }
       } else if (u_time < u_phaseSplit.y) { // Phase 2: Smoke Thickening
-        // Making this faster by raising to a power
+        // Power of 2 makes the albedo decrease faster at the start of the phase
         float phase_time = (u_time - u_phaseSplit.x) / (u_phaseSplit.y - u_phaseSplit.x);
         animatedAlbedo = mix(albedo, 0.9, pow(phase_time, 2.0));
       } else { // Phase 3: Smoke Clearing
@@ -333,3 +343,5 @@ export const volcanoShader = {
     }
   `
 };
+
+    
