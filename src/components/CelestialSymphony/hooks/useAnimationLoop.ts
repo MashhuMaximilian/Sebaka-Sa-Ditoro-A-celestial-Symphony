@@ -217,9 +217,17 @@ export const useAnimationLoop = ({
           });
       }
 
-      if (viewFromSebaka && characterControllerRef.current && thirdPersonCameraRef.current) {
+      if (viewFromSebaka && characterControllerRef.current && thirdPersonCameraRef.current && alphaStarBody && twilightStarBody && beaconStarBody) {
           const { latitude, longitude, height } = characterStateRef.current;
-          characterControllerRef.current.update(longitude, latitude, height, materialProperties.Character);
+          characterControllerRef.current.update(
+            longitude, 
+            latitude, 
+            height, 
+            materialProperties.Character,
+            alphaStarBody.position,
+            twilightStarBody.position,
+            beaconStarBody.position
+          );
           thirdPersonCameraRef.current.update();
           controls.enabled = false;
       } else {

@@ -215,10 +215,12 @@ export const initialMaterialProperties: MaterialProperties = {
     noiseSpeed: 1.1,
     blobComplexity: 5,
     iridescenceStrength: 18.9,
-    colorSpeed: 3.8,
     rimPower: 9.1,
     opacity: 1.0,
     height: 0.01,
+    albedo: 0.3,
+    specularIntensity: 0.8,
+    shininess: 80,
   }
 };
 

@@ -60,6 +60,12 @@ const InfoPanel = ({
         { label: "Opacity", prop: "opacity", min: 0, max: 1, step: 0.01, defaultValue: 1.0 },
       ] as const;
 
+      const lightingSliders = [
+          { label: "Albedo", prop: "albedo", min: 0, max: 2, step: 0.01, defaultValue: 0.3 },
+          { label: "Specular Intensity", prop: "specularIntensity", min: 0, max: 2, step: 0.01, defaultValue: 0.8 },
+          { label: "Shininess", prop: "shininess", min: 1, max: 256, step: 1, defaultValue: 80 },
+      ] as const;
+
       const positionSliders = [
           { label: "Latitude", prop: "latitude", min: -90, max: 90, step: 1, defaultValue: 0 },
           { label: "Longitude", prop: "longitude", min: 0, max: 360, step: 1, defaultValue: 0 },
@@ -70,7 +76,7 @@ const InfoPanel = ({
         <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
           <AccordionItem value="item-1">
             <AccordionTrigger>
-              <h3 className="text-lg font-bold">Blob Settings</h3>
+              <h3 className="text-lg font-bold">Blob Appearance</h3>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-4 pt-2">
@@ -89,14 +95,35 @@ const InfoPanel = ({
                         </div>
                     </div>
                   ))}
-                <Button onClick={onReset} variant="outline" className="w-full mt-4">
-                  Reset All to Defaults
-                </Button>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-2">
+            <AccordionTrigger>
+              <h3 className="text-lg font-bold">Blob Lighting</h3>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4 pt-2">
+                  {lightingSliders.map(({ label, prop, min, max, step, defaultValue }) => (
+                     <div className="grid gap-2" key={prop}>
+                        <Label>{label}</Label>
+                        <div className="flex items-center gap-2">
+                        <Slider
+                            min={min} max={max} step={step}
+                            value={[charProps[prop] ?? defaultValue]}
+                            onValueChange={(value) => onCharacterPropChange(prop, value[0])}
+                        />
+                        <span className="text-xs font-mono w-12 text-center">
+                            {(charProps[prop] ?? defaultValue).toFixed(step < 1 ? 2 : 0)}
+                        </span>
+                        </div>
+                    </div>
+                  ))}
               </div>
             </AccordionContent>
           </AccordionItem>
           {!viewFromSebaka && (
-             <AccordionItem value="item-2">
+             <AccordionItem value="item-3">
                 <AccordionTrigger>
                     <h3 className="text-lg font-bold">Position</h3>
                 </AccordionTrigger>
@@ -121,6 +148,11 @@ const InfoPanel = ({
                 </AccordionContent>
              </AccordionItem>
           )}
+           <div className="pt-4">
+             <Button onClick={onReset} variant="outline" className="w-full">
+                Reset All to Defaults
+              </Button>
+           </div>
         </Accordion>
       )
     }

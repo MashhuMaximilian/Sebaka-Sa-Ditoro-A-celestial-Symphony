@@ -116,13 +116,21 @@ export const blobShader = {
     noiseSpeed: { value: 0.5 },
     blobComplexity: { value: 4.0 }, 
 
-    // Iridescence & Color - matching spiderStrandShader
+    // Iridescence & Color
     iridescenceStrength: { value: 14.3 },
     opacity: { value: 1.0 },
     baseColor: { value: new THREE.Color(0xffffff) },
     colors: { value: iridescentPalette },
     numColors: { value: iridescentPalette.length },
     rimPower: { value: 1.9 },
+    
+    // Lighting
+    alphaStarPos: { value: new THREE.Vector3() },
+    twilightStarPos: { value: new THREE.Vector3() },
+    beaconStarPos: { value: new THREE.Vector3() },
+    albedo: { value: 0.3 },
+    specularIntensity: { value: 0.5 },
+    shininess: { value: 80.0 },
   },
   vertexShader: `
     ${noiseGLSL}
@@ -189,33 +197,64 @@ export const blobShader = {
     uniform int numColors;
     uniform float rimPower;
 
+    uniform vec3 alphaStarPos;
+    uniform vec3 twilightStarPos;
+    uniform vec3 beaconStarPos;
+    uniform float albedo;
+    uniform float specularIntensity;
+    uniform float shininess;
+
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying vec3 vViewDirection;
+    
+    // Function to calculate lighting contribution from a single star
+    vec3 getStarContribution(vec3 starPos, vec3 normal, vec3 viewDir) {
+        vec3 lightDir = normalize(starPos - vWorldPosition);
+        float dist = length(starPos - vWorldPosition);
+        float attenuation = 1.0 / (1.0 + dist * dist * 0.0001); // Simplified attenuation
+        
+        // Diffuse
+        float diff = max(dot(normal, lightDir), 0.0);
+        vec3 diffuse = vec3(diff); // Use white light for simplicity
+        
+        // Specular
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float spec = pow(max(dot(normal, halfwayDir), 0.0), max(shininess, 0.1));
+        vec3 specular = vec3(spec * specularIntensity);
+        
+        return (diffuse + specular) * attenuation;
+    }
 
     void main() {
-      // Use the corrected normal from the vertex shader
       vec3 normal = normalize(vNormal);
 
-      // --- Iridescence Calculation (EXACTLY like the rings/orbits, but without time) ---
+      // --- Lighting Calculation ---
+      vec3 lighting = vec3(0.0);
+      lighting += getStarContribution(alphaStarPos, normal, vViewDirection);
+      lighting += getStarContribution(twilightStarPos, normal, vViewDirection);
+      lighting += getStarContribution(beaconStarPos, normal, vViewDirection);
+      
+      vec3 litColor = baseColor * albedo * lighting;
+
+      // --- Iridescence Calculation (stable) ---
       float fresnel = pow(1.0 - max(0.0, dot(normal, vViewDirection)), rimPower);
       
-      // Iridescent color is now stable, based on world position
       float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.y) * 0.1, float(numColors));
       int colorIndex1 = int(colorIndexFloat);
       int colorIndex2 = (colorIndex1 + 1) % numColors;
       vec3 iridescentColor = mix(colors[colorIndex1], colors[colorIndex2], fract(colorIndexFloat));
 
-      // Mix the base color (white) with the iridescent color based on the fresnel effect
-      vec3 finalColor = mix(baseColor, iridescentColor, fresnel * iridescenceStrength);
-      
-      // Alpha calculation: The core is opaque, and the fresnel effect adds a semi-transparent glow at the edges.
-      // Opacity slider controls the overall transparency.
+      // --- Final Combination ---
+      // Add the iridescent effect on top of the lit base color
+      vec3 finalColor = litColor + (iridescentColor * fresnel * iridescenceStrength);
+
+      // --- Alpha Calculation ---
       float fresnelAlpha = pow(1.0 - max(0.0, dot(normal, vViewDirection)), rimPower * 0.5);
       float finalAlpha = opacity * (1.0 - fresnelAlpha * (1.0 - 0.2)); 
       finalAlpha = max(finalAlpha, fresnelAlpha * opacity);
 
-      // When opacity is 1.0, we ensure the core is solid.
+      // When opacity is 1.0, ensure the core is solid.
       gl_FragColor = vec4(finalColor, opacity < 1.0 ? finalAlpha : 1.0);
     }
   `,

@@ -53,7 +53,15 @@ export class SphericalCharacterController {
     this.characterMesh.add(this.characterHitbox); // Attach hitbox to character
   }
 
-  public update(longitude: number, latitude: number, height: number, materialProps: MaterialProperties['Character']) {
+  public update(
+    longitude: number, 
+    latitude: number, 
+    height: number, 
+    materialProps: MaterialProperties['Character'],
+    alphaStarPos: THREE.Vector3,
+    twilightStarPos: THREE.Vector3,
+    beaconStarPos: THREE.Vector3,
+  ) {
     const latRad = THREE.MathUtils.degToRad(90 - latitude);
     const lonRad = THREE.MathUtils.degToRad(longitude);   
     
@@ -69,6 +77,11 @@ export class SphericalCharacterController {
       const uniforms = this.characterMesh.material.uniforms;
       uniforms.time.value = this.clock.getElapsedTime();
       
+      // Update lighting uniforms
+      uniforms.alphaStarPos.value.copy(alphaStarPos);
+      uniforms.twilightStarPos.value.copy(twilightStarPos);
+      uniforms.beaconStarPos.value.copy(beaconStarPos);
+      
       // Update all material properties from the panel
       if (materialProps) {
         uniforms.displacementScale.value = materialProps.displacementScale ?? 0.05;
@@ -78,6 +91,9 @@ export class SphericalCharacterController {
         uniforms.iridescenceStrength.value = materialProps.iridescenceStrength ?? 14.3;
         uniforms.rimPower.value = materialProps.rimPower ?? 1.9;
         uniforms.opacity.value = materialProps.opacity ?? 1.0;
+        uniforms.albedo.value = materialProps.albedo ?? 0.3;
+        uniforms.specularIntensity.value = materialProps.specularIntensity ?? 0.8;
+        uniforms.shininess.value = materialProps.shininess ?? 80;
       }
     }
   }

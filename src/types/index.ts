@@ -45,7 +45,7 @@ export type AnyBodyData = PlanetData | StarData;
 
 export interface MaterialProperties {
   [key: string]: {
-    // Existing properties
+    // Existing properties for planets/stars
     albedo?: number;
     emissiveIntensity?: number;
     normalScale?: number;
