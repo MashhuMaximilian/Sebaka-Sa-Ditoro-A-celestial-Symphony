@@ -72,6 +72,9 @@ const updateMaterialProperties = (mesh: THREE.Mesh, props: MaterialProperties[st
     if (uniforms.colorSpeed && props.colorSpeed !== undefined) {
       uniforms.colorSpeed.value = props.colorSpeed;
     }
+    if (uniforms.opacity && props.opacity !== undefined) {
+      uniforms.opacity.value = props.opacity;
+    }
   }
 };
 
@@ -133,7 +136,7 @@ export const useUpdateBodyMaterials = ({
             }
         });
         if (characterMesh) {
-            const props = materialProperties[characterMesh.name];
+            const props = materialProperties['Character'];
             if (props && characterMesh instanceof THREE.Mesh) {
                 updateMaterialProperties(characterMesh, props);
             }

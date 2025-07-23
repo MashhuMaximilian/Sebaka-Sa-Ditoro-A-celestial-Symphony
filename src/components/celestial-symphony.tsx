@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import { useAnimationLoop } from "./CelestialSymphony/hooks/useAnimationLoop";
 import { useBodyClickHandler } from "./CelestialSymphony/hooks/useBodyClickHandler";
@@ -11,6 +11,7 @@ import { useUpdateBodyMaterials } from "./CelestialSymphony/hooks/useUpdateBodyM
 import { useBodyData } from "./CelestialSymphony/hooks/useBodyData";
 import InfoPanel from "./info-panel";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "./ui/sheet";
+import * as THREE from 'three';
 
 
 export interface CelestialSymphonyProps {
@@ -42,14 +43,19 @@ export interface CelestialSymphonyProps {
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
   const bodyData = useBodyData(props.stars, props.planets);
   const [materialProperties, setMaterialProperties] = useState(props.initialMaterialProperties);
+  const characterHitboxRef = useRef<THREE.Mesh | null>(null);
   
   // Isolate character-specific state to prevent top-level re-renders
   const [characterLatitude, setCharacterLatitude] = useState(0);
   const [characterLongitude, setCharacterLongitude] = useState(0);
   
-  const charProps = materialProperties.Character;
-  const [characterHeight, setCharacterHeight] = useState(charProps.height ?? 0.01);
-  const [characterOpacity, setCharacterOpacity] = useState(charProps.opacity ?? 1.0);
+  useEffect(() => {
+    // When entering Sebaka view, sync the external props to the internal state
+    if (props.viewFromSebaka) {
+        setCharacterLatitude(props.characterLatitude);
+        setCharacterLongitude(props.characterLongitude);
+    }
+  }, [props.viewFromSebaka, props.characterLatitude, props.characterLongitude]);
 
 
   const {
@@ -62,8 +68,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     allMeshesRef,
     orbitMeshesRef,
     beaconPositionRef,
-    sebakaRadiusRef,
-    originalCameraPosRef,
     characterMeshRef
   } = useInitializeScene({ 
     bodyData, 
@@ -72,13 +76,14 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     usePlainOrbits: props.usePlainOrbits,
     showOrbits: props.showOrbits,
     materialProperties: materialProperties,
+    characterHitboxRef,
   });
 
   useBodyClickHandler({
     renderer: rendererRef.current,
     camera: cameraRef.current,
     allBodies: allBodiesRef.current,
-    characterMesh: characterMeshRef.current,
+    characterHitbox: characterHitboxRef.current,
     onBodyClick: props.onBodyClick,
     viewFromSebaka: props.viewFromSebaka,
   });
@@ -92,7 +97,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     planetMeshesRef: allMeshesRef,
     bodyData,
     beaconPositionRef,
-    originalCameraPosRef,
     orbitMeshesRef,
     fov: props.fov,
   });
@@ -112,8 +116,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     ...props,
     characterLatitude: props.viewFromSebaka ? props.characterLatitude : characterLatitude,
     characterLongitude: props.viewFromSebaka ? props.characterLongitude : characterLongitude,
-    characterHeight,
-    characterOpacity,
     bodyData,
     scene: sceneRef.current,
     camera: cameraRef.current,
@@ -147,10 +149,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
                   onCharacterLatitudeChange={setCharacterLatitude}
                   characterLongitude={characterLongitude}
                   onCharacterLongitudeChange={setCharacterLongitude}
-                  characterHeight={characterHeight}
-                  onCharacterHeightChange={setCharacterHeight}
-                  characterOpacity={characterOpacity}
-                  onCharacterOpacityChange={setCharacterOpacity}
                   viewFromSebaka={props.viewFromSebaka}
                 />
             )}

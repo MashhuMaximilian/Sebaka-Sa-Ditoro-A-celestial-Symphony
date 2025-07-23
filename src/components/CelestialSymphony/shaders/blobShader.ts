@@ -93,11 +93,12 @@ float snoise(vec3 v) {
 }
 
 // Fractal noise for more complex deformation
-float fbm(vec3 x) {
+float fbm(vec3 x, int octaves) {
   float v = 0.0;
   float a = 0.5;
   vec3 shift = vec3(100);
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < 10; ++i) {
+    if (i >= octaves) break;
     v += a * snoise(x);
     x = x * 2.0 + shift;
     a *= 0.5;
@@ -113,7 +114,7 @@ export const blobShader = {
     displacementScale: { value: 0.3 },
     noiseFrequency: { value: 4.0 },
     noiseSpeed: { value: 0.8 },
-    blobComplexity: { value: 1.0 },
+    blobComplexity: { value: 4.0 }, // Now an integer, but sent as float
 
     // Iridescence & Color
     iridescenceStrength: { value: 8.0 },
@@ -124,10 +125,18 @@ export const blobShader = {
     colorSpeed: { value: 0.5 },
     rimPower: { value: 4.0 },
     
-    // Required for lighting calculation
+    // Lighting calculation
     alphaStarPos: { value: new THREE.Vector3() },
     twilightStarPos: { value: new THREE.Vector3() },
     beaconStarPos: { value: new THREE.Vector3() },
+    alphaColor: { value: new THREE.Color(0xfff8e7) },
+    twilightColor: { value: new THREE.Color(0xfff0d4) },
+    beaconColor: { value: new THREE.Color(0xaaccff) },
+    alphaIntensity: { value: 1.8 },
+    twilightIntensity: { value: 1.2 },
+    beaconIntensity: { value: 150.0 }, // Lower for character
+    ambientLevel: { value: 0.05 },
+    shininess: { value: 30.0 },
   },
   vertexShader: `
     ${noiseGLSL}
@@ -144,7 +153,8 @@ export const blobShader = {
 
     // Function to compute displaced position
     vec3 getDisplacedPosition(vec3 p, out vec3 displacedNormal) {
-      float noise = fbm(p * noiseFrequency + time * noiseSpeed) * blobComplexity;
+      // Remap noise from [-1, 1] to [0, 1] to only push vertices outwards
+      float noise = (fbm(p * noiseFrequency + time * noiseSpeed, int(blobComplexity)) + 1.0) * 0.5;
       vec3 displacedPosition = p + normal * noise * displacementScale;
       
       // Recalculate normals for correct lighting
@@ -158,8 +168,8 @@ export const blobShader = {
       vec3 neighbor1 = p + tangent * eps;
       vec3 neighbor2 = p + bitangent * eps;
 
-      float noise1 = fbm(neighbor1 * noiseFrequency + time * noiseSpeed) * blobComplexity;
-      float noise2 = fbm(neighbor2 * noiseFrequency + time * noiseSpeed) * blobComplexity;
+      float noise1 = (fbm(neighbor1 * noiseFrequency + time * noiseSpeed, int(blobComplexity)) + 1.0) * 0.5;
+      float noise2 = (fbm(neighbor2 * noiseFrequency + time * noiseSpeed, int(blobComplexity)) + 1.0) * 0.5;
       
       vec3 displacedNeighbor1 = neighbor1 + normal * noise1 * displacementScale;
       vec3 displacedNeighbor2 = neighbor2 + normal * noise2 * displacementScale;
@@ -194,24 +204,68 @@ export const blobShader = {
     uniform int numColors;
     uniform float colorSpeed;
     uniform float rimPower;
+    
+    // Lighting uniforms
+    uniform vec3 alphaStarPos;
+    uniform vec3 twilightStarPos;
+    uniform vec3 beaconStarPos;
+    uniform vec3 alphaColor;
+    uniform vec3 twilightColor;
+    uniform vec3 beaconColor;
+    uniform float alphaIntensity;
+    uniform float twilightIntensity;
+    uniform float beaconIntensity;
+    uniform float ambientLevel;
+    uniform float shininess;
 
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying vec3 vViewDirection;
 
+    // Function to calculate lighting contribution from a single star
+    vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir) {
+        vec3 lightDir = normalize(starPos - vWorldPosition);
+        float dist = length(starPos - vWorldPosition);
+        float attenuation = 1.0 / (1.0 + dist * dist * 0.001); // Custom attenuation for character
+        
+        // Diffuse
+        float diff = max(dot(normal, lightDir), 0.0);
+        vec3 diffuse = starColor * diff * starIntensity;
+        
+        // Specular
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
+        vec3 specular = starColor * spec * starIntensity; // Specular not tied to albedo
+        
+        return (diffuse + specular) * attenuation;
+    }
+
     void main() {
+      vec3 normal = normalize(vNormal);
+
+      // --- 3D LIGHTING CALCULATION ---
+      vec3 lighting = vec3(0.0);
+      lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, normal, vViewDirection);
+      lighting += getStarContribution(twilightStarPos, twilightColor, twilightIntensity, normal, vViewDirection);
+      lighting += getStarContribution(beaconStarPos, beaconColor, beaconIntensity, normal, vViewDirection);
+      vec3 ambient = vec3(ambientLevel);
+
       // Fresnel for rim lighting and iridescence mask
-      float fresnel = 1.0 - max(0.0, dot(vNormal, vViewDirection));
+      float fresnel = 1.0 - max(0.0, dot(normal, vViewDirection));
       float rim = pow(fresnel, rimPower);
 
       // Iridescent color cycling
-      float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.z) * 0.1 + time * colorSpeed, float(numColors));
+      float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.y) * 0.1 + time * colorSpeed, float(numColors));
       int colorIndex1 = int(colorIndexFloat);
       int colorIndex2 = (colorIndex1 + 1) % numColors;
       vec3 iridescentColor = mix(colors[colorIndex1], colors[colorIndex2], fract(colorIndexFloat));
 
       // Final color composition
-      vec3 finalColor = mix(baseColor, iridescentColor, fresnel * iridescenceStrength);
+      // Start with the base color, apply lighting
+      vec3 litColor = baseColor * (lighting + ambient);
+      // Mix in the iridescence based on the fresnel effect
+      vec3 finalColor = mix(litColor, iridescentColor, fresnel * iridescenceStrength);
+      // Add the rim highlight on top
       finalColor += iridescentColor * rim;
 
       gl_FragColor = vec4(finalColor, opacity);

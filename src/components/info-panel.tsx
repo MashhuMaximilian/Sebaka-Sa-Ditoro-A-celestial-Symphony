@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import DataDisplay from "./data-display";
 import { Separator } from "./ui/separator";
@@ -26,10 +25,6 @@ interface InfoPanelProps {
   onCharacterLatitudeChange: (value: number) => void;
   characterLongitude: number;
   onCharacterLongitudeChange: (value: number) => void;
-  characterHeight: number;
-  onCharacterHeightChange: (value: number) => void;
-  characterOpacity: number;
-  onCharacterOpacityChange: (value: number) => void;
   viewFromSebaka: boolean;
 }
 
@@ -37,8 +32,6 @@ const InfoPanel = ({
     data, materialProperties, onPropertiesChange, onReset,
     characterLatitude, onCharacterLatitudeChange,
     characterLongitude, onCharacterLongitudeChange,
-    characterHeight, onCharacterHeightChange,
-    characterOpacity, onCharacterOpacityChange,
     viewFromSebaka
 }: InfoPanelProps) => {
 
@@ -57,6 +50,8 @@ const InfoPanel = ({
     if (!bodyProps) return null;
     
     if (data.name === 'Character') {
+      const charProps = materialProperties.Character;
+      
       return (
         <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
           <AccordionItem value="item-1">
@@ -69,12 +64,12 @@ const InfoPanel = ({
                     <Label>Blob Deformation</Label>
                     <div className="flex items-center gap-2">
                       <Slider
-                        min={0} max={1} step={0.01}
-                        value={[bodyProps.displacementScale ?? 0.3]}
+                        min={0} max={0.5} step={0.01}
+                        value={[charProps.displacementScale ?? 0.05]}
                         onValueChange={(value) => handleSliderChange(data.name, 'displacementScale', value)}
                       />
                       <span className="text-xs font-mono w-12 text-center">
-                        {(bodyProps.displacementScale ?? 0.3).toFixed(2)}
+                        {(charProps.displacementScale ?? 0.05).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -83,12 +78,12 @@ const InfoPanel = ({
                     <Label>Noise Frequency</Label>
                     <div className="flex items-center gap-2">
                       <Slider
-                        min={0.1} max={10} step={0.1}
-                        value={[bodyProps.noiseFrequency ?? 4.0]}
+                        min={0.1} max={15} step={0.1}
+                        value={[charProps.noiseFrequency ?? 8.3]}
                         onValueChange={(value) => handleSliderChange(data.name, 'noiseFrequency', value)}
                       />
                       <span className="text-xs font-mono w-12 text-center">
-                        {(bodyProps.noiseFrequency ?? 4.0).toFixed(1)}
+                        {(charProps.noiseFrequency ?? 8.3).toFixed(1)}
                       </span>
                     </div>
                   </div>
@@ -98,25 +93,25 @@ const InfoPanel = ({
                     <div className="flex items-center gap-2">
                       <Slider
                         min={0.1} max={5} step={0.1}
-                        value={[bodyProps.noiseSpeed ?? 0.8]}
+                        value={[charProps.noiseSpeed ?? 0.5]}
                         onValueChange={(value) => handleSliderChange(data.name, 'noiseSpeed', value)}
                       />
                       <span className="text-xs font-mono w-12 text-center">
-                        {(bodyProps.noiseSpeed ?? 0.8).toFixed(1)}
+                        {(charProps.noiseSpeed ?? 0.5).toFixed(1)}
                       </span>
                     </div>
                   </div>
 
                   <div className="grid gap-2">
-                    <Label>Blob Complexity</Label>
+                    <Label>Blob Complexity (Layers)</Label>
                     <div className="flex items-center gap-2">
                       <Slider
-                        min={0.1} max={10} step={0.1}
-                        value={[bodyProps.blobComplexity ?? 1.0]}
+                        min={1} max={8} step={1}
+                        value={[charProps.blobComplexity ?? 1]}
                         onValueChange={(value) => handleSliderChange(data.name, 'blobComplexity', value)}
                       />
                       <span className="text-xs font-mono w-12 text-center">
-                        {(bodyProps.blobComplexity ?? 1.0).toFixed(1)}
+                        {(charProps.blobComplexity ?? 1).toFixed(0)}
                       </span>
                     </div>
                   </div>
@@ -126,11 +121,11 @@ const InfoPanel = ({
                     <div className="flex items-center gap-2">
                       <Slider
                          min={0} max={20} step={0.1}
-                        value={[bodyProps.iridescenceStrength ?? 8.0]}
+                        value={[charProps.iridescenceStrength ?? 14.3]}
                         onValueChange={(value) => handleSliderChange(data.name, 'iridescenceStrength', value)}
                       />
                       <span className="text-xs font-mono w-12 text-center">
-                        {(bodyProps.iridescenceStrength ?? 8.0).toFixed(1)}
+                        {(charProps.iridescenceStrength ?? 14.3).toFixed(1)}
                       </span>
                     </div>
                   </div>
@@ -140,11 +135,11 @@ const InfoPanel = ({
                     <div className="flex items-center gap-2">
                       <Slider
                          min={0} max={10} step={0.1}
-                        value={[bodyProps.rimPower ?? 4.0]}
+                        value={[charProps.rimPower ?? 1.9]}
                         onValueChange={(value) => handleSliderChange(data.name, 'rimPower', value)}
                       />
                       <span className="text-xs font-mono w-12 text-center">
-                        {(bodyProps.rimPower ?? 4.0).toFixed(1)}
+                        {(charProps.rimPower ?? 1.9).toFixed(1)}
                       </span>
                     </div>
                   </div>
@@ -154,11 +149,11 @@ const InfoPanel = ({
                     <div className="flex items-center gap-2">
                       <Slider
                          min={0} max={5} step={0.1}
-                        value={[bodyProps.colorSpeed ?? 0.5]}
+                        value={[charProps.colorSpeed ?? 2.2]}
                         onValueChange={(value) => handleSliderChange(data.name, 'colorSpeed', value)}
                       />
                       <span className="text-xs font-mono w-12 text-center">
-                        {(bodyProps.colorSpeed ?? 0.5).toFixed(1)}
+                        {(charProps.colorSpeed ?? 2.2).toFixed(1)}
                       </span>
                     </div>
                   </div>
@@ -168,11 +163,11 @@ const InfoPanel = ({
                     <div className="flex items-center gap-2">
                       <Slider
                          min={0} max={1} step={0.01}
-                        value={[characterOpacity]}
-                        onValueChange={(v) => onCharacterOpacityChange(v[0])}
+                        value={[charProps.opacity ?? 1.0]}
+                        onValueChange={(v) => handleSliderChange(data.name, 'opacity', v)}
                       />
                       <span className="text-xs font-mono w-12 text-center">
-                        {characterOpacity.toFixed(2)}
+                        {(charProps.opacity ?? 1.0).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -221,11 +216,11 @@ const InfoPanel = ({
                             <div className="flex items-center gap-2">
                                 <Slider
                                     min={0.01} max={0.5} step={0.01}
-                                    value={[characterHeight]}
-                                    onValueChange={(v) => onCharacterHeightChange(v[0])}
+                                    value={[charProps.height ?? 0.01]}
+                                    onValueChange={(v) => handleSliderChange(data.name, 'height', v)}
                                 />
                                 <span className="text-xs font-mono w-12 text-center">
-                                    {characterHeight.toFixed(2)}
+                                    {(charProps.height ?? 0.01).toFixed(2)}
                                 </span>
                             </div>
                         </div>
