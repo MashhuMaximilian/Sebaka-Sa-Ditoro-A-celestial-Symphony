@@ -45,7 +45,7 @@ export type AnyBodyData = PlanetData | StarData;
 
 export interface MaterialProperties {
   [key: string]: {
-    // Existing properties for planets/stars
+    // Standard Planet/Star properties
     albedo?: number;
     emissiveIntensity?: number;
     normalScale?: number;
@@ -54,7 +54,7 @@ export interface MaterialProperties {
     shininess?: number;
     aoMapIntensity?: number;
     
-    // New blob properties
+    // Character Blob properties
     noiseFrequency?: number;
     noiseSpeed?: number;
     blobComplexity?: number;
@@ -63,5 +63,11 @@ export interface MaterialProperties {
     iridescenceStrength?: number;
     rimPower?: number;
     colorSpeed?: number;
+
+    // Viridis Volcano properties
+    noiseScale?: number;
+    smokeDensity?: number;
+    lavaSoftnessMin?: number;
+    lavaSoftnessMax?: number;
   };
 }

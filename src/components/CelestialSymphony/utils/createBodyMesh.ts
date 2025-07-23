@@ -281,6 +281,10 @@ export const createBodyMesh = (
         const uniforms = {
             ...THREE.UniformsUtils.clone(volcanoShader.uniforms),
             planetTexture: { value: baseTexture },
+            normalMap: { value: normalMap },
+            displacementMap: { value: displacementMap },
+            specularMap: { value: specularMap },
+            aoMap: { value: aoMap },
         };
         material = new THREE.ShaderMaterial({
             uniforms: uniforms,
@@ -371,5 +375,3 @@ export const createBodyMesh = (
     tiltAxis.add(mesh);
     return tiltAxis;
 };
-
-    

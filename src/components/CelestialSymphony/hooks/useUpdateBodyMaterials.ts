@@ -76,6 +76,22 @@ const updateMaterialProperties = (mesh: THREE.Mesh | THREE.Object3D, props: Mate
       uniforms.opacity.value = props.opacity;
     }
   }
+
+  // Viridis Volcano uniform updates
+  if (mesh.name === 'Viridis') {
+    if (uniforms.u_noiseScale && props.noiseScale !== undefined) {
+      uniforms.u_noiseScale.value = props.noiseScale;
+    }
+    if (uniforms.u_smokeDensity && props.smokeDensity !== undefined) {
+      uniforms.u_smokeDensity.value = props.smokeDensity;
+    }
+    if (uniforms.u_lavaSoftnessMin && props.lavaSoftnessMin !== undefined) {
+      uniforms.u_lavaSoftnessMin.value = props.lavaSoftnessMin;
+    }
+    if (uniforms.u_lavaSoftnessMax && props.lavaSoftnessMax !== undefined) {
+      uniforms.u_lavaSoftnessMax.value = props.lavaSoftnessMax;
+    }
+  }
 };
 
 interface UpdateBodyMaterialsProps {

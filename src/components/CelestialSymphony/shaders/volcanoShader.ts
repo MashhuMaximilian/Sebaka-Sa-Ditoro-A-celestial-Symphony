@@ -94,11 +94,13 @@ export const volcanoShader = {
     u_lavaColor: { value: new THREE.Color(0xff4500) },
     u_noiseScale: { value: 3.5 },
     u_smokeDensity: { value: 1.5 },
-    
+    u_lavaSoftnessMin: { value: 0.4 },
+    u_lavaSoftnessMax: { value: 0.8 },
+
     // Base texture
     planetTexture: { value: null as THREE.Texture | null },
 
-    // Standard lighting uniforms (for compatibility)
+    // Standard lighting uniforms
     alphaStarPos: { value: new THREE.Vector3() },
     twilightStarPos: { value: new THREE.Vector3() },
     beaconStarPos: { value: new THREE.Vector3() },
@@ -110,6 +112,21 @@ export const volcanoShader = {
     beaconIntensity: { value: 200.0 },
     ambientLevel: { value: 0.02 },
     albedo: { value: 1.0 },
+
+    // Maps
+    useNormalMap: { value: false },
+    normalMap: { value: null as THREE.Texture | null },
+    normalScale: { value: new THREE.Vector2(1, 1) },
+    useDisplacementMap: { value: false },
+    displacementMap: { value: null as THREE.Texture | null },
+    displacementScale: { value: 1.0 },
+    useSpecularMap: { value: false },
+    specularMap: { value: null as THREE.Texture | null },
+    specularIntensity: { value: 1.0 },
+    shininess: { value: 30.0 },
+    useAoMap: { value: false },
+    aoMap: { value: null as THREE.Texture | null },
+    aoMapIntensity: { value: 1.0 },
   },
 
   vertexShader: `
@@ -119,28 +136,48 @@ export const volcanoShader = {
     uniform vec3 u_phaseSplit;
     uniform float u_noiseScale;
 
+    uniform bool useDisplacementMap;
+    uniform sampler2D displacementMap;
+    uniform float displacementScale;
+
     varying vec2 vUv;
     varying float v_lavaMask;
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
+    varying mat3 vTBN;
+    
+    in vec4 tangent;
 
     void main() {
       vUv = uv;
-      vNormal = normalize(normalMatrix * normal);
+      
+      // Calculate TBN matrix for normal mapping
+      vec3 T = normalize( mat3(modelMatrix) * tangent.xyz );
+      vec3 N = normalize( mat3(modelMatrix) * normal );
+      vec3 B = cross( N, T );
+      vTBN = mat3( T, B, N );
+
       vec3 pos = position;
 
-      // Displace only during eruption phase
+      // Displace only during eruption phase (volcano-specific displacement)
       if(u_time < u_phaseSplit.x){
           float displacementStrength = smoothstep(0.0, u_phaseSplit.x, u_time) * (1.0 - smoothstep(u_phaseSplit.x - 0.1, u_phaseSplit.x, u_time));
           float noise = noise3D(pos * u_noiseScale * 0.5 + u_time * 5.0);
           pos += normal * noise * displacementStrength * 0.5;
       }
       
+      // Apply standard displacement map
+      if (useDisplacementMap) {
+        float displacementValue = texture2D(displacementMap, uv).r;
+        pos += normal * pow(displacementValue, 4.0) * displacementScale;
+      }
+
       // Calculate lava mask based on noise
       float base_noise = noise3D(position * 2.0);
       float slow_noise = noise3D(position * 0.5 + u_time * 0.2);
       v_lavaMask = pow(base_noise, 4.0) + pow(slow_noise, 2.0);
-
+      
+      vNormal = normalize(mat3(modelMatrix) * normal);
       vec4 worldPosition4 = modelMatrix * vec4(pos, 1.0);
       vWorldPosition = worldPosition4.xyz;
       gl_Position = projectionMatrix * viewMatrix * worldPosition4;
@@ -155,6 +192,8 @@ export const volcanoShader = {
     uniform vec3 u_lavaColor;
     uniform float u_noiseScale;
     uniform float u_smokeDensity;
+    uniform float u_lavaSoftnessMin;
+    uniform float u_lavaSoftnessMax;
     uniform sampler2D planetTexture;
 
     // Standard lighting uniforms
@@ -169,21 +208,45 @@ export const volcanoShader = {
     uniform float beaconIntensity;
     uniform float ambientLevel;
     uniform float albedo;
+    
+    // Maps
+    uniform bool useNormalMap;
+    uniform sampler2D normalMap;
+    uniform vec2 normalScale;
+    uniform bool useSpecularMap;
+    uniform sampler2D specularMap;
+    uniform float specularIntensity;
+    uniform float shininess;
+    uniform bool useAoMap;
+    uniform sampler2D aoMap;
+    uniform float aoMapIntensity;
+
 
     varying vec2 vUv;
     varying float v_lavaMask;
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
+    varying mat3 vTBN;
     
     // Standard lighting function from planetShader
     vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir, bool isDistantSource) {
         vec3 lightDir = normalize(starPos - vWorldPosition);
-        float attenuation = 1.0;
-        float dist = length(starPos - vWorldPosition);
-        attenuation = 1.0 / (1.0 + dist * dist * 0.00001);
+        float attenuation = 1.0 / (1.0 + length(starPos - vWorldPosition) * length(starPos - vWorldPosition) * 0.00001);
+        
+        // Diffuse
         float diff = max(dot(normal, lightDir), 0.0);
         vec3 diffuse = starColor * diff * starIntensity;
-        return diffuse * albedo * attenuation;
+
+        // Specular
+        vec3 specular = vec3(0.0);
+        if (useSpecularMap) {
+            vec3 halfwayDir = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(normal, halfwayDir), 0.0), max(shininess, 0.1));
+            float specularMask = texture2D(specularMap, vUv).r;
+            specular = starColor * spec * specularIntensity * specularMask;
+        }
+
+        return (diffuse * albedo + specular) * attenuation;
     }
 
 
@@ -191,19 +254,38 @@ export const volcanoShader = {
       // Base surface color from texture
       vec3 surfaceColor = texture2D(planetTexture, vUv).rgb;
       
+      // Get normal from normal map or use vertex normal
+      vec3 normal = normalize(vNormal);
+      if (useNormalMap) {
+          vec3 mapN = texture2D(normalMap, vUv).xyz * 2.0 - 1.0;
+          mapN.xy *= normalScale;
+          normal = normalize(vTBN * mapN);
+      }
+      
       // --- Phase 1: Eruption ---
       float eruptionFactor = 1.0 - smoothstep(0.0, u_phaseSplit.x, u_time);
-      vec3 lavaEmission = u_lavaColor * v_lavaMask * eruptionFactor;
+      // Soften the lava mask for smoother edges
+      float softLavaMask = smoothstep(u_lavaSoftnessMin, u_lavaSoftnessMax, v_lavaMask);
+      vec3 lavaEmission = u_lavaColor * softLavaMask * eruptionFactor;
       
       // Add lighting to base color
       vec3 viewDir = normalize(cameraPosition - vWorldPosition);
       vec3 lighting = vec3(0.0);
-      lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, vNormal, viewDir, false);
-      lighting += getStarContribution(twilightStarPos, twilightColor, twilightIntensity, vNormal, viewDir, false);
-      lighting += getStarContribution(beaconStarPos, beaconColor, beaconIntensity, vNormal, viewDir, false);
-      vec3 litSurface = surfaceColor * (lighting + ambientLevel);
+      lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, normal, viewDir, false);
+      lighting += getStarContribution(twilightStarPos, twilightColor, twilightIntensity, normal, viewDir, false);
+      lighting += getStarContribution(beaconStarPos, beaconColor, beaconIntensity, normal, viewDir, false);
+
+      // Ambient Occlusion
+      float ao = 1.0;
+      if (useAoMap) {
+        ao = texture2D(aoMap, vUv).r;
+        ao = mix(1.0, ao, aoMapIntensity);
+      }
+
+      vec3 litSurface = surfaceColor * (lighting + ambientLevel * albedo * ao);
       
       vec3 finalColor = litSurface + lavaEmission;
+      finalColor *= ao;
 
       // --- Phase 2: Rising Smoke ---
       float smokeMask = 0.0;
