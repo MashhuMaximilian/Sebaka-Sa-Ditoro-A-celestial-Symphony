@@ -312,8 +312,8 @@ export const volcanoShader = {
       float eruptionFactor = 1.0 - smoothstep(u_phaseSplit.x - transitionWidth, u_phaseSplit.x, u_time);
       
       // --- Lava Color Calculation ---
-      vec3 lavaBaseColor = vec3(1.0, 1.0, 1.0);
-      vec3 hotWhite = vec3(1.0, 1.0, 1.0);
+      vec3 lavaBaseColor = vec3(1.0, 0.2, 0.0); // Orange-Red
+      vec3 hotWhite = vec3(1.0, 1.0, 0.5); // Pale Yellow
       float softLavaMask = smoothstep(u_lavaSoftnessMin, u_lavaSoftnessMax, v_lavaMask);
       float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, v_lavaMask);
       vec3 lavaColor = mix(lavaBaseColor, hotWhite, hotCoreMask);
@@ -373,5 +373,6 @@ export const volcanoShader = {
     }
   `
 };
+
 
     
