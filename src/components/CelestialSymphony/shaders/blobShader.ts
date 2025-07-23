@@ -97,8 +97,7 @@ float fbm(vec3 x, int octaves) {
   float v = 0.0;
   float a = 0.5;
   vec3 shift = vec3(100);
-  // Use a loop that respects the number of octaves (complexity)
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 8; ++i) {
     if (i >= octaves) break;
     v += a * snoise(x);
     x = x * 2.0 + shift;
@@ -112,26 +111,19 @@ export const blobShader = {
   uniforms: {
     // Blob deformation
     time: { value: 0 },
-    displacementScale: { value: 0.3 },
-    noiseFrequency: { value: 4.0 },
-    noiseSpeed: { value: 0.8 },
-    blobComplexity: { value: 4.0 }, // Sent as float, used as int
+    displacementScale: { value: 0.05 },
+    noiseFrequency: { value: 8.3 },
+    noiseSpeed: { value: 0.5 },
+    blobComplexity: { value: 1.0 },
 
     // Iridescence & Color
-    iridescenceStrength: { value: 8.0 },
+    iridescenceStrength: { value: 14.3 },
     opacity: { value: 1.0 },
-    baseColor: { value: new THREE.Color(0xffffff) }, // Base color for fresnel mix
+    baseColor: { value: new THREE.Color(0xffffff) },
     colors: { value: iridescentPalette },
     numColors: { value: iridescentPalette.length },
-    colorSpeed: { value: 0.5 },
-    rimPower: { value: 4.0 },
-    
-    // Lighting calculation (will be used for specular highlights on top of iridescence)
-    alphaStarPos: { value: new THREE.Vector3() },
-    twilightStarPos: { value: new THREE.Vector3() },
-    beaconStarPos: { value: new THREE.Vector3() },
-    specularIntensity: { value: 1.0 },
-    shininess: { value: 30.0 },
+    colorSpeed: { value: 2.2 },
+    rimPower: { value: 1.9 },
   },
   vertexShader: `
     ${noiseGLSL}
@@ -199,37 +191,17 @@ export const blobShader = {
     uniform int numColors;
     uniform float colorSpeed;
     uniform float rimPower;
-    
-    // Lighting uniforms
-    uniform vec3 alphaStarPos;
-    uniform vec3 twilightStarPos;
-    uniform vec3 beaconStarPos;
-    uniform float specularIntensity;
-    uniform float shininess;
 
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying vec3 vViewDirection;
 
-    // Function to calculate specular highlights from a single star
-    vec3 getSpecularContribution(vec3 starPos, vec3 starColor, vec3 normal, vec3 viewDir) {
-        vec3 lightDir = normalize(starPos - vWorldPosition);
-        
-        // Specular
-        vec3 halfwayDir = normalize(lightDir + viewDir);
-        float specAngle = max(dot(normal, halfwayDir), 0.0);
-        float spec = pow(specAngle, shininess);
-        
-        return starColor * spec * specularIntensity;
-    }
-
     void main() {
       vec3 normal = normalize(vNormal);
 
       // --- Iridescence Calculation (like the rings) ---
-      float fresnel = 1.0 - max(0.0, dot(normal, vViewDirection));
-      float rim = pow(fresnel, rimPower);
-
+      float fresnel = pow(1.0 - max(0.0, dot(normal, vViewDirection)), rimPower);
+      
       // Iridescent color cycling
       float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.y) * 0.1 + time * colorSpeed, float(numColors));
       int colorIndex1 = int(colorIndexFloat);
@@ -239,18 +211,6 @@ export const blobShader = {
       // Mix the base color (white) with the iridescent color based on the fresnel effect
       vec3 finalColor = mix(baseColor, iridescentColor, fresnel * iridescenceStrength);
       
-      // --- Additive Specular Highlights ---
-      vec3 specular = vec3(0.0);
-      specular += getSpecularContribution(alphaStarPos, vec3(1.0, 0.9, 0.8), normal, vViewDirection);
-      specular += getSpecularContribution(twilightStarPos, vec3(1.0, 0.8, 0.7), normal, vViewDirection);
-      specular += getSpecularContribution(beaconStarPos, vec3(0.8, 0.9, 1.0), normal, vViewDirection);
-
-      // Add specular on top of the iridescent color
-      finalColor += specular;
-      
-      // Add the rim highlight
-      finalColor += iridescentColor * rim * 2.0;
-
       gl_FragColor = vec4(finalColor, opacity);
     }
   `,

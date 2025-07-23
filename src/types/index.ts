@@ -1,8 +1,4 @@
 
-
-
-
-
 interface CelestialBody {
     name: string;
     color: string;
