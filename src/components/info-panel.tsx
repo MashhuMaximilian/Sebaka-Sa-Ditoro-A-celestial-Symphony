@@ -331,6 +331,18 @@ const InfoPanel = ({
                     </div>
                   </div>
                   <div className="grid gap-2">
+                    <Label htmlFor="viridis-lava-brightness">Lava Brightness</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                        id="viridis-lava-brightness"
+                        min={0} max={20} step={0.1}
+                        value={[viridisProps.lavaBrightness ?? 10.0]}
+                        onValueChange={(value) => handleMaterialSliderChange(data.name, 'lavaBrightness', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaBrightness ?? 10.0).toFixed(1)}</span>
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
                     <Label htmlFor="viridis-noise-scale">Noise Scale</Label>
                     <div className="flex items-center gap-2">
                       <Slider

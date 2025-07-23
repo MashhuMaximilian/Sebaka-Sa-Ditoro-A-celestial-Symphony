@@ -96,6 +96,7 @@ export const volcanoShader = {
     u_lavaSoftnessMin: { value: 0.0 },
     u_lavaSoftnessMax: { value: 0.0 },
     u_lavaDensity: { value: 0.4 },
+    u_lavaBrightness: { value: 10.0 },
 
     // Base texture
     planetTexture: { value: null as THREE.Texture | null },
@@ -175,6 +176,7 @@ export const volcanoShader = {
     uniform float u_noiseScale;
     uniform float u_smokeDensity;
     uniform float u_lavaDensity;
+    uniform float u_lavaBrightness;
     uniform sampler2D planetTexture;
 
     // Standard lighting uniforms
@@ -252,7 +254,7 @@ export const volcanoShader = {
           }
       } else if (u_time < u_phaseSplit.y) { // Phase 2: Smoke Thickening
         float phase_time = (u_time - u_phaseSplit.x) / (u_phaseSplit.y - u_phaseSplit.x);
-        animatedAlbedo = mix(1.8, 0.9, pow(phase_time, 2.0));
+        animatedAlbedo = mix(1.8, 0.9, phase_time);
       } else { // Phase 3: Smoke Clearing
         float phase_time = (u_time - u_phaseSplit.y) / (u_phaseSplit.z - u_phaseSplit.y);
         animatedAlbedo = mix(0.9, albedo, phase_time);
@@ -283,7 +285,7 @@ export const volcanoShader = {
         vec3 point_color = mix(red, yellow, smoothstep(0.0, 0.5, flashing_points));
         point_color = mix(point_color, white, smoothstep(0.5, 1.0, flashing_points));
 
-        lavaEmission = point_color * flashing_points * eruptionFactor * 10.0;
+        lavaEmission = point_color * flashing_points * eruptionFactor * u_lavaBrightness;
       }
       
       // --- Smoke & Haze ---

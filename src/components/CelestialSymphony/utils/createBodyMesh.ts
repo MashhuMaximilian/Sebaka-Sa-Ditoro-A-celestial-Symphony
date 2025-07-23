@@ -297,6 +297,8 @@ export const createBodyMesh = (
                 u_smokeDensity: { value: initialProps.smokeDensity ?? 5.0 },
                 u_lavaSoftnessMin: { value: initialProps.lavaSoftnessMin ?? 0.11 },
                 u_lavaSoftnessMax: { value: initialProps.lavaSoftnessMax ?? 0.80 },
+                u_lavaDensity: { value: initialProps.lavaDensity ?? 0.4 },
+                u_lavaBrightness: { value: initialProps.lavaBrightness ?? 10.0 },
                 useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
                 useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
                 useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },

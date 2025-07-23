@@ -70,5 +70,6 @@ export interface MaterialProperties {
     lavaSoftnessMin?: number;
     lavaSoftnessMax?: number;
     lavaDensity?: number;
+    lavaBrightness?: number;
   };
 }
