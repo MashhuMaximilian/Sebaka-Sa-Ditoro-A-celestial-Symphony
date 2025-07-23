@@ -157,8 +157,6 @@ export const volcanoShader = {
       vec3 B = cross( N, T );
       vTBN = mat3( T, B, N );
 
-      vec3 pos = position;
-
       // Apply standard displacement map first
       vec3 displacedPos = position;
       if (useDisplacementMap) {
@@ -288,19 +286,22 @@ export const volcanoShader = {
       vec3 finalColor = litSurface + lavaEmission;
       finalColor *= ao;
 
-      // --- Phase 2: Rising Smoke ---
+      // --- Phase 2 & 3: Smoke and Haze ---
       float smokeMask = 0.0;
-      if(u_time > u_phaseSplit.x){
-          float t = smoothstep(u_phaseSplit.x, u_phaseSplit.z, u_time);
+      if(u_time > u_phaseSplit.x && u_time < u_phaseSplit.y) {
+          // Phase 2: Thickening Smoke
+          float t = smoothstep(u_phaseSplit.x, u_phaseSplit.y, u_time);
+          vec3 p = vec3(vUv * u_noiseScale, t * 5.0);
+          smokeMask = pow(noise3D(p), 2.0) * t * u_smokeDensity;
+      } else if (u_time >= u_phaseSplit.y) {
+          // Phase 3: Easing Smoke
+          float t = 1.0 - smoothstep(u_phaseSplit.y, u_phaseSplit.z, u_time);
           vec3 p = vec3(vUv * u_noiseScale, t * 5.0);
           smokeMask = pow(noise3D(p), 2.0) * t * u_smokeDensity;
       }
-      
-      // --- Phase 3: Dense Haze (mixes with smoke) ---
-      float fogFactor = smoothstep(u_phaseSplit.y, u_phaseSplit.z, u_time);
+
       vec3 fogColor = vec3(0.15); // Dark ash
-      
-      finalColor = mix(finalColor, fogColor, fogFactor * smokeMask);
+      finalColor = mix(finalColor, fogColor, smokeMask);
 
       gl_FragColor = vec4(finalColor, 1.0);
     }
