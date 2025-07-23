@@ -88,16 +88,16 @@ export class SphericalCharacterController {
       
       // Update all material properties from the panel
       if (materialProps) {
-        uniforms.displacementScale.value = materialProps.displacementScale ?? 0.05;
-        uniforms.noiseFrequency.value = materialProps.noiseFrequency ?? 8.3;
-        uniforms.noiseSpeed.value = materialProps.noiseSpeed ?? 0.5;
-        uniforms.blobComplexity.value = materialProps.blobComplexity ?? 4.0;
-        uniforms.opacity.value = materialProps.opacity ?? 1.0;
-        uniforms.iridescenceStrength.value = materialProps.iridescenceStrength ?? 14.3;
-        uniforms.rimPower.value = materialProps.rimPower ?? 1.9;
-        uniforms.colorSpeed.value = materialProps.colorSpeed ?? 2.2;
-        uniforms.specularIntensity.value = materialProps.specularIntensity ?? 0.8;
-        uniforms.shininess.value = materialProps.shininess ?? 80;
+        uniforms.displacementScale.value = materialProps.displacementScale;
+        uniforms.noiseFrequency.value = materialProps.noiseFrequency;
+        uniforms.noiseSpeed.value = materialProps.noiseSpeed;
+        uniforms.blobComplexity.value = materialProps.blobComplexity;
+        uniforms.opacity.value = materialProps.opacity;
+        uniforms.iridescenceStrength.value = materialProps.iridescenceStrength;
+        uniforms.rimPower.value = materialProps.rimPower;
+        uniforms.colorSpeed.value = materialProps.colorSpeed;
+        uniforms.specularIntensity.value = materialProps.specularIntensity;
+        uniforms.shininess.value = materialProps.shininess;
       }
     }
   }
