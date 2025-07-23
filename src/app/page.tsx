@@ -493,6 +493,10 @@ export default function Home() {
         isSebakaRotating={isSebakaRotating}
         characterLongitude={characterLongitude}
         characterLatitude={characterLatitude}
+        onCharacterLatLongChange={(lat, long) => {
+            setCharacterLatitude(lat);
+            setCharacterLongitude(long);
+        }}
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
@@ -507,10 +511,6 @@ export default function Home() {
         selectedBody={selectedBody}
         isInfoPanelOpen={isInfoPanelOpen}
         setInfoPanelOpen={setInfoPanelOpen}
-        onCharacterLatLongChange={(lat, long) => {
-            setCharacterLatitude(lat);
-            setCharacterLongitude(long);
-        }}
       />
 
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">

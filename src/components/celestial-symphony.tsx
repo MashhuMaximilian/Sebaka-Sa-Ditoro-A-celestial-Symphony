@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import { useAnimationLoop } from "./CelestialSymphony/hooks/useAnimationLoop";
 import { useBodyClickHandler } from "./CelestialSymphony/hooks/useBodyClickHandler";

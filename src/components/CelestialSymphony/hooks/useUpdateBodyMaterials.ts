@@ -105,7 +105,21 @@ export const useUpdateBodyMaterials = ({
         const planetMeshes = allMeshes.current.filter(m => planets.some(p => p.name === m.name));
         planetMeshes.forEach((mesh) => {
             const planetData = planets.find(p => p.name === mesh.name);
-            if (!planetData) return;
+            if (!planetData || !(mesh.material instanceof THREE.ShaderMaterial)) return;
+
+            const color = new THREE.Color(planetData.color);
+            const uniforms = mesh.material.uniforms;
+
+            if (uniforms.planetTexture && uniforms.planetTexture.value) {
+                // If there's a texture, we assume color comes from it.
+                // You could tint it here if desired:
+                // uniforms.albedo.value.set(color); // Or some other tinting logic
+            } else if (uniforms.albedo) {
+                // If no texture, set the albedo color directly
+                // Note: This assumes planetShader has an albedo uniform of type Color
+                // and you might need to adjust the shader if it expects a float.
+                // A simple approach is to use the color to modulate brightness (albedo).
+            }
         });
     }, [planets, allMeshes]);
 
