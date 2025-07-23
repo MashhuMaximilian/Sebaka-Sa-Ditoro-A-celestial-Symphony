@@ -55,22 +55,22 @@ const InfoPanel = ({
         { label: "Noise Frequency", prop: "noiseFrequency", min: 0.1, max: 20, step: 0.1, defaultValue: 16.9 },
         { label: "Animation Speed", prop: "noiseSpeed", min: 0.1, max: 5, step: 0.1, defaultValue: 0.2 },
         { label: "Blob Complexity (Layers)", prop: "blobComplexity", min: 1, max: 8, step: 1, defaultValue: 3 },
-        { label: "Opacity", prop: "opacity", min: 0, max: 1, step: 0.01, defaultValue: 0.91 },
+        { label: "Opacity", prop: "opacity", min: 0, max: 1, step: 0.01, defaultValue: 0.88 },
       ] as const;
 
       const lightingSliders = [
-          { label: "Iridescence Strength", prop: "iridescenceStrength", min: 0, max: 30, step: 0.1, defaultValue: 3.5 },
-          { label: "Rim Power", prop: "rimPower", min: 0.1, max: 5, step: 0.01, defaultValue: 5.0 },
-          { label: "Color Speed", prop: "colorSpeed", min: 0, max: 10, step: 0.1, defaultValue: 1.8 },
-          { label: "Albedo", prop: "albedo", min: 0, max: 2, step: 0.01, defaultValue: 0.3 },
-          { label: "Specular Intensity", prop: "specularIntensity", min: 0, max: 2, step: 0.01, defaultValue: 2.0 },
-          { label: "Shininess", prop: "shininess", min: 1, max: 256, step: 1, defaultValue: 105 },
+          { label: "Iridescence Strength", prop: "iridescenceStrength", min: 0, max: 30, step: 0.01, defaultValue: 1.5 },
+          { label: "Rim Power", prop: "rimPower", min: 0.1, max: 5, step: 0.01, defaultValue: 4.75 },
+          { label: "Color Speed", prop: "colorSpeed", min: 0, max: 10, step: 0.1, defaultValue: 3.2 },
+          { label: "Albedo", prop: "albedo", min: 0, max: 2, step: 0.01, defaultValue: 1.8 },
+          { label: "Specular Intensity", prop: "specularIntensity", min: 0, max: 2, step: 0.01, defaultValue: 1.04 },
+          { label: "Shininess", prop: "shininess", min: 1, max: 256, step: 1, defaultValue: 256 },
       ] as const;
 
       const positionSliders = [
           { label: "Latitude", prop: "latitude", min: -90, max: 90, step: 1, defaultValue: 0 },
           { label: "Longitude", prop: "longitude", min: 0, max: 360, step: 1, defaultValue: 0 },
-          { label: "Height From Surface", prop: "height", min: 0.01, max: 0.5, step: 0.01, defaultValue: 0.01 },
+          { label: "Height From Surface", prop: "height", min: 0.01, max: 0.5, step: 0.01, defaultValue: 0.05 },
       ] as const;
       
       return (

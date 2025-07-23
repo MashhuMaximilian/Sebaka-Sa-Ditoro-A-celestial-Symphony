@@ -214,14 +214,14 @@ export const initialMaterialProperties: MaterialProperties = {
     noiseFrequency: 16.9,
     noiseSpeed: 0.2,
     blobComplexity: 3,
-    opacity: 0.91,
-    height: 0.01,
-    albedo: 0.3,
-    iridescenceStrength: 3.5,
-    rimPower: 5.0,
-    colorSpeed: 1.8,
-    specularIntensity: 2.0,
-    shininess: 105,
+    opacity: 0.88,
+    height: 0.05,
+    albedo: 1.8,
+    iridescenceStrength: 1.5,
+    rimPower: 4.75,
+    colorSpeed: 3.2,
+    specularIntensity: 1.04,
+    shininess: 256,
   }
 };
 
