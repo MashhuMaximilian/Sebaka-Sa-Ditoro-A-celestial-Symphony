@@ -266,18 +266,13 @@ export const volcanoShader = {
 
         // Generate multiple layers of noise for complexity
         float noise1 = (noise3D(vWorldPosition * 25.0 + u_time * 15.0) + 1.0) * 0.5;
-        float noise2 = (noise3D(vWorldPosition * 10.0 - u_time * 10.0) + 1.0) * 0.5;
-        float noise3 = (noise3D(vWorldPosition * 5.0 + u_time * 5.0) + 1.0) * 0.5;
-        
-        // Combine noise layers to create sparse points
-        float combined_noise = pow(noise1 * noise2 * noise3, 4.0);
         
         // Use density to set a sharp threshold for points to appear
         float threshold = 1.0 - u_lavaDensity;
-        float flashing_points = smoothstep(threshold, threshold + 0.01, combined_noise);
+        float flashing_points = smoothstep(threshold, threshold + 0.01, noise1);
         
         // Make the points flash over time
-        float flash_speed = sin(u_time * 50.0) * 0.5 + 0.5;
+        float flash_speed = sin(u_time * 50.0 + vWorldPosition.x * 2.0) * 0.5 + 0.5;
         flashing_points *= flash_speed;
         
         // Create a color gradient based on intensity
@@ -337,5 +332,3 @@ export const volcanoShader = {
     }
   `
 };
-
-    
