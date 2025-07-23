@@ -278,7 +278,7 @@ export const volcanoShader = {
           // Only draw dots in a fraction of cells based on density
           if (cellRand > (1.0 - u_lavaDensity)) {
             
-            // Randomize position within the cell
+            // Randomize position within the cell to break the grid pattern
             vec2 dotCenter = vec2(0.5, 0.5) + (hash21(gridCell + 10.0) - 0.5) * 0.8;
             
             // Get a random size variance for this specific dot
