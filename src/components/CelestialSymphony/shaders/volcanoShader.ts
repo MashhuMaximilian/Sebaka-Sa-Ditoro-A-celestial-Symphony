@@ -259,14 +259,14 @@ export const volcanoShader = {
       }
 
       // --- Albedo Animation ---
-      float animatedAlbedo = albedo;
-      if (u_time < u_phaseSplit.x) { // Eruption: 3.04 -> 4.2
+      float animatedAlbedo = albedo; // Start with default albedo
+      if (u_time < u_phaseSplit.x) { // Phase 1: Eruption
         float phase_time = u_time / u_phaseSplit.x;
         animatedAlbedo = mix(albedo, 4.2, phase_time);
-      } else if (u_time < u_phaseSplit.y) { // Thickening Smoke: 4.2 -> 0.9
+      } else if (u_time < u_phaseSplit.y) { // Phase 2: Smoke Thickening
         float phase_time = (u_time - u_phaseSplit.x) / (u_phaseSplit.y - u_phaseSplit.x);
-        animatedAlbedo = mix(4.2, 0.9, phase_time);
-      } else { // Easing Smoke: 0.9 -> 3.04
+        animatedAlbedo = mix(albedo, 0.9, phase_time); // Start from default albedo
+      } else { // Phase 3: Smoke Clearing
         float phase_time = (u_time - u_phaseSplit.y) / (u_phaseSplit.z - u_phaseSplit.y);
         animatedAlbedo = mix(0.9, albedo, phase_time);
       }
