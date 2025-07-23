@@ -367,7 +367,7 @@ export const createBodyMesh = (
                side: THREE.DoubleSide,
                blending: THREE.AdditiveBlending,
             });
-            (ringMaterial as THREE.ShaderMaterial).uniforms.iridescenceStrength.value = 1;
+            (ringMaterial as THREE.ShaderMaterial).uniforms.iridescenceStrength.value = 1.5;
             (ringMaterial as THREE.ShaderMaterial).uniforms.opacity.value = 0.585;
 
 

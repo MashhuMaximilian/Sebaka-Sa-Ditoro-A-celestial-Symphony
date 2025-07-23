@@ -264,8 +264,9 @@ export const volcanoShader = {
         float phase_time = u_time / u_phaseSplit.x;
         animatedAlbedo = mix(albedo, 4.2, phase_time);
       } else if (u_time < u_phaseSplit.y) { // Phase 2: Smoke Thickening
+        // Making this faster by raising to a power
         float phase_time = (u_time - u_phaseSplit.x) / (u_phaseSplit.y - u_phaseSplit.x);
-        animatedAlbedo = mix(albedo, 0.9, phase_time); // Start from default albedo
+        animatedAlbedo = mix(albedo, 0.9, pow(phase_time, 2.0));
       } else { // Phase 3: Smoke Clearing
         float phase_time = (u_time - u_phaseSplit.y) / (u_phaseSplit.z - u_phaseSplit.y);
         animatedAlbedo = mix(0.9, albedo, phase_time);
