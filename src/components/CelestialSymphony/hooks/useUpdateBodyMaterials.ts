@@ -4,6 +4,77 @@ import * as THREE from "three";
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 
+const updateMaterialProperties = (mesh: THREE.Mesh, props: MaterialProperties[string]) => {
+  if (!mesh || !props || !(mesh.material instanceof THREE.ShaderMaterial)) return;
+  
+  const uniforms = mesh.material.uniforms;
+  
+    if (uniforms.useNormalMap && props.normalScale !== undefined) {
+        uniforms.useNormalMap.value = props.normalScale > 0;
+    }
+    if (uniforms.normalScale && props.normalScale !== undefined && uniforms.normalScale.value.x !== props.normalScale) {
+        uniforms.normalScale.value.set(props.normalScale, props.normalScale);
+    }
+
+    if (uniforms.useDisplacementMap && props.displacementScale !== undefined) {
+        uniforms.useDisplacementMap.value = props.displacementScale > 0;
+    }
+    if (uniforms.displacementScale && props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
+        uniforms.displacementScale.value = props.displacementScale;
+    }
+    
+    if (uniforms.albedo && props.albedo !== undefined && uniforms.albedo.value !== props.albedo) {
+        uniforms.albedo.value = props.albedo;
+    }
+
+    if (uniforms.emissiveIntensity && props.emissiveIntensity !== undefined && uniforms.emissiveIntensity.value !== props.emissiveIntensity) {
+        uniforms.emissiveIntensity.value = props.emissiveIntensity;
+    }
+
+    if (uniforms.useSpecularMap && uniforms.specularMap.value) {
+        uniforms.useSpecularMap.value = true;
+    }
+    if (uniforms.specularIntensity && props.specularIntensity !== undefined && uniforms.specularIntensity.value !== props.specularIntensity) {
+        uniforms.specularIntensity.value = props.specularIntensity;
+    }
+
+    if (uniforms.shininess && props.shininess !== undefined && uniforms.shininess.value !== props.shininess) {
+        uniforms.shininess.value = props.shininess;
+    }
+
+    if (uniforms.useAoMap && uniforms.aoMap.value) {
+        uniforms.useAoMap.value = props.aoMapIntensity > 0;
+    }
+    if (uniforms.aoMapIntensity && props.aoMapIntensity !== undefined && uniforms.aoMapIntensity.value !== props.aoMapIntensity) {
+        uniforms.aoMapIntensity.value = props.aoMapIntensity;
+    }
+  
+  // Add blob-specific uniform updates
+  if (mesh.name === 'Character') {
+    if (uniforms.displacementScale && props.displacementScale !== undefined) {
+      uniforms.displacementScale.value = props.displacementScale;
+    }
+    if (uniforms.noiseFrequency && props.noiseFrequency !== undefined) {
+      uniforms.noiseFrequency.value = props.noiseFrequency;
+    }
+    if (uniforms.noiseSpeed && props.noiseSpeed !== undefined) {
+      uniforms.noiseSpeed.value = props.noiseSpeed;
+    }
+    if (uniforms.blobComplexity && props.blobComplexity !== undefined) {
+      uniforms.blobComplexity.value = props.blobComplexity;
+    }
+    if (uniforms.iridescenceStrength && props.iridescenceStrength !== undefined) {
+      uniforms.iridescenceStrength.value = props.iridescenceStrength;
+    }
+    if (uniforms.rimPower && props.rimPower !== undefined) {
+      uniforms.rimPower.value = props.rimPower;
+    }
+    if (uniforms.colorSpeed && props.colorSpeed !== undefined) {
+      uniforms.colorSpeed.value = props.colorSpeed;
+    }
+  }
+};
+
 interface UpdateBodyMaterialsProps {
     stars: StarData[];
     planets: PlanetData[];
@@ -37,54 +108,12 @@ export const useUpdateBodyMaterials = ({
     }, [planets, allMeshes]);
 
     useEffect(() => {
-        if (!allBodies.current.length) return; // Guard against running before initialization
+        if (!allBodies.current.length) return;
 
-        // Update all planets
         allMeshes.current.forEach((mesh) => {
-             if (!mesh || !(mesh.material instanceof THREE.ShaderMaterial) || !('isBeaconPlanet' in mesh.material.uniforms)) return;
             const props = materialProperties[mesh.name];
-            if (!props) return;
-            
-            const uniforms = mesh.material.uniforms;
-            
-            if (uniforms.useNormalMap && props.normalScale !== undefined) {
-                uniforms.useNormalMap.value = props.normalScale > 0;
-            }
-            if (uniforms.normalScale && props.normalScale !== undefined && uniforms.normalScale.value.x !== props.normalScale) {
-                uniforms.normalScale.value.set(props.normalScale, props.normalScale);
-            }
-
-            if (uniforms.useDisplacementMap && props.displacementScale !== undefined) {
-                uniforms.useDisplacementMap.value = props.displacementScale > 0;
-            }
-            if (uniforms.displacementScale && props.displacementScale !== undefined && uniforms.displacementScale.value !== props.displacementScale) {
-                uniforms.displacementScale.value = props.displacementScale;
-            }
-            
-            if (uniforms.albedo && props.albedo !== undefined && uniforms.albedo.value !== props.albedo) {
-                uniforms.albedo.value = props.albedo;
-            }
-
-            if (uniforms.emissiveIntensity && props.emissiveIntensity !== undefined && uniforms.emissiveIntensity.value !== props.emissiveIntensity) {
-                uniforms.emissiveIntensity.value = props.emissiveIntensity;
-            }
-
-            if (uniforms.useSpecularMap && uniforms.specularMap.value) {
-                uniforms.useSpecularMap.value = true;
-            }
-            if (uniforms.specularIntensity && props.specularIntensity !== undefined && uniforms.specularIntensity.value !== props.specularIntensity) {
-                uniforms.specularIntensity.value = props.specularIntensity;
-            }
-
-            if (uniforms.shininess && props.shininess !== undefined && uniforms.shininess.value !== props.shininess) {
-                uniforms.shininess.value = props.shininess;
-            }
-
-            if (uniforms.useAoMap && uniforms.aoMap.value) {
-                uniforms.useAoMap.value = props.aoMapIntensity > 0;
-            }
-            if (uniforms.aoMapIntensity && props.aoMapIntensity !== undefined && uniforms.aoMapIntensity.value !== props.aoMapIntensity) {
-                uniforms.aoMapIntensity.value = props.aoMapIntensity;
+            if (props) {
+                updateMaterialProperties(mesh, props);
             }
         });
     }, [materialProperties, allMeshes, allBodies]);
@@ -154,5 +183,4 @@ export const useUpdateBodyMaterials = ({
             uniforms.useGrid.value = viewFromSebaka;
         }
     }, [viewFromSebaka, allMeshes]);
-
 };

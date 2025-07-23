@@ -210,6 +210,16 @@ const initialMaterialProperties: MaterialProperties = {
   Aetheris: { albedo: 4.51, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 19, specularIntensity: 0.00, aoMapIntensity: 0.00 },
   Gelidis: { albedo: 0.20, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 1, specularIntensity: 0.32, aoMapIntensity: 0.38 },
   Liminis: { albedo: 0.72, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 32, specularIntensity: 0.00, aoMapIntensity: 2.00 },
+  Character: {
+    displacementScale: 0.3,
+    noiseFrequency: 4.0,
+    noiseSpeed: 0.8,
+    blobComplexity: 1.0,
+    iridescenceStrength: 8.0,
+    colorSpeed: 0.5,
+    rimPower: 4.0,
+    opacity: 1.0,
+  }
 };
 
 type ActiveSebakaPanel = 'time' | 'move';
@@ -218,7 +228,7 @@ export default function Home() {
   const [planets, setPlanets] = useState<PlanetData[]>(initialPlanets);
   const [speedMultiplier, setSpeedMultiplier] = useState(24);
   const [speedInput, setSpeedInput] = useState('24');
-  const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | null>(null);
+  const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | { name: string } | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
   const [isSebakaRotating, setIsSebakaRotating] = useState(true);
@@ -240,7 +250,6 @@ export default function Home() {
   
   const [isInitialized, setIsInitialized] = useState(false);
   const [fov, setFov] = useState(70);
-
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -283,6 +292,11 @@ export default function Home() {
   };
   
   const handleBodyClick = (bodyName: string) => {
+    if (bodyName === 'Character') {
+        setSelectedBody({ name: 'Character' });
+        setInfoPanelOpen(true);
+        return;
+    }
     const allBodies = [...initialStars, ...planets];
     const body = allBodies.find(p => p.name === bodyName);
     if (body) {

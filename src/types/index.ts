@@ -1,5 +1,6 @@
 
 
+
 interface CelestialBody {
     name: string;
     color: string;
@@ -46,12 +47,22 @@ export type AnyBodyData = PlanetData | StarData;
 
 export interface MaterialProperties {
   [key: string]: {
-    normalScale: number;
-    displacementScale: number;
-    albedo: number;
-    emissiveIntensity: number | undefined;
-    specularIntensity: number;
-    aoMapIntensity: number;
-    shininess: number;
+    // Existing properties
+    albedo?: number;
+    emissiveIntensity?: number;
+    normalScale?: number;
+    displacementScale?: number;
+    specularIntensity?: number;
+    shininess?: number;
+    aoMapIntensity?: number;
+    
+    // New blob properties
+    noiseFrequency?: number;
+    noiseSpeed?: number;
+    blobComplexity?: number;
+    iridescenceStrength?: number;
+    rimPower?: number;
+    colorSpeed?: number;
+    opacity?: number;
   };
 }

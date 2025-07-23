@@ -17,7 +17,7 @@ import { Button } from "./ui/button";
 import { texturePaths } from "./CelestialSymphony/utils/createBodyMesh";
 
 interface InfoPanelProps {
-  data: PlanetData | StarData;
+  data: PlanetData | StarData | { name: string };
   materialProperties: MaterialProperties;
   onPropertiesChange: React.Dispatch<React.SetStateAction<MaterialProperties>>;
   onReset: () => void;
@@ -38,6 +38,95 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
   const renderMaterialSettings = () => {
     const bodyProps = materialProperties[data.name];
     if (!bodyProps) return null;
+    
+    if (data.name === 'Character') {
+      return (
+        <Accordion type="single" collapsible className="w-full" defaultValue="item-1">
+          <AccordionItem value="item-1">
+            <AccordionTrigger>
+              <h3 className="text-lg font-bold">Blob Settings</h3>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4 pt-2">
+                  <div className="grid gap-2">
+                    <Label>Blob Deformation</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                        min={0} max={1} step={0.01}
+                        value={[bodyProps.displacementScale ?? 0.3]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'displacementScale', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">
+                        {(bodyProps.displacementScale ?? 0.3).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label>Noise Frequency</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                        min={0.1} max={10} step={0.1}
+                        value={[bodyProps.noiseFrequency ?? 4.0]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'noiseFrequency', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">
+                        {(bodyProps.noiseFrequency ?? 4.0).toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label>Animation Speed</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                        min={0.1} max={5} step={0.1}
+                        value={[bodyProps.noiseSpeed ?? 0.8]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'noiseSpeed', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">
+                        {(bodyProps.noiseSpeed ?? 0.8).toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label>Blob Complexity</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                        min={0.1} max={10} step={0.1}
+                        value={[bodyProps.blobComplexity ?? 1.0]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'blobComplexity', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">
+                        {(bodyProps.blobComplexity ?? 1.0).toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label>Iridescence Strength</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                         min={0} max={20} step={0.1}
+                        value={[bodyProps.iridescenceStrength ?? 8.0]}
+                        onValueChange={(value) => handleSliderChange(data.name, 'iridescenceStrength', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">
+                        {(bodyProps.iridescenceStrength ?? 8.0).toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+
+                <Button onClick={onReset} variant="outline" className="w-full">
+                  Reset All to Defaults
+                </Button>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )
+    }
 
     const bodyTexturePaths = texturePaths[data.name];
     const hasNormalMap = !!bodyTexturePaths?.normal;
@@ -62,10 +151,10 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                       min={0}
                       max={15}
                       step={0.01}
-                      value={[bodyProps.normalScale]}
+                      value={[bodyProps.normalScale ?? 1.0]}
                       onValueChange={(value) => handleSliderChange(data.name, 'normalScale', value)}
                     />
-                    <span className="text-xs font-mono w-12 text-center">{bodyProps.normalScale.toFixed(2)}</span>
+                    <span className="text-xs font-mono w-12 text-center">{(bodyProps.normalScale ?? 1.0).toFixed(2)}</span>
                   </div>
                 </div>
                )}
@@ -78,10 +167,10 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                         min={0}
                         max={25}
                         step={0.01}
-                        value={[bodyProps.displacementScale]}
+                        value={[bodyProps.displacementScale ?? 0]}
                         onValueChange={(value) => handleSliderChange(data.name, 'displacementScale', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{bodyProps.displacementScale.toFixed(2)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(bodyProps.displacementScale ?? 0).toFixed(2)}</span>
                   </div>
                 </div>
               )}
@@ -127,10 +216,10 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                         min={0}
                         max={5}
                         step={0.01}
-                        value={[bodyProps.specularIntensity]}
+                        value={[bodyProps.specularIntensity ?? 0]}
                         onValueChange={(value) => handleSliderChange(data.name, 'specularIntensity', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{bodyProps.specularIntensity.toFixed(2)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(bodyProps.specularIntensity ?? 0).toFixed(2)}</span>
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -141,10 +230,10 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                         min={1}
                         max={256}
                         step={1}
-                        value={[bodyProps.shininess]}
+                        value={[bodyProps.shininess ?? 1]}
                         onValueChange={(value) => handleSliderChange(data.name, 'shininess', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{bodyProps.shininess.toFixed(0)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(bodyProps.shininess ?? 1).toFixed(0)}</span>
                     </div>
                   </div>
                 </>
@@ -158,10 +247,10 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
                       min={0}
                       max={2}
                       step={0.01}
-                      value={[bodyProps.aoMapIntensity]}
+                      value={[bodyProps.aoMapIntensity ?? 0]}
                       onValueChange={(value) => handleSliderChange(data.name, 'aoMapIntensity', value)}
                     />
-                    <span className="text-xs font-mono w-12 text-center">{bodyProps.aoMapIntensity.toFixed(2)}</span>
+                    <span className="text-xs font-mono w-12 text-center">{(bodyProps.aoMapIntensity ?? 0).toFixed(2)}</span>
                   </div>
                 </div>
               )}
@@ -179,42 +268,47 @@ const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: In
     <ScrollArea className="h-full w-full p-6">
       <div className="space-y-6 text-sm">
         <h2 className="text-2xl font-bold">{data.name}</h2>
-        <div className="space-y-2">
-          <h3 className="text-lg font-bold">Overview</h3>
-          <dl className="space-y-2">
-            <DataDisplay label="Type" value={data.type} />
-            <DataDisplay label="Classification" value={data.classification} />
-            <DataDisplay label="Orbital Role" value={data.orbitalRole} />
-            <DataDisplay label="Orbital Period" value={data.orbitalPeriod} />
-            <DataDisplay label="Orbital Distance" value={data.orbitalDistance} />
-          </dl>
-        </div>
-
-        <Separator />
-
-        <div className="space-y-2">
-          <h3 className="text-lg font-bold">Physical Characteristics</h3>
-          <dl className="space-y-2">
-            <DataDisplay label="Radius" value={data.radius} />
-            <DataDisplay label="Mass" value={data.mass} />
-            {'luminosity' in data && <DataDisplay label="Luminosity (L☉)" value={data.luminosity} />}
-            {'rotation' in data && <DataDisplay label="Rotation / Day Length" value={data.rotation} />}
-            {'axialTilt' in data && <DataDisplay label="Axial Tilt" value={data.axialTilt} />}
-            {'moons' in data && <DataDisplay label="Moons" value={data.moons} />}
-            <DataDisplay label="Surface" value={data.surface} />
-            <DataDisplay label="Notable Characteristics" value={data.characteristics} />
-          </dl>
-        </div>
         
-        <Separator />
+        { 'type' in data && (
+            <>
+                <div className="space-y-2">
+                    <h3 className="text-lg font-bold">Overview</h3>
+                    <dl className="space-y-2">
+                        <DataDisplay label="Type" value={data.type} />
+                        <DataDisplay label="Classification" value={data.classification} />
+                        <DataDisplay label="Orbital Role" value={data.orbitalRole} />
+                        <DataDisplay label="Orbital Period" value={data.orbitalPeriod} />
+                        <DataDisplay label="Orbital Distance" value={data.orbitalDistance} />
+                    </dl>
+                </div>
 
-        <div className="space-y-2">
-          <h3 className="text-lg font-bold">Appearance & Lore</h3>
-          <dl className="space-y-2">
-              <DataDisplay label="Appearance from Sebaka" value={data.appearance} />
-              <DataDisplay label="Lore" value={data.lore} />
-          </dl>
-        </div>
+                <Separator />
+
+                <div className="space-y-2">
+                    <h3 className="text-lg font-bold">Physical Characteristics</h3>
+                    <dl className="space-y-2">
+                        <DataDisplay label="Radius" value={data.radius} />
+                        <DataDisplay label="Mass" value={data.mass} />
+                        {'luminosity' in data && <DataDisplay label="Luminosity (L☉)" value={data.luminosity} />}
+                        {'rotation' in data && <DataDisplay label="Rotation / Day Length" value={data.rotation} />}
+                        {'axialTilt' in data && <DataDisplay label="Axial Tilt" value={data.axialTilt} />}
+                        {'moons' in data && <DataDisplay label="Moons" value={data.moons} />}
+                        <DataDisplay label="Surface" value={data.surface} />
+                        <DataDisplay label="Notable Characteristics" value={data.characteristics} />
+                    </dl>
+                </div>
+                
+                <Separator />
+
+                <div className="space-y-2">
+                    <h3 className="text-lg font-bold">Appearance & Lore</h3>
+                    <dl className="space-y-2">
+                        <DataDisplay label="Appearance from Sebaka" value={data.appearance} />
+                        <DataDisplay label="Lore" value={data.lore} />
+                    </dl>
+                </div>
+            </>
+        )}
         
         {renderMaterialSettings()}
       </div>
