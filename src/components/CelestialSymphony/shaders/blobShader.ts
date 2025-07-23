@@ -126,6 +126,7 @@ export const blobShader = {
     numColors: { value: iridescentPalette.length },
     
     // Lighting
+    albedo: { value: 0.3 },
     alphaStarPos: { value: new THREE.Vector3() },
     twilightStarPos: { value: new THREE.Vector3() },
     beaconStarPos: { value: new THREE.Vector3() },
@@ -199,6 +200,7 @@ export const blobShader = {
     uniform int numColors;
     uniform float time;
 
+    uniform float albedo;
     uniform vec3 alphaStarPos;
     uniform vec3 twilightStarPos;
     uniform vec3 beaconStarPos;
@@ -224,7 +226,7 @@ export const blobShader = {
         float spec = pow(max(dot(normal, halfwayDir), 0.0), max(shininess, 0.1));
         vec3 specular = vec3(spec * specularIntensity);
         
-        return (diffuse + specular) * attenuation;
+        return (diffuse * albedo + specular) * attenuation;
     }
 
     void main() {

@@ -213,15 +213,15 @@ export const initialMaterialProperties: MaterialProperties = {
     displacementScale: 0.03,
     noiseFrequency: 16.9,
     noiseSpeed: 0.2,
-    blobComplexity: 4,
-    opacity: 1.0,
+    blobComplexity: 3,
+    opacity: 0.91,
     height: 0.01,
     albedo: 0.3,
     iridescenceStrength: 3.5,
-    rimPower: 1.0,
-    colorSpeed: 4.7,
-    specularIntensity: 0.42,
-    shininess: 256,
+    rimPower: 5.0,
+    colorSpeed: 1.8,
+    specularIntensity: 2.0,
+    shininess: 105,
   }
 };
 

@@ -98,6 +98,7 @@ export class SphericalCharacterController {
         uniforms.colorSpeed.value = materialProps.colorSpeed;
         uniforms.specularIntensity.value = materialProps.specularIntensity;
         uniforms.shininess.value = materialProps.shininess;
+        uniforms.albedo.value = materialProps.albedo;
       }
     }
   }
