@@ -278,16 +278,30 @@ export const createBodyMesh = (
     const aoMap = paths?.ambient ? textureLoader.load(paths.ambient) : null;
     
     if (body.name === 'Viridis') {
-        const uniforms = {
-            ...THREE.UniformsUtils.clone(volcanoShader.uniforms),
-            planetTexture: { value: baseTexture },
-            normalMap: { value: normalMap },
-            displacementMap: { value: displacementMap },
-            specularMap: { value: specularMap },
-            aoMap: { value: aoMap },
-        };
         material = new THREE.ShaderMaterial({
-            uniforms: uniforms,
+            uniforms: {
+                ...THREE.UniformsUtils.clone(volcanoShader.uniforms),
+                planetTexture: { value: baseTexture },
+                normalMap: { value: normalMap },
+                displacementMap: { value: displacementMap },
+                specularMap: { value: specularMap },
+                aoMap: { value: aoMap },
+                // Directly initialize with passed props
+                albedo: { value: initialProps.albedo ?? 1.0 },
+                normalScale: { value: new THREE.Vector2(initialProps.normalScale ?? 1.0, initialProps.normalScale ?? 1.0) },
+                displacementScale: { value: initialProps.displacementScale ?? 1.0 },
+                specularIntensity: { value: initialProps.specularIntensity ?? 1.0 },
+                shininess: { value: initialProps.shininess ?? 30.0 },
+                aoMapIntensity: { value: initialProps.aoMapIntensity ?? 1.0 },
+                u_noiseScale: { value: initialProps.noiseScale ?? 3.5 },
+                u_smokeDensity: { value: initialProps.smokeDensity ?? 1.5 },
+                u_lavaSoftnessMin: { value: initialProps.lavaSoftnessMin ?? 0.4 },
+                u_lavaSoftnessMax: { value: initialProps.lavaSoftnessMax ?? 0.8 },
+                useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
+                useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
+                useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
+                useAoMap: { value: !!aoMap && initialProps.aoMapIntensity > 0 },
+            },
             vertexShader: volcanoShader.vertexShader,
             fragmentShader: volcanoShader.fragmentShader,
         });

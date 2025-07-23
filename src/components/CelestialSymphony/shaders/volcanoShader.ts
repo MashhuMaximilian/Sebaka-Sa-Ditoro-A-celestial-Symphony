@@ -159,26 +159,27 @@ export const volcanoShader = {
 
       vec3 pos = position;
 
-      // Displace only during eruption phase (volcano-specific displacement)
-      if(u_time < u_phaseSplit.x){
-          float displacementStrength = smoothstep(0.0, u_phaseSplit.x, u_time) * (1.0 - smoothstep(u_phaseSplit.x - 0.1, u_phaseSplit.x, u_time));
-          float noise = noise3D(pos * u_noiseScale * 0.5 + u_time * 5.0);
-          pos += normal * noise * displacementStrength * 0.5;
-      }
-      
-      // Apply standard displacement map
+      // Apply standard displacement map first
+      vec3 displacedPos = position;
       if (useDisplacementMap) {
         float displacementValue = texture2D(displacementMap, uv).r;
-        pos += normal * pow(displacementValue, 4.0) * displacementScale;
+        displacedPos += normal * pow(displacementValue, 4.0) * displacementScale;
       }
-
-      // Calculate lava mask based on noise
+      
+      // Now, apply volcanic displacement on top of the already displaced position
+      if(u_time < u_phaseSplit.x){
+          float displacementStrength = smoothstep(0.0, u_phaseSplit.x, u_time) * (1.0 - smoothstep(u_phaseSplit.x - 0.1, u_phaseSplit.x, u_time));
+          float noise = noise3D(displacedPos * u_noiseScale * 0.5 + u_time * 5.0);
+          displacedPos += normal * noise * displacementStrength * 0.5;
+      }
+      
+      // Calculate lava mask based on the original, non-displaced position so it's stable
       float base_noise = noise3D(position * 2.0);
       float slow_noise = noise3D(position * 0.5 + u_time * 0.2);
       v_lavaMask = pow(base_noise, 4.0) + pow(slow_noise, 2.0);
       
       vNormal = normalize(mat3(modelMatrix) * normal);
-      vec4 worldPosition4 = modelMatrix * vec4(pos, 1.0);
+      vec4 worldPosition4 = modelMatrix * vec4(displacedPos, 1.0);
       vWorldPosition = worldPosition4.xyz;
       gl_Position = projectionMatrix * viewMatrix * worldPosition4;
     }
