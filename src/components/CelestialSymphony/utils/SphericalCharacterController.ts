@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { blobShader } from '../shaders/blobShader';
 import { MaterialProperties } from '@/types';
+import { planetShader } from '../shaders/planetShader';
 
 /**
  * A controller to manage a character object that is "stuck" to the surface
@@ -28,10 +29,9 @@ export class SphericalCharacterController {
     const geometry = new THREE.SphereGeometry(0.015, 64, 64);
     geometry.computeTangents(); 
 
-    const uniforms = THREE.UniformsUtils.clone(blobShader.uniforms);
-    
+    // The blob shader is now used directly.
     const material = new THREE.ShaderMaterial({
-        uniforms: uniforms,
+        uniforms: THREE.UniformsUtils.clone(blobShader.uniforms),
         vertexShader: blobShader.vertexShader,
         fragmentShader: blobShader.fragmentShader,
         transparent: true,
@@ -40,6 +40,8 @@ export class SphericalCharacterController {
     
     this.characterMesh = new THREE.Mesh(geometry, material);
     this.characterMesh.name = "Character";
+    // Render the character after the planet so transparency works correctly.
+    this.characterMesh.renderOrder = 1;
 
     this.planetMesh.add(this.characterMesh);
 
@@ -72,7 +74,7 @@ export class SphericalCharacterController {
         uniforms.displacementScale.value = materialProps.displacementScale ?? 0.05;
         uniforms.noiseFrequency.value = materialProps.noiseFrequency ?? 8.3;
         uniforms.noiseSpeed.value = materialProps.noiseSpeed ?? 0.5;
-        uniforms.blobComplexity.value = materialProps.blobComplexity ?? 0.5;
+        uniforms.blobComplexity.value = materialProps.blobComplexity ?? 4.0;
         uniforms.iridescenceStrength.value = materialProps.iridescenceStrength ?? 14.3;
         uniforms.rimPower.value = materialProps.rimPower ?? 1.9;
         uniforms.colorSpeed.value = materialProps.colorSpeed ?? 2.2;

@@ -212,10 +212,15 @@ export const blobShader = {
       // Mix the base color (white) with the iridescent color based on the fresnel effect
       vec3 finalColor = mix(baseColor, iridescentColor, fresnel * iridescenceStrength);
       
-      // Use the same alpha logic as the orbit lines to preserve 3D shape
-      float finalAlpha = opacity * (0.35 + fresnel * 0.65);
-      
-      gl_FragColor = vec4(finalColor, finalAlpha);
+      // New alpha calculation:
+      // The core is opaque, and the fresnel effect adds a semi-transparent glow at the edges.
+      // Opacity slider controls the overall transparency.
+      float fresnelAlpha = pow(1.0 - max(0.0, dot(normal, vViewDirection)), rimPower * 0.5);
+      float finalAlpha = opacity * (1.0 - fresnelAlpha * (1.0 - 0.2)); // 0.2 is the base glow opacity
+      finalAlpha = max(finalAlpha, fresnelAlpha * opacity); // Ensure edges are at least as visible as fresnel dictates
+
+      // For full opacity, we ensure the core is solid.
+      gl_FragColor = vec4(finalColor, opacity < 1.0 ? finalAlpha : 1.0);
     }
   `,
 };

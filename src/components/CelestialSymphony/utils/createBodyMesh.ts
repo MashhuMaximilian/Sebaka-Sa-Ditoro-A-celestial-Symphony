@@ -275,31 +275,34 @@ export const createBodyMesh = (
     const specularMap = paths?.specular ? textureLoader.load(paths.specular) : null;
     const aoMap = paths?.ambient ? textureLoader.load(paths.ambient) : null;
     
+    const uniforms = {
+        ...THREE.UniformsUtils.clone(planetShader.uniforms),
+        planetTexture: { value: baseTexture },
+        gridTexture: { value: null as THREE.CanvasTexture | null },
+        useGrid: { value: false },
+        isBeaconPlanet: { value: body.name === 'Gelidis' || body.name === 'Liminis' },
+        isCharacter: { value: false },
+
+        normalMap: { value: normalMap },
+        displacementMap: { value: displacementMap },
+        specularMap: { value: specularMap },
+        aoMap: { value: aoMap },
+
+        emissiveIntensity: { value: initialProps.emissiveIntensity },
+        albedo: { value: initialProps.albedo },
+        useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
+        normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
+        useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
+        displacementScale: { value: initialProps.displacementScale },
+        useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
+        specularIntensity: { value: initialProps.specularIntensity },
+        shininess: { value: initialProps.shininess },
+        useAoMap: { value: !!aoMap && initialProps.aoMapIntensity > 0 },
+        aoMapIntensity: { value: initialProps.aoMapIntensity },
+    };
+    
     material = new THREE.ShaderMaterial({
-        uniforms: {
-            ...THREE.UniformsUtils.clone(planetShader.uniforms),
-            planetTexture: { value: baseTexture },
-            gridTexture: { value: null as THREE.CanvasTexture | null },
-            useGrid: { value: false },
-            isBeaconPlanet: { value: body.name === 'Gelidis' || body.name === 'Liminis' },
-
-            normalMap: { value: normalMap },
-            displacementMap: { value: displacementMap },
-            specularMap: { value: specularMap },
-            aoMap: { value: aoMap },
-
-            emissiveIntensity: { value: initialProps.emissiveIntensity },
-            albedo: { value: initialProps.albedo },
-            useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },
-            normalScale: { value: new THREE.Vector2(initialProps.normalScale, initialProps.normalScale) },
-            useDisplacementMap: { value: !!displacementMap && initialProps.displacementScale > 0 },
-            displacementScale: { value: initialProps.displacementScale },
-            useSpecularMap: { value: !!specularMap && initialProps.specularIntensity > 0 },
-            specularIntensity: { value: initialProps.specularIntensity },
-            shininess: { value: initialProps.shininess },
-            useAoMap: { value: !!aoMap && initialProps.aoMapIntensity > 0 },
-            aoMapIntensity: { value: initialProps.aoMapIntensity },
-        },
+        uniforms: uniforms,
         vertexShader: planetShader.vertexShader,
         fragmentShader: planetShader.fragmentShader,
         transparent: body.name === 'Spectris' || body.name === 'Aetheris',

@@ -22,6 +22,7 @@ export const planetShader = {
     useGrid: { value: false },
     ambientLevel: { value: 0.02 },
     isBeaconPlanet: { value: false },
+    isCharacter: { value: false }, // Flag to disable lighting for character
 
     // Normal and displacement maps
     useNormalMap: { value: false },
@@ -98,6 +99,7 @@ export const planetShader = {
 
     uniform float ambientLevel;
     uniform bool isBeaconPlanet;
+    uniform bool isCharacter;
 
     uniform bool useNormalMap;
     uniform sampler2D normalMap;
@@ -152,6 +154,14 @@ export const planetShader = {
       // Get base texture color
       vec4 texColor = texture2D(planetTexture, vUv);
       vec3 baseColor = texColor.rgb;
+
+      if (isCharacter) {
+        // For the character, we just want to pass through, the real shader is elsewhere.
+        // But we discard transparent pixels so it doesn't block the planet underneath.
+        if (texColor.a < 0.1) discard;
+        gl_FragColor = vec4(1.0, 1.0, 1.0, 0.0); // Essentially invisible, to be replaced by blob shader.
+        return;
+      }
 
       if (useGrid) {
         vec4 gridColor = texture2D(gridTexture, vUv);
