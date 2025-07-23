@@ -42,17 +42,7 @@ const InfoPanel = ({
       }
     }));
   };
-
-  const handleDualMaterialSliderChange = (bodyName: string, propNameMin: keyof MaterialProperties[string], propNameMax: keyof MaterialProperties[string], value: number[]) => {
-    onMaterialPropertiesChange(prevProps => ({
-      ...prevProps,
-      [bodyName]: {
-        ...prevProps[bodyName],
-        [propNameMin]: value[0],
-        [propNameMax]: value[1],
-      }
-    }));
-  };
+  
   const renderStandardMaterialSettings = (bodyName: string) => {
     const bodyProps = materialProperties[bodyName];
     if (!bodyProps) return null;
@@ -323,11 +313,11 @@ const InfoPanel = ({
                     <div className="flex items-center gap-2">
                       <Slider
                         id="viridis-lava-density"
-                        min={0.1} max={1.5} step={0.01}
-                        value={[viridisProps.lavaDensity ?? 0.4]}
+                        min={0.1} max={1.0} step={0.01}
+                        value={[viridisProps.lavaDensity ?? 0.7]}
                         onValueChange={(value) => handleMaterialSliderChange(data.name, 'lavaDensity', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaDensity ?? 0.4).toFixed(2)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaDensity ?? 0.7).toFixed(2)}</span>
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -343,15 +333,27 @@ const InfoPanel = ({
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="viridis-noise-scale">Noise Scale</Label>
+                    <Label htmlFor="viridis-dot-size">Lava Dot Size</Label>
                     <div className="flex items-center gap-2">
                       <Slider
-                        id="viridis-noise-scale"
-                        min={0.1} max={10} step={0.1}
-                        value={[viridisProps.noiseScale ?? 5.9]}
-                        onValueChange={(value) => handleMaterialSliderChange(data.name, 'noiseScale', value)}
+                        id="viridis-dot-size"
+                        min={1.0} max={50.0} step={0.1}
+                        value={[viridisProps.lavaDotSize ?? 25.0]}
+                        onValueChange={(value) => handleMaterialSliderChange(data.name, 'lavaDotSize', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.noiseScale ?? 5.9).toFixed(1)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaDotSize ?? 25.0).toFixed(1)}</span>
+                    </div>
+                  </div>
+                   <div className="grid gap-2">
+                    <Label htmlFor="viridis-dot-size-variance">Lava Dot Size Variance</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                        id="viridis-dot-size-variance"
+                        min={1.0} max={50.0} step={0.1}
+                        value={[viridisProps.lavaDotSizeVariance ?? 15.0]}
+                        onValueChange={(value) => handleMaterialSliderChange(data.name, 'lavaDotSizeVariance', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaDotSizeVariance ?? 15.0).toFixed(1)}</span>
                     </div>
                   </div>
                   <div className="grid gap-2">
@@ -367,16 +369,15 @@ const InfoPanel = ({
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="viridis-lava-softness">Lava Edge Softness</Label>
+                    <Label htmlFor="viridis-noise-scale">Smoke Noise Scale</Label>
                     <div className="flex items-center gap-2">
                       <Slider
-                        id="viridis-lava-softness"
-                        min={0} max={1} step={0.01}
-                        value={[viridisProps.lavaSoftnessMin ?? 0.0, viridisProps.lavaSoftnessMax ?? 0.0]}
-                        onValueChange={(value) => handleDualMaterialSliderChange(data.name, 'lavaSoftnessMin', 'lavaSoftnessMax', value)}
+                        id="viridis-noise-scale"
+                        min={0.1} max={10} step={0.1}
+                        value={[viridisProps.noiseScale ?? 5.9]}
+                        onValueChange={(value) => handleMaterialSliderChange(data.name, 'noiseScale', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaSoftnessMin ?? 0.0).toFixed(2)}</span>
-                       <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaSoftnessMax ?? 0.0).toFixed(2)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.noiseScale ?? 5.9).toFixed(1)}</span>
                     </div>
                   </div>
                 </div>

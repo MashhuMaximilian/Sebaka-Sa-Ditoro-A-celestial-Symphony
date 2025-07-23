@@ -93,10 +93,10 @@ export const volcanoShader = {
     // Lava and smoke properties
     u_noiseScale: { value: 5.9 },
     u_smokeDensity: { value: 5.0 },
-    u_lavaSoftnessMin: { value: 0.0 },
-    u_lavaSoftnessMax: { value: 0.0 },
-    u_lavaDensity: { value: 0.4 },
+    u_lavaDensity: { value: 0.7 },
     u_lavaBrightness: { value: 10.0 },
+    u_lavaDotSize: { value: 25.0 },
+    u_lavaDotSizeVariance: { value: 15.0 },
 
     // Base texture
     planetTexture: { value: null as THREE.Texture | null },
@@ -177,6 +177,8 @@ export const volcanoShader = {
     uniform float u_smokeDensity;
     uniform float u_lavaDensity;
     uniform float u_lavaBrightness;
+    uniform float u_lavaDotSize;
+    uniform float u_lavaDotSizeVariance;
     uniform sampler2D planetTexture;
 
     // Standard lighting uniforms
@@ -260,18 +262,22 @@ export const volcanoShader = {
         animatedAlbedo = mix(0.9, albedo, phase_time);
       }
       
-      // --- Eruption Effect (Flashing Points) ---
+      // --- Eruption Effect (Flashing Dots) ---
       vec3 lavaEmission = vec3(0.0);
       if (u_time < u_phaseSplit.x) {
         float phase_progress = u_time / u_phaseSplit.x;
         float eruptionFactor = sin(phase_progress * 3.14159); // Simple sine fade in/out for the whole phase
 
-        // Generate multiple layers of noise for complexity
-        float noise1 = (noise3D(vWorldPosition * 25.0 + u_time * 15.0) + 1.0) * 0.5;
+        // Generate multiple layers of noise for complexity and variance
+        float noise1 = noise3D(vWorldPosition * u_lavaDotSize + u_time * 15.0);
+        float noise2 = noise3D(vWorldPosition * u_lavaDotSizeVariance + u_time * 5.0);
         
+        // Combine noise to create varied dots
+        float combined_noise = (noise1 + 1.0) * 0.5 * ((noise2 + 1.0) * 0.5);
+
         // Use density to set a sharp threshold for points to appear
         float threshold = 1.0 - u_lavaDensity;
-        float flashing_points = smoothstep(threshold, threshold + 0.01, noise1);
+        float flashing_points = smoothstep(threshold, threshold + 0.01, combined_noise);
         
         // Make the points flash over time
         float flash_speed = sin(u_time * 50.0 + vWorldPosition.x * 2.0) * 0.5 + 0.5;

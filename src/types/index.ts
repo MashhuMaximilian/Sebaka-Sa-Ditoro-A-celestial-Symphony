@@ -67,9 +67,9 @@ export interface MaterialProperties {
     // Viridis Volcano properties
     noiseScale?: number;
     smokeDensity?: number;
-    lavaSoftnessMin?: number;
-    lavaSoftnessMax?: number;
     lavaDensity?: number;
     lavaBrightness?: number;
+    lavaDotSize?: number;
+    lavaDotSizeVariance?: number;
   };
 }
