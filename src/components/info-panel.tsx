@@ -348,11 +348,11 @@ const InfoPanel = ({
                       <Slider
                         id="viridis-lava-softness"
                         min={0} max={1} step={0.01}
-                        value={[viridisProps.lavaSoftnessMin ?? 0.4, viridisProps.lavaSoftnessMax ?? 0.8]}
+                        value={[viridisProps.lavaSoftnessMin ?? 0.11, viridisProps.lavaSoftnessMax ?? 0.80]}
                         onValueChange={(value) => handleDualMaterialSliderChange(data.name, 'lavaSoftnessMin', 'lavaSoftnessMax', value)}
                       />
-                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaSoftnessMin ?? 0.4).toFixed(2)}</span>
-                       <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaSoftnessMax ?? 0.8).toFixed(2)}</span>
+                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaSoftnessMin ?? 0.11).toFixed(2)}</span>
+                       <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaSoftnessMax ?? 0.80).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
