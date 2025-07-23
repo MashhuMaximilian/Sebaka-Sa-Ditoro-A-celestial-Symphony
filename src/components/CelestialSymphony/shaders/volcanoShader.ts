@@ -190,7 +190,7 @@ export const volcanoShader = {
     uniform float twilightIntensity;
     uniform float beaconIntensity;
     uniform float ambientLevel;
-    uniform float albedo; // Base albedo (3.04)
+    uniform float albedo; // Base albedo
     
     // Maps
     uniform bool useNormalMap;
@@ -208,6 +208,13 @@ export const volcanoShader = {
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying mat3 vTBN;
+
+    // Produces 0-1 white noise from a 2D vector
+    float hash21(vec2 p) {
+        p = fract(p * vec2(123.34, 456.21));
+        p += dot(p, p + 45.32);
+        return fract(p.x * p.y);
+    }
     
     // Standard lighting function from planetShader
     vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir, float currentAlbedo) {
@@ -243,50 +250,55 @@ export const volcanoShader = {
       }
 
       // --- Albedo Animation ---
-      float animatedAlbedo = albedo; // Start with default albedo
-      float phase1Midpoint = u_phaseSplit.x / 2.0;
-
-      if (u_time < u_phaseSplit.x) { // Phase 1: Eruption and cool down
-          if (u_time < phase1Midpoint) {
-              animatedAlbedo = mix(albedo, 4.2, u_time / phase1Midpoint);
-          } else {
-              animatedAlbedo = mix(4.2, 1.8, (u_time - phase1Midpoint) / phase1Midpoint);
-          }
+      float animatedAlbedo = albedo;
+      if (u_time < u_phaseSplit.x) { 
+        // No albedo change during eruption phase
       } else if (u_time < u_phaseSplit.y) { // Phase 2: Smoke Thickening
         float phase_time = (u_time - u_phaseSplit.x) / (u_phaseSplit.y - u_phaseSplit.x);
-        animatedAlbedo = mix(1.8, 0.9, phase_time);
+        animatedAlbedo = mix(albedo, 0.9, phase_time);
       } else { // Phase 3: Smoke Clearing
         float phase_time = (u_time - u_phaseSplit.y) / (u_phaseSplit.z - u_phaseSplit.y);
         animatedAlbedo = mix(0.9, albedo, phase_time);
       }
       
-      // --- Eruption Effect (Large, Sparse Dots) ---
+      // --- Eruption Effect (Random Flashing Circles) ---
       vec3 lavaEmission = vec3(0.0);
       if (u_time < u_phaseSplit.x) {
           float phase = u_time / u_phaseSplit.x;
-          float eruptionAmp = sin(phase * 3.14159); // Fade in/out
+          float eruptionAmp = sin(phase * 3.14159); // Fade in/out of phase 1
 
-          // Use 3D noise based on world position to avoid UV seams/spirals
-          vec3 noisePos1 = vWorldPosition * u_lavaDotSize * 0.1;
-          vec3 noisePos2 = vWorldPosition * u_lavaDotSizeVariance * 0.1;
+          // Create a grid from UVs. Dot Size controls grid density.
+          vec2 gridUV = vUv * u_lavaDotSize;
+          vec2 gridCell = floor(gridUV);
+          vec2 localUV = fract(gridUV);
 
-          float n1 = (noise3D(noisePos1 + u_time * 0.1) + 1.0) * 0.5;
-          float n2 = (noise3D(noisePos2 - u_time * 0.2) + 1.0) * 0.5;
-          float combined_noise = n1 * n2;
+          // Get a random value for each grid cell
+          float cellRand = hash21(gridCell);
 
-          // Create sharp dots from the noise
-          float threshold = 1.0 - u_lavaDensity;
-          float dots = smoothstep(threshold - 0.05, threshold + 0.05, combined_noise);
+          // Only draw dots in a fraction of cells based on density
+          if (cellRand > (1.0 - u_lavaDensity)) {
+            
+            // Randomize position within the cell
+            vec2 dotCenter = vec2(0.5, 0.5) + (hash21(gridCell + 10.0) - 0.5) * 0.8;
+            
+            // Get a random size variance for this specific dot
+            float sizeVariance = hash21(gridCell + 25.0) * u_lavaDotSizeVariance;
+            float dotRadius = 0.5 + sizeVariance;
 
-          // Make them pulse
-          float pulse = (sin(u_time * 20.0 + combined_noise * 10.0) + 1.0) * 0.5;
+            // Calculate distance to the dot's center to draw a circle
+            float distToCenter = distance(localUV, dotCenter);
+            float circle = 1.0 - smoothstep(dotRadius - 0.1, dotRadius, distToCenter);
+            
+            // Make the dot flash over time
+            float flash = (sin(u_time * 20.0 + cellRand * 100.0) + 1.0) * 0.5;
 
-          // Color ramp from red to yellow to white
-          vec3 cool = vec3(1.0, 0.2, 0.0); // Red
-          vec3 hot = vec3(1.0, 1.0, 0.5); // Yellow-white
-          vec3 dotCol = mix(cool, hot, pulse);
-
-          lavaEmission = dotCol * dots * eruptionAmp * u_lavaBrightness;
+            // Color ramp: Red -> Yellow -> White-Hot
+            vec3 cool = vec3(1.0, 0.2, 0.0); // Red
+            vec3 hot = vec3(1.0, 1.0, 0.8);  // Yellow-White
+            vec3 dotCol = mix(cool, hot, flash);
+            
+            lavaEmission = dotCol * circle * flash * eruptionAmp * u_lavaBrightness;
+          }
       }
       
       // --- Smoke & Haze ---
