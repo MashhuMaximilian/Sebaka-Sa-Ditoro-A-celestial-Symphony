@@ -85,14 +85,17 @@ const updateMaterialProperties = (mesh: THREE.Mesh | THREE.Object3D, props: Mate
     if (uniforms.u_smokeDensity && props.smokeDensity !== undefined) {
       uniforms.u_smokeDensity.value = props.smokeDensity;
     }
-    if (uniforms.u_lavaSoftnessMin && props.lavaSoftnessMin !== undefined) {
-      uniforms.u_lavaSoftnessMin.value = props.lavaSoftnessMin;
-    }
-    if (uniforms.u_lavaSoftnessMax && props.lavaSoftnessMax !== undefined) {
-      uniforms.u_lavaSoftnessMax.value = props.lavaSoftnessMax;
-    }
     if (uniforms.u_lavaDensity && props.lavaDensity !== undefined) {
-      uniforms.u_lavaDensity.value = props.lavaDensity;
+        uniforms.u_lavaDensity.value = props.lavaDensity;
+    }
+    if (uniforms.u_lavaBrightness && props.lavaBrightness !== undefined) {
+        uniforms.u_lavaBrightness.value = props.lavaBrightness;
+    }
+    if (uniforms.u_lavaDotSize && props.lavaDotSize !== undefined) {
+        uniforms.u_lavaDotSize.value = props.lavaDotSize;
+    }
+    if (uniforms.u_lavaDotSizeVariance && props.lavaDotSizeVariance !== undefined) {
+        uniforms.u_lavaDotSizeVariance.value = props.lavaDotSizeVariance;
     }
   }
 };

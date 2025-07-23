@@ -274,8 +274,8 @@ export const volcanoShader = {
           float phase = u_time / u_phaseSplit.x;         // 0-1 across Phase 1
           float eruptionAmp = sin(phase * 3.14159);      // smooth fade in/out
 
-          // Add variance to dot size
-          float sizeVariance = hash21(vUv * 5.0); // A different hash for variance
+          // Add variance to dot size using a different hash
+          float sizeVariance = hash21(vUv * 5.0); 
           float finalDotSize = u_lavaDotSize + sizeVariance * u_lavaDotSizeVariance;
 
           // Pure random mask (static in space)
