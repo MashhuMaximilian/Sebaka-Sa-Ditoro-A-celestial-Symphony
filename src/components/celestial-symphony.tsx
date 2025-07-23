@@ -38,6 +38,7 @@ export interface CelestialSymphonyProps {
   selectedBody: PlanetData | StarData | { name: string } | null;
   isInfoPanelOpen: boolean;
   setInfoPanelOpen: (isOpen: boolean) => void;
+  elapsedHours: number;
 }
 
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
@@ -112,6 +113,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     isViridisAnimationActive: props.isViridisAnimationActive,
     viewFromSebaka: props.viewFromSebaka,
     materialProperties: materialProperties,
+    elapsedHours: props.elapsedHours,
   });
 
   useAnimationLoop({

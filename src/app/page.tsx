@@ -235,7 +235,7 @@ export default function Home() {
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
   const [isSebakaRotating, setIsSebakaRotating] = useState(true);
-  const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(false);
+  const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(true);
   const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [usePlainOrbits, setUsePlainOrbits] = useState(false);
@@ -514,6 +514,7 @@ export default function Home() {
         selectedBody={selectedBody}
         isInfoPanelOpen={isInfoPanelOpen}
         setInfoPanelOpen={setInfoPanelOpen}
+        elapsedHours={elapsedHours}
       />
 
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">

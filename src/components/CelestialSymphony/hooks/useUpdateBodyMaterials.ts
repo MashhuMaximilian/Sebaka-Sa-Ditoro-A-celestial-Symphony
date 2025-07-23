@@ -87,6 +87,7 @@ interface UpdateBodyMaterialsProps {
     isViridisAnimationActive: boolean;
     viewFromSebaka: boolean;
     materialProperties: MaterialProperties;
+    elapsedHours: number;
 }
 
 export const useUpdateBodyMaterials = ({
@@ -98,11 +99,8 @@ export const useUpdateBodyMaterials = ({
     isViridisAnimationActive,
     viewFromSebaka,
     materialProperties,
+    elapsedHours,
 }: UpdateBodyMaterialsProps) => {
-
-    const elapsedHoursRef = useRef(0);
-    const animationFrameId = useRef<number>();
-    const clockRef = useRef(new THREE.Clock());
 
     useEffect(() => {
         const planetMeshes = allMeshes.current.filter(m => planets.some(p => p.name === m.name));
@@ -148,57 +146,25 @@ export const useUpdateBodyMaterials = ({
         const viridisMesh = allMeshes.current.find(p => p.name === 'Viridis');
         if (!viridisMesh || !(viridisMesh.material instanceof THREE.ShaderMaterial)) return;
 
-        let isCancelled = false;
-
-        const animateViridis = () => {
-            if (isCancelled) return;
-            animationFrameId.current = requestAnimationFrame(animateViridis);
-            const deltaTime = clockRef.current.getDelta();
-            elapsedHoursRef.current += deltaTime * 24; // Assuming 1 day/sec for this animation's timing
-            const elapsedDays = elapsedHoursRef.current / HOURS_IN_SEBAKA_DAY;
-
-            const material = viridisMesh.material as THREE.ShaderMaterial;
-            
-            if (isViridisAnimationActive) {
-                const cycleDurationDays = 27;
-                const currentDayInCycle = elapsedDays % cycleDurationDays;
-                const phaseDuration = 9;
-                let brightnessFactor = 1.0;
-
-                // Waning phase
-                if (currentDayInCycle >= 0 && currentDayInCycle < phaseDuration) {
-                    brightnessFactor = 1.0 - (currentDayInCycle / phaseDuration) * 0.9;
-                // Dim phase
-                } else if (currentDayInCycle >= phaseDuration && currentDayInCycle < phaseDuration * 2) {
-                    brightnessFactor = 0.1;
-                // Waxing phase
-                } else {
-                    brightnessFactor = 0.1 + ((currentDayInCycle - phaseDuration * 2) / phaseDuration) * 0.9;
-                }
-                
-                material.uniforms.alphaIntensity.value = THREE.MathUtils.lerp(material.uniforms.alphaIntensity.value, 1.8 * brightnessFactor, 0.1);
-                material.uniforms.twilightIntensity.value = THREE.MathUtils.lerp(material.uniforms.twilightIntensity.value, 1.0 * brightnessFactor, 0.1);
-
-            } else {
-                 material.uniforms.alphaIntensity.value = THREE.MathUtils.lerp(material.uniforms.alphaIntensity.value, 1.8, 0.1);
-                 material.uniforms.twilightIntensity.value = THREE.MathUtils.lerp(material.uniforms.twilightIntensity.value, 1.0, 0.1);
-            }
-        };
-
+        const material = viridisMesh.material as THREE.ShaderMaterial;
+        
         if (isViridisAnimationActive) {
-            clockRef.current.start();
-        } else {
-            clockRef.current.stop();
-        }
-        animateViridis();
-
-        return () => {
-            isCancelled = true;
-            if (animationFrameId.current) {
-                cancelAnimationFrame(animationFrameId.current);
+            const cycleDurationDays = 27;
+            const cycleDurationHours = cycleDurationDays * HOURS_IN_SEBAKA_DAY;
+            const currentCycleTime = elapsedHours % cycleDurationHours;
+            const u_time = currentCycleTime / cycleDurationHours; // Normalized 0-1
+            
+            if (material.uniforms.u_time) {
+                material.uniforms.u_time.value = u_time;
             }
-        };
-    }, [isViridisAnimationActive, allMeshes]);
+
+        } else {
+             // When animation is stopped, reset to the beginning of the cycle
+             if (material.uniforms.u_time) {
+                material.uniforms.u_time.value = 0;
+            }
+        }
+    }, [isViridisAnimationActive, allMeshes, elapsedHours]);
 
     // This effect handles toggling the grid view on Sebaka
     useEffect(() => {
