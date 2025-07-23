@@ -234,10 +234,11 @@ export const blobShader = {
         float diff = max(dot(normal, lightDir), 0.0);
         vec3 diffuse = starColor * diff * starIntensity;
         
-        // Specular
+        // Softer Specular
         vec3 halfwayDir = normalize(lightDir + viewDir);
-        float spec = pow(max(dot(normal, halfwayDir), 0.0), shininess);
-        vec3 specular = starColor * spec * starIntensity;
+        float specAngle = max(dot(normal, halfwayDir), 0.0);
+        float spec = pow(specAngle, shininess * 0.5); // Softer shininess
+        vec3 specular = starColor * spec * starIntensity * 0.5; // Reduced intensity
         
         return (diffuse + specular) * attenuation;
     }
@@ -266,9 +267,9 @@ export const blobShader = {
       // Start with the base color, apply lighting
       vec3 litColor = baseColor * (lighting + ambient);
       // Mix in the iridescence based on the fresnel effect
-      vec3 finalColor = mix(litColor, iridescentColor, fresnel * iridescenceStrength);
-      // Add the rim highlight on top
-      finalColor += iridescentColor * rim;
+      vec3 finalColor = mix(litColor, iridescentColor * (lighting + ambient + 0.5), fresnel * iridescenceStrength);
+      // Add the rim highlight on top, also lit
+      finalColor += iridescentColor * rim * 2.0;
 
       gl_FragColor = vec4(finalColor, opacity);
     }
