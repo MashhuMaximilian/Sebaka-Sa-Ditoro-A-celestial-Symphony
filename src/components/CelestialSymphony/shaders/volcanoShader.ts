@@ -315,9 +315,16 @@ export const volcanoShader = {
       vec3 lavaBaseColor = vec3(1.0, 1.0, 1.0);
       vec3 hotWhite = vec3(1.0, 1.0, 1.0);
       float softLavaMask = smoothstep(u_lavaSoftnessMin, u_lavaSoftnessMax, v_lavaMask);
-      float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, v_lavaMask); // A sharper step for the core
+      float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, v_lavaMask);
       vec3 lavaColor = mix(lavaBaseColor, hotWhite, hotCoreMask);
-      vec3 lavaEmission = lavaColor * softLavaMask * eruptionFactor;
+      
+      // --- Blinking Lava ---
+      float blinkNoise = noise3D(vWorldPosition * 2.0 + u_time * 20.0); // Faster time component for blinking
+      float blinkSine = (sin(u_time * 50.0 + v_lavaMask * 20.0) + 1.0) / 2.0; // Sine wave for pulsing
+      float blinkFactor = pow(blinkNoise * blinkSine, 2.0); // Combine and sharpen
+      
+      vec3 lavaEmission = lavaColor * softLavaMask * eruptionFactor * blinkFactor;
+
       
       // Phase 2: Smoke (fades in, then fades out)
       float smokeFadeIn = smoothstep(u_phaseSplit.x - transitionWidth, u_phaseSplit.x, u_time);
@@ -367,3 +374,4 @@ export const volcanoShader = {
   `
 };
 
+    
