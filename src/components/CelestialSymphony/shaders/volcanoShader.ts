@@ -290,22 +290,9 @@ export const volcanoShader = {
             // Make the dot flash over time
             float flash = step(0.5, (sin(u_time * 20.0 + cellRand * 100.0) + 1.0) * 0.5);
 
-            // Define colors
-            vec3 red = vec3(1.0, 0.1, 0.0);
-            vec3 orange = vec3(1.0, 0.5, 0.0);
-            vec3 yellow = vec3(1.0, 0.9, 0.1);
+            vec3 dotCol = vec3(1.0, 0.1, 0.0); // Set to red
             
-            // Select color based on random value
-            vec3 dotCol;
-            if (cellRand < 0.33) {
-                dotCol = red;
-            } else if (cellRand < 0.66) {
-                dotCol = orange;
-            } else {
-                dotCol = yellow;
-            }
-            
-            lavaEmission = dotCol * circle * flash * eruptionAmp * 2.0; // Use a fixed brightness multiplier
+            lavaEmission = dotCol * circle * flash * 2.0 * eruptionAmp; // Use a fixed brightness multiplier
           }
       }
       
