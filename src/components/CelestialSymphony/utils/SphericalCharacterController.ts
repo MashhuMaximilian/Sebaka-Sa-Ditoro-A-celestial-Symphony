@@ -4,6 +4,8 @@ import { blobShader } from '../shaders/blobShader';
 import { MaterialProperties } from '@/types';
 import { planetShader } from '../shaders/planetShader';
 
+const textureLoader = new THREE.TextureLoader();
+
 /**
  * A controller to manage a character object that is "stuck" to the surface
  * of a parent planet mesh. It calculates the character's local position and
@@ -31,7 +33,10 @@ export class SphericalCharacterController {
 
     // The blob shader is now used directly.
     const material = new THREE.ShaderMaterial({
-        uniforms: THREE.UniformsUtils.clone(blobShader.uniforms),
+        uniforms: {
+            ...THREE.UniformsUtils.clone(blobShader.uniforms),
+            colorTexture: { value: textureLoader.load('/maps/iridescentring.png') },
+        },
         vertexShader: blobShader.vertexShader,
         fragmentShader: blobShader.fragmentShader,
         transparent: true,
@@ -88,8 +93,6 @@ export class SphericalCharacterController {
         uniforms.noiseFrequency.value = materialProps.noiseFrequency ?? 8.3;
         uniforms.noiseSpeed.value = materialProps.noiseSpeed ?? 0.5;
         uniforms.blobComplexity.value = materialProps.blobComplexity ?? 4.0;
-        uniforms.iridescenceStrength.value = materialProps.iridescenceStrength ?? 14.3;
-        uniforms.rimPower.value = materialProps.rimPower ?? 1.9;
         uniforms.opacity.value = materialProps.opacity ?? 1.0;
         uniforms.albedo.value = materialProps.albedo ?? 0.3;
         uniforms.specularIntensity.value = materialProps.specularIntensity ?? 0.8;

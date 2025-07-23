@@ -149,7 +149,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 mountRef.current.removeChild(rendererRef.current.domElement);
             }
         };
-    }, [bodyData, viewFromSebaka, usePlainOrbits, showOrbits, sebakaGridTexture, materialProperties]);
+    }, [bodyData, viewFromSebaka, usePlainOrbits, showOrbits, sebakaGridTexture]);
 
     return {
         mountRef,
