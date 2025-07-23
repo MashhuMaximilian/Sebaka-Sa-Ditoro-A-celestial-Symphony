@@ -94,7 +94,6 @@ export const volcanoShader = {
     u_noiseScale: { value: 5.9 },
     u_smokeDensity: { value: 5.0 },
     u_lavaDensity: { value: 0.7 },
-    u_lavaBrightness: { value: 10.0 },
     u_lavaDotSize: { value: 25.0 },
     u_lavaDotSizeVariance: { value: 15.0 },
 
@@ -174,7 +173,6 @@ export const volcanoShader = {
     uniform float u_noiseScale;
     uniform float u_smokeDensity;
     uniform float u_lavaDensity;
-    uniform float u_lavaBrightness;
     uniform float u_lavaDotSize;
     uniform float u_lavaDotSizeVariance;
     uniform sampler2D planetTexture;
@@ -292,12 +290,22 @@ export const volcanoShader = {
             // Make the dot flash over time
             float flash = (sin(u_time * 20.0 + cellRand * 100.0) + 1.0) * 0.5;
 
-            // Color ramp: Red -> Yellow -> White-Hot
-            vec3 cool = vec3(1.0, 0.2, 0.0); // Red
-            vec3 hot = vec3(1.0, 1.0, 0.8);  // Yellow-White
-            vec3 dotCol = mix(cool, hot, flash);
+            // Define colors
+            vec3 red = vec3(1.0, 0.1, 0.0);
+            vec3 orange = vec3(1.0, 0.5, 0.0);
+            vec3 yellow = vec3(1.0, 0.9, 0.1);
             
-            lavaEmission = dotCol * circle * flash * eruptionAmp * u_lavaBrightness;
+            // Select color based on random value
+            vec3 dotCol;
+            if (cellRand < 0.33) {
+                dotCol = red;
+            } else if (cellRand < 0.66) {
+                dotCol = orange;
+            } else {
+                dotCol = yellow;
+            }
+            
+            lavaEmission = dotCol * circle * flash * eruptionAmp * 2.0; // Use a fixed brightness multiplier
           }
       }
       
