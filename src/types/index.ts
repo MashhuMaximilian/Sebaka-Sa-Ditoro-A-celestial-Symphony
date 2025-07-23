@@ -62,5 +62,6 @@ export interface MaterialProperties {
     rimPower?: number;
     opacity?: number;
     height?: number;
+    colorSpeed?: number;
   };
 }
