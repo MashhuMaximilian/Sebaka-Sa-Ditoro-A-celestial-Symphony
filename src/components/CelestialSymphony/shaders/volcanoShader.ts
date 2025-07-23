@@ -93,8 +93,8 @@ export const volcanoShader = {
     // Lava and smoke properties
     u_noiseScale: { value: 5.9 },
     u_smokeDensity: { value: 5.0 },
-    u_lavaSoftnessMin: { value: 0.11 },
-    u_lavaSoftnessMax: { value: 0.80 },
+    u_lavaSoftnessMin: { value: 0.0 },
+    u_lavaSoftnessMax: { value: 0.0 },
 
     // Base texture
     planetTexture: { value: null as THREE.Texture | null },
@@ -131,10 +131,6 @@ export const volcanoShader = {
   vertexShader: `
     ${noiseGLSL}
 
-    uniform float u_time;
-    uniform vec3 u_phaseSplit;
-    uniform float u_noiseScale;
-
     uniform bool useDisplacementMap;
     uniform sampler2D displacementMap;
     uniform float displacementScale;
@@ -166,7 +162,7 @@ export const volcanoShader = {
       
       // Calculate lava mask based on the original, non-displaced position so it's stable
       float base_noise = noise3D(position * 2.0);
-      float slow_noise = noise3D(position * 0.5 + u_time * 0.2);
+      float slow_noise = noise3D(position * 0.5);
       v_lavaMask = pow(base_noise, 4.0) + pow(slow_noise, 2.0);
       
       vNormal = n; // Pass world-space normal to fragment shader
@@ -259,10 +255,8 @@ export const volcanoShader = {
 
       if (u_time < u_phaseSplit.x) { // Phase 1: Eruption and cool down
           if (u_time < phase1Midpoint) {
-              // Ramp up to peak albedo (4.2)
               animatedAlbedo = mix(albedo, 4.2, u_time / phase1Midpoint);
           } else {
-              // Ramp down to cool albedo (1.8)
               animatedAlbedo = mix(4.2, 1.8, (u_time - phase1Midpoint) / phase1Midpoint);
           }
       } else if (u_time < u_phaseSplit.y) { // Phase 2: Smoke Thickening
@@ -273,32 +267,45 @@ export const volcanoShader = {
         animatedAlbedo = mix(0.9, albedo, phase_time);
       }
       
-      // --- Phase Blending ---
-      float transitionWidth = 0.1;
+      // --- Phase Blending & Eruption Effect ---
+      float eruptionFactor = 0.0;
+      if (u_time < u_phaseSplit.x) {
+        // This factor fades the eruption in and out during phase 1
+        float phase_progress = u_time / u_phaseSplit.x;
+        eruptionFactor = sin(phase_progress * 3.14159); // Simple sine fade in/out
+      }
 
-      // Phase 1: Eruption (fades out at the end of its phase)
-      float eruptionFactor = 1.0 - smoothstep(u_phaseSplit.x - transitionWidth, u_phaseSplit.x, u_time);
-      
-      // --- Lava Color Calculation ---
+      // --- Lava Color & Randomized Eruptions ---
       vec3 lavaBaseColor = vec3(1.0, 0.2, 0.0); // Orange-Red
       vec3 hotWhite = vec3(1.0, 1.0, 0.5); // Pale Yellow
-      float softLavaMask = smoothstep(u_lavaSoftnessMin, u_lavaSoftnessMax, v_lavaMask);
-      float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, v_lavaMask);
+
+      // Dynamic noise for random eruptions
+      float dynamic_noise = noise3D(vWorldPosition * 2.0 + u_time * 5.0);
+      // Combine static lava mask with dynamic noise
+      float combined_mask = v_lavaMask * dynamic_noise;
+      
+      // Make the combined mask pulse
+      float pulse = (sin(u_time * 20.0) + 1.0) * 0.5; // Fast pulse
+      combined_mask *= pulse;
+
+      // Apply softness and create core
+      float softLavaMask = smoothstep(u_lavaSoftnessMin, u_lavaSoftnessMax, combined_mask);
+      float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, combined_mask);
       vec3 lavaColor = mix(lavaBaseColor, hotWhite, hotCoreMask);
       
-      vec3 lavaEmission = lavaColor * softLavaMask * eruptionFactor * 5.0; // Increased brightness
+      vec3 lavaEmission = lavaColor * softLavaMask * eruptionFactor * 5.0;
       
-      // Phase 2: Smoke (fades in, then fades out)
+      // --- Smoke & Haze ---
+      float transitionWidth = 0.1;
       float smokeFadeIn = smoothstep(u_phaseSplit.x - transitionWidth, u_phaseSplit.x, u_time);
       float smokeFadeOut = 1.0 - smoothstep(u_phaseSplit.y - transitionWidth, u_phaseSplit.y, u_time);
       float smokeIntensity = smokeFadeIn * smokeFadeOut;
 
-      // Phase 3: Haze (fades in, then fades out to loop)
       float hazeFadeIn = smoothstep(u_phaseSplit.y - transitionWidth, u_phaseSplit.y, u_time);
       float hazeFadeOut = 1.0 - smoothstep(u_phaseSplit.z - transitionWidth, u_phaseSplit.z, u_time);
       float hazeIntensity = hazeFadeIn * hazeFadeOut;
       
-      // Add lighting to base color
+      // --- Lighting & Final Color ---
       vec3 viewDir = normalize(cameraPosition - vWorldPosition);
       vec3 lighting = vec3(0.0);
       lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, normal, viewDir, animatedAlbedo);
@@ -317,15 +324,15 @@ export const volcanoShader = {
       vec3 finalColor = litSurface + lavaEmission;
       finalColor *= ao;
 
-      // --- Mix Smoke and Haze ---
+      // Mix Smoke and Haze
       vec3 smokeNoiseP = vec3(vUv * u_noiseScale, u_time * 5.0);
       float smokeMask = pow(noise3D(smokeNoiseP), 2.0) * smokeIntensity * u_smokeDensity;
       
       vec3 hazeNoiseP = vec3(vUv * u_noiseScale * 0.5, u_time * 2.0);
       float hazeMask = pow(noise3D(hazeNoiseP), 2.0) * hazeIntensity * u_smokeDensity * 0.5;
 
-      vec3 smokeColor = vec3(0.15); // Dark ash for smoke
-      vec3 hazeColor = vec3(0.3); // Lighter grey for haze
+      vec3 smokeColor = vec3(0.15);
+      vec3 hazeColor = vec3(0.3);
 
       finalColor = mix(finalColor, smokeColor, smokeMask);
       finalColor = mix(finalColor, hazeColor, hazeMask);

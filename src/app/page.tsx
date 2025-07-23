@@ -207,7 +207,7 @@ export const initialMaterialProperties: MaterialProperties = {
   Spectris: { albedo: 1.59, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 1, specularIntensity: 0.46, aoMapIntensity: 0.17 },
   Viridis: { 
     albedo: 3.04, normalScale: 0.75, displacementScale: 13.02, emissiveIntensity: 0, shininess: 5, specularIntensity: 1.41, aoMapIntensity: 0.00,
-    noiseScale: 5.9, smokeDensity: 5.0, lavaSoftnessMin: 0.11, lavaSoftnessMax: 0.80
+    noiseScale: 5.9, smokeDensity: 5.0, lavaSoftnessMin: 0.0, lavaSoftnessMax: 0.0
   },
   Aetheris: { albedo: 4.51, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 19, specularIntensity: 0.00, aoMapIntensity: 0.00 },
   Gelidis: { albedo: 0.20, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 1, specularIntensity: 0.32, aoMapIntensity: 0.38 },
@@ -719,5 +719,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
