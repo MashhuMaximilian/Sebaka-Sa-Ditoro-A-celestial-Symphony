@@ -12,6 +12,7 @@ export class SphericalCharacterController {
   public characterMesh: THREE.Object3D;
   private planetMesh: THREE.Mesh;
   private planetRadius: number;
+  private clock = new THREE.Clock();
 
   constructor(planetMesh: THREE.Mesh) {
     this.planetMesh = planetMesh;
@@ -23,7 +24,7 @@ export class SphericalCharacterController {
         this.planetRadius = box.getSize(new THREE.Vector3()).x / 2;
     }
     
-    const geometry = new THREE.BoxGeometry(0.02, 0.02, 0.02);
+    const geometry = new THREE.SphereGeometry(0.015, 64, 64);
     
     const uniforms = THREE.UniformsUtils.clone(spiderStrandShader.uniforms);
     uniforms.baseColor.value = new THREE.Color(0x8c52ff);
@@ -56,7 +57,17 @@ export class SphericalCharacterController {
     this.characterMesh.position.copy(localPosition);
     
     // The character's orientation is inherited from the parent planet's rotation.
-    // It does not have its own orientation logic, making it a stable "rock" on the surface.
+    // To counteract this, we get the parent's world quaternion and apply its inverse.
+    if (this.characterMesh.parent) {
+      const parentWorldQuaternion = new THREE.Quaternion();
+      this.characterMesh.parent.getWorldQuaternion(parentWorldQuaternion);
+      this.characterMesh.quaternion.copy(parentWorldQuaternion).invert();
+    }
+
+    // Update shader time for blob animation
+    if (this.characterMesh instanceof THREE.Mesh && this.characterMesh.material instanceof THREE.ShaderMaterial) {
+      this.characterMesh.material.uniforms.time.value = this.clock.getElapsedTime();
+    }
   }
 
   public dispose() {
