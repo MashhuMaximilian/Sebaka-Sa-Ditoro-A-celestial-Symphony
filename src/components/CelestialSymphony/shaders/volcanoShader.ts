@@ -279,15 +279,15 @@ export const volcanoShader = {
           if (cellRand > (1.0 - u_lavaDensity)) {
             
             // Randomize position within the cell to break the grid pattern
-            vec2 dotCenter = vec2(0.5, 0.5) + (hash21(gridCell + 10.0) - 0.5) * 0.8;
+            vec2 dotCenter = vec2(0.5, 0.5) + (vec2(hash21(gridCell + 10.0), hash21(gridCell + 20.0)) - 0.5) * 0.8;
             
             // Get a random size variance for this specific dot
-            float sizeVariance = hash21(gridCell + 25.0) * u_lavaDotSizeVariance;
-            float dotRadius = 0.5 + sizeVariance;
+            float sizeVariance = hash21(gridCell + 25.0);
+            float dotRadius = (0.2 + sizeVariance * 0.3) * (u_lavaDotSizeVariance / 100.0 + 1.0);
 
             // Calculate distance to the dot's center to draw a circle
             float distToCenter = distance(localUV, dotCenter);
-            float circle = 1.0 - smoothstep(dotRadius - 0.1, dotRadius, distToCenter);
+            float circle = 1.0 - smoothstep(dotRadius - 0.05, dotRadius, distToCenter);
             
             // Make the dot flash over time
             float flash = (sin(u_time * 20.0 + cellRand * 100.0) + 1.0) * 0.5;
