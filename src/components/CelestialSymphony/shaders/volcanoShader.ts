@@ -153,47 +153,16 @@ export const volcanoShader = {
       vec3 pos = position;
 
       // Apply standard displacement map first
-      vec3 displacedNormal = normal;
       if (useDisplacementMap) {
         float displacementValue = texture2D(displacementMap, uv).r;
         pos += normal * pow(displacementValue, 4.0) * displacementScale;
-        
-        // Recalculate normals for correct lighting after displacement
-        float eps = 0.01; // Small offset for sampling
-        vec2 du = vec2(eps, 0.0);
-        vec2 dv = vec2(0.0, eps);
-
-        float H = texture2D(displacementMap, vUv).r * displacementScale;
-        float H_u = texture2D(displacementMap, vUv + du).r * displacementScale;
-        float H_v = texture2D(displacementMap, vUv + dv).r * displacementScale;
-
-        vec3 p = position;
-        vec3 p_u = position + tangent.xyz * eps;
-        vec3 p_v = cross(normal, tangent.xyz) * eps;
-
-        vec3 displaced_p = p + normal * H;
-        vec3 displaced_p_u = p_u + normal * H_u;
-        vec3 displaced_p_v = p_v + normal * H_v;
-
-        vec3 dP_du = displaced_p_u - displaced_p;
-        vec3 dP_dv = displaced_p_v - displaced_p;
-
-        displacedNormal = normalize(cross(dP_du, dP_dv));
       }
       
-      // Calculate TBN matrix for normal mapping based on the potentially displaced position
+      // Calculate TBN matrix for normal mapping
       vec3 t = normalize( mat3(modelMatrix) * tangent.xyz );
-      vec3 n = normalize( mat3(modelMatrix) * displacedNormal );
+      vec3 n = normalize( mat3(modelMatrix) * normal );
       vec3 b = cross( n, t );
       vTBN = mat3( t, b, n );
-
-      
-      // Now, apply volcanic displacement on top of the already displaced position
-      if(u_time < u_phaseSplit.x){
-          float displacementStrength = smoothstep(0.0, u_phaseSplit.x, u_time) * (1.0 - smoothstep(u_phaseSplit.x - 0.1, u_phaseSplit.x, u_time));
-          float noise = noise3D(pos * u_noiseScale * 0.5 + u_time * 5.0);
-          pos += n * noise * displacementStrength * 0.5;
-      }
       
       // Calculate lava mask based on the original, non-displaced position so it's stable
       float base_noise = noise3D(position * 2.0);
@@ -297,7 +266,6 @@ export const volcanoShader = {
               animatedAlbedo = mix(4.2, 1.8, (u_time - phase1Midpoint) / phase1Midpoint);
           }
       } else if (u_time < u_phaseSplit.y) { // Phase 2: Smoke Thickening
-        // Power of 2 makes the albedo decrease faster at the start of the phase
         float phase_time = (u_time - u_phaseSplit.x) / (u_phaseSplit.y - u_phaseSplit.x);
         animatedAlbedo = mix(1.8, 0.9, pow(phase_time, 2.0));
       } else { // Phase 3: Smoke Clearing
@@ -318,13 +286,7 @@ export const volcanoShader = {
       float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, v_lavaMask);
       vec3 lavaColor = mix(lavaBaseColor, hotWhite, hotCoreMask);
       
-      // --- Blinking Lava ---
-      float blinkNoise = noise3D(vWorldPosition * 2.0 + u_time * 20.0); // Faster time component for blinking
-      float blinkSine = (sin(u_time * 50.0 + v_lavaMask * 20.0) + 1.0) / 2.0; // Sine wave for pulsing
-      float blinkFactor = pow(blinkNoise * blinkSine, 2.0); // Combine and sharpen
-      
-      vec3 lavaEmission = lavaColor * softLavaMask * eruptionFactor * blinkFactor;
-
+      vec3 lavaEmission = lavaColor * softLavaMask * eruptionFactor * 5.0; // Increased brightness
       
       // Phase 2: Smoke (fades in, then fades out)
       float smokeFadeIn = smoothstep(u_phaseSplit.x - transitionWidth, u_phaseSplit.x, u_time);
@@ -373,6 +335,3 @@ export const volcanoShader = {
     }
   `
 };
-
-
-    
