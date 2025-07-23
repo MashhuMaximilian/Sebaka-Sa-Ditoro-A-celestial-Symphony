@@ -274,8 +274,12 @@ export const volcanoShader = {
           float phase = u_time / u_phaseSplit.x;         // 0-1 across Phase 1
           float eruptionAmp = sin(phase * 3.14159);      // smooth fade in/out
 
+          // Add variance to dot size
+          float sizeVariance = hash21(vUv * 5.0); // A different hash for variance
+          float finalDotSize = u_lavaDotSize + sizeVariance * u_lavaDotSizeVariance;
+
           // Pure random mask (static in space)
-          float rnd = hash21(vUv * u_lavaDotSize);
+          float rnd = hash21(vUv * finalDotSize);
 
           // Flashing over time – higher freq for sparkle
           float flash = step(1.0 - u_lavaDensity, rnd) *  // density slider
@@ -334,4 +338,4 @@ export const volcanoShader = {
       gl_FragColor = vec4(finalColor, 1.0);
     }
   `
-};
+}
