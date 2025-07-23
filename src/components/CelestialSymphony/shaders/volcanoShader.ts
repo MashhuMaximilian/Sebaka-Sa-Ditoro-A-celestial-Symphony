@@ -142,8 +142,6 @@ export const volcanoShader = {
     
     in vec4 tangent;
 
-    ${noiseGLSL}
-
     void main() {
       vUv = uv;
       
