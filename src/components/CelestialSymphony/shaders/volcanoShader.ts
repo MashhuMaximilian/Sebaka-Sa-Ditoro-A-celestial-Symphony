@@ -270,13 +270,13 @@ export const volcanoShader = {
               // Ramp up to peak albedo
               animatedAlbedo = mix(albedo, 4.2, u_time / phase1Midpoint);
           } else {
-              // Ramp down to base albedo
-              animatedAlbedo = mix(4.2, albedo, (u_time - phase1Midpoint) / phase1Midpoint);
+              // Ramp down to cool albedo (1.8)
+              animatedAlbedo = mix(4.2, 1.8, (u_time - phase1Midpoint) / phase1Midpoint);
           }
       } else if (u_time < u_phaseSplit.y) { // Phase 2: Smoke Thickening
         // Power of 2 makes the albedo decrease faster at the start of the phase
         float phase_time = (u_time - u_phaseSplit.x) / (u_phaseSplit.y - u_phaseSplit.x);
-        animatedAlbedo = mix(albedo, 0.9, pow(phase_time, 2.0));
+        animatedAlbedo = mix(1.8, 0.9, pow(phase_time, 2.0));
       } else { // Phase 3: Smoke Clearing
         float phase_time = (u_time - u_phaseSplit.y) / (u_phaseSplit.z - u_phaseSplit.y);
         animatedAlbedo = mix(0.9, albedo, phase_time);
@@ -343,5 +343,3 @@ export const volcanoShader = {
     }
   `
 };
-
-    
