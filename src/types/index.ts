@@ -58,8 +58,6 @@ export interface MaterialProperties {
     noiseFrequency?: number;
     noiseSpeed?: number;
     blobComplexity?: number;
-    iridescenceStrength?: number;
-    rimPower?: number;
     opacity?: number;
     height?: number;
     colorSpeed?: number;

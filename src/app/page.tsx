@@ -214,8 +214,6 @@ export const initialMaterialProperties: MaterialProperties = {
     noiseFrequency: 14.5,
     noiseSpeed: 1.1,
     blobComplexity: 5,
-    iridescenceStrength: 18.9,
-    rimPower: 9.1,
     opacity: 1.0,
     height: 0.01,
     albedo: 0.3,
