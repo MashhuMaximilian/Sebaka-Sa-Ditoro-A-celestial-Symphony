@@ -16,18 +16,15 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "./ui/button";
 import { texturePaths } from "./CelestialSymphony/utils/createBodyMesh";
-import { setInfoPanelContextComponent } from './celestial-symphony';
 
-let currentOnPropertiesChange: React.Dispatch<React.SetStateAction<MaterialProperties>> | null = null;
-let currentOnReset: (() => void) | null = null;
-let currentMaterialProperties: MaterialProperties | null = null;
+interface InfoPanelProps {
+  data: PlanetData | StarData | { name: string };
+  materialProperties: MaterialProperties;
+  onPropertiesChange: React.Dispatch<React.SetStateAction<MaterialProperties>>;
+  onReset: () => void;
+}
 
-const InfoPanelContent = ({ data }: { data: PlanetData | StarData | { name: string } }) => {
-  const onPropertiesChange = currentOnPropertiesChange;
-  const onReset = currentOnReset;
-  const materialProperties = currentMaterialProperties;
-
-  if (!onPropertiesChange || !onReset || !materialProperties) return null;
+const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: InfoPanelProps) => {
 
   const handleSliderChange = (bodyName: string, propName: keyof MaterialProperties[string], value: number[]) => {
     onPropertiesChange(prevProps => ({
@@ -346,28 +343,6 @@ const InfoPanelContent = ({ data }: { data: PlanetData | StarData | { name: stri
       </div>
     </ScrollArea>
   );
-};
-
-interface InfoPanelProps {
-  data: PlanetData | StarData | { name: string };
-  materialProperties?: MaterialProperties;
-  onPropertiesChange?: React.Dispatch<React.SetStateAction<MaterialProperties>>;
-  onReset?: () => void;
-}
-
-const InfoPanel = ({ data, materialProperties, onPropertiesChange, onReset }: InfoPanelProps) => {
-  // This is a bridge component.
-  // We use a bit of a hack to get the state from CelestialSymphony into here
-  // without causing re-renders of the main three.js canvas.
-  useEffect(() => {
-    setInfoPanelContextComponent(() => InfoPanelContent);
-  }, []);
-
-  if (onPropertiesChange) currentOnPropertiesChange = onPropertiesChange;
-  if (onReset) currentOnReset = onReset;
-  if (materialProperties) currentMaterialProperties = materialProperties;
-
-  return <InfoPanelContent data={data} />;
 };
 
 

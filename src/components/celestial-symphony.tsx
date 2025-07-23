@@ -9,6 +9,9 @@ import { useCameraControl } from "./CelestialSymphony/hooks/useCameraControl";
 import { useInitializeScene } from "./CelestialSymphony/hooks/useInitializeScene";
 import { useUpdateBodyMaterials } from "./CelestialSymphony/hooks/useUpdateBodyMaterials";
 import { useBodyData } from "./CelestialSymphony/hooks/useBodyData";
+import InfoPanel from "./info-panel";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "./ui/sheet";
+
 
 export interface CelestialSymphonyProps {
   stars: StarData[];
@@ -30,7 +33,9 @@ export interface CelestialSymphonyProps {
   usePlainOrbits: boolean;
   showOrbits: boolean;
   fov: number;
-  selectedBody: PlanetData | StarData | { name: string } | null
+  selectedBody: PlanetData | StarData | { name: string } | null;
+  isInfoPanelOpen: boolean;
+  setInfoPanelOpen: (isOpen: boolean) => void;
 }
 
 const CelestialSymphony = (props: CelestialSymphonyProps) => {
@@ -110,40 +115,26 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
   return (
     <>
       <div ref={mountRef} className="absolute inset-0 w-full h-full" />
-      <div style={{ display: 'none' }}>
-        {/* Hidden component to pass state to InfoPanel without causing re-renders of the main component */}
-        <InfoPanelContext
-          selectedBody={props.selectedBody}
-          materialProperties={materialProperties}
-          onPropertiesChange={setMaterialProperties}
-          onReset={() => setMaterialProperties(props.initialMaterialProperties)}
-        />
-      </div>
+      <Sheet open={props.isInfoPanelOpen} onOpenChange={props.setInfoPanelOpen}>
+        <SheetContent side="left" className="w-[65vw] max-w-2xl p-0 bg-card/80 backdrop-blur-sm" withoutOverlay>
+            <SheetHeader className="sr-only">
+              <SheetTitle>Celestial Body Information</SheetTitle>
+              <SheetDescription>
+                Detailed information and material properties for the selected celestial body.
+              </SheetDescription>
+            </SheetHeader>
+            {props.selectedBody && (
+                <InfoPanel 
+                  data={props.selectedBody}
+                  materialProperties={materialProperties}
+                  onPropertiesChange={setMaterialProperties}
+                  onReset={() => setMaterialProperties(props.initialMaterialProperties)}
+                />
+            )}
+        </SheetContent>
+      </Sheet>
     </>
   );
 };
-
-// A simple context provider to pass props to the InfoPanel
-// This is a pattern to avoid passing state through a component that should not re-render
-let InfoPanelContextComponent: React.FC<any> = () => null;
-export const setInfoPanelContextComponent = (Component: React.FC<any>) => {
-  InfoPanelContextComponent = Component;
-}
-const InfoPanelContext: React.FC<{
-  selectedBody: any;
-  materialProperties: MaterialProperties;
-  onPropertiesChange: React.Dispatch<React.SetStateAction<MaterialProperties>>;
-  onReset: () => void;
-}> = ({ selectedBody, materialProperties, onPropertiesChange, onReset }) => {
-  return (
-    <InfoPanelContextComponent
-      data={selectedBody}
-      materialProperties={materialProperties}
-      onPropertiesChange={onPropertiesChange}
-      onReset={onReset}
-    />
-  );
-};
-
 
 export default CelestialSymphony;

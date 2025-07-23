@@ -7,7 +7,6 @@ import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, Chevrons
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import ColorHarmonizerPanel from "@/components/color-harmonizer-panel";
-import InfoPanel from "@/components/info-panel";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -518,23 +517,9 @@ export default function Home() {
         showOrbits={showOrbits}
         fov={fov}
         selectedBody={selectedBody}
+        isInfoPanelOpen={isInfoPanelOpen}
+        setInfoPanelOpen={setInfoPanelOpen}
       />
-
-      <Sheet open={isInfoPanelOpen} onOpenChange={setInfoPanelOpen}>
-        <SheetContent side="left" className="w-[65vw] max-w-2xl p-0 bg-card/80 backdrop-blur-sm" withoutOverlay>
-            <SheetHeader className="sr-only">
-              <SheetTitle>Celestial Body Information</SheetTitle>
-              <SheetDescription>
-                Detailed information and material properties for the selected celestial body.
-              </SheetDescription>
-            </SheetHeader>
-            {selectedBody && (
-                <InfoPanel 
-                  data={selectedBody}
-                />
-            )}
-        </SheetContent>
-      </Sheet>
 
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
         <div className="text-left">
