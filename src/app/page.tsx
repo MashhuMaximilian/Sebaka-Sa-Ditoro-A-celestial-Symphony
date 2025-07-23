@@ -210,13 +210,16 @@ export const initialMaterialProperties: MaterialProperties = {
   Gelidis: { albedo: 0.20, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 1, specularIntensity: 0.32, aoMapIntensity: 0.38 },
   Liminis: { albedo: 0.72, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 32, specularIntensity: 0.00, aoMapIntensity: 2.00 },
   Character: {
-    displacementScale: 0.02,
+    displacementScale: 0.05,
     noiseFrequency: 14.5,
     noiseSpeed: 1.1,
-    blobComplexity: 5,
+    blobComplexity: 4,
     opacity: 1.0,
     height: 0.01,
     albedo: 0.3,
+    iridescenceStrength: 14.3,
+    rimPower: 1.9,
+    colorSpeed: 2.2,
     specularIntensity: 0.8,
     shininess: 80,
   }

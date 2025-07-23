@@ -35,7 +35,6 @@ export class SphericalCharacterController {
     const material = new THREE.ShaderMaterial({
         uniforms: {
             ...THREE.UniformsUtils.clone(blobShader.uniforms),
-            colorTexture: { value: textureLoader.load('/maps/iridescentring.png') },
         },
         vertexShader: blobShader.vertexShader,
         fragmentShader: blobShader.fragmentShader,
@@ -94,7 +93,9 @@ export class SphericalCharacterController {
         uniforms.noiseSpeed.value = materialProps.noiseSpeed ?? 0.5;
         uniforms.blobComplexity.value = materialProps.blobComplexity ?? 4.0;
         uniforms.opacity.value = materialProps.opacity ?? 1.0;
-        uniforms.albedo.value = materialProps.albedo ?? 0.3;
+        uniforms.iridescenceStrength.value = materialProps.iridescenceStrength ?? 14.3;
+        uniforms.rimPower.value = materialProps.rimPower ?? 1.9;
+        uniforms.colorSpeed.value = materialProps.colorSpeed ?? 2.2;
         uniforms.specularIntensity.value = materialProps.specularIntensity ?? 0.8;
         uniforms.shininess.value = materialProps.shininess ?? 80;
       }

@@ -60,6 +60,8 @@ export interface MaterialProperties {
     blobComplexity?: number;
     opacity?: number;
     height?: number;
+    iridescenceStrength?: number;
+    rimPower?: number;
     colorSpeed?: number;
   };
 }

@@ -51,15 +51,17 @@ const InfoPanel = ({
       const charProps = materialProperties.Character;
       
       const characterSliders = [
-        { label: "Blob Deformation", prop: "displacementScale", min: 0, max: 0.5, step: 0.01, defaultValue: 0.02 },
+        { label: "Blob Deformation", prop: "displacementScale", min: 0, max: 0.5, step: 0.01, defaultValue: 0.05 },
         { label: "Noise Frequency", prop: "noiseFrequency", min: 0.1, max: 20, step: 0.1, defaultValue: 14.5 },
         { label: "Animation Speed", prop: "noiseSpeed", min: 0.1, max: 5, step: 0.1, defaultValue: 1.1 },
-        { label: "Blob Complexity (Layers)", prop: "blobComplexity", min: 1, max: 8, step: 1, defaultValue: 5 },
+        { label: "Blob Complexity (Layers)", prop: "blobComplexity", min: 1, max: 8, step: 1, defaultValue: 4 },
         { label: "Opacity", prop: "opacity", min: 0, max: 1, step: 0.01, defaultValue: 1.0 },
       ] as const;
 
       const lightingSliders = [
-          { label: "Albedo", prop: "albedo", min: 0, max: 2, step: 0.01, defaultValue: 0.3 },
+          { label: "Iridescence Strength", prop: "iridescenceStrength", min: 0, max: 30, step: 0.1, defaultValue: 14.3 },
+          { label: "Rim Power", prop: "rimPower", min: 0.1, max: 5, step: 0.1, defaultValue: 1.9 },
+          { label: "Color Speed", prop: "colorSpeed", min: 0, max: 10, step: 0.1, defaultValue: 2.2 },
           { label: "Specular Intensity", prop: "specularIntensity", min: 0, max: 2, step: 0.01, defaultValue: 0.8 },
           { label: "Shininess", prop: "shininess", min: 1, max: 256, step: 1, defaultValue: 80 },
       ] as const;
@@ -98,7 +100,7 @@ const InfoPanel = ({
           </AccordionItem>
           <AccordionItem value="item-2">
             <AccordionTrigger>
-              <h3 className="text-lg font-bold">Blob Lighting</h3>
+              <h3 className="text-lg font-bold">Blob Lighting & Color</h3>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-4 pt-2">

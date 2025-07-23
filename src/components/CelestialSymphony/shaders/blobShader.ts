@@ -1,6 +1,19 @@
 
 import * as THREE from 'three';
 
+const iridescentPalette = [
+  new THREE.Color("#ff99ff"), // Soft Magenta
+  new THREE.Color("#99ffff"), // Light Cyan
+  new THREE.Color("#ffff99"), // Pale Yellow
+  new THREE.Color("#ff9999"), // Light Coral
+  new THREE.Color("#99ff99"), // Mint Green
+  new THREE.Color("#9999ff"), // Periwinkle Blue
+  new THREE.Color("#ffd699"), // Peach
+  new THREE.Color("#d699ff"), // Lavender
+  new THREE.Color("#99ffd6"), // Seafoam
+  new THREE.Color("#ffc3e1")  // Blush Pink
+];
+
 // Simplex noise implementation from Ashima Arts
 const noiseGLSL = `
 vec3 mod289(vec3 x) {
@@ -98,22 +111,26 @@ export const blobShader = {
   uniforms: {
     // Blob deformation
     time: { value: 0 },
-    displacementScale: { value: 0.05 },
-    noiseFrequency: { value: 8.3 },
-    noiseSpeed: { value: 0.5 },
-    blobComplexity: { value: 4.0 }, 
+    displacementScale: { value: 0.3 },
+    noiseFrequency: { value: 4.0 },
+    noiseSpeed: { value: 0.8 },
+    blobComplexity: { value: 1.0 }, 
 
-    // Color & Material
-    colorTexture: { value: null as THREE.Texture | null },
+    // Color & Iridescence
+    baseColor: { value: new THREE.Color(0x8c52ff) },
     opacity: { value: 1.0 },
+    iridescenceStrength: { value: 14.3 },
+    rimPower: { value: 1.9 },
+    colorSpeed: { value: 2.2 },
+    colors: { value: iridescentPalette },
+    numColors: { value: iridescentPalette.length },
     
     // Lighting
     alphaStarPos: { value: new THREE.Vector3() },
     twilightStarPos: { value: new THREE.Vector3() },
     beaconStarPos: { value: new THREE.Vector3() },
-    albedo: { value: 0.3 },
-    specularIntensity: { value: 0.5 },
-    shininess: { value: 80.0 },
+    specularIntensity: { value: 1.0 },
+    shininess: { value: 30.0 },
   },
   vertexShader: `
     ${noiseGLSL}
@@ -127,7 +144,6 @@ export const blobShader = {
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying vec3 vViewDirection;
-    varying vec2 vUv;
 
     // Function to compute displaced position
     vec3 getDisplacedPosition(vec3 p, out vec3 displacedNormal) {
@@ -161,7 +177,6 @@ export const blobShader = {
     }
 
     void main() {
-      vUv = uv;
       vec3 displacedNormal;
       vec3 displacedPosition = getDisplacedPosition(position, displacedNormal);
 
@@ -175,20 +190,24 @@ export const blobShader = {
     }
   `,
   fragmentShader: `
+    uniform vec3 baseColor;
     uniform float opacity;
-    uniform sampler2D colorTexture;
+    uniform float iridescenceStrength;
+    uniform float rimPower;
+    uniform float colorSpeed;
+    uniform vec3 colors[10]; 
+    uniform int numColors;
+    uniform float time;
 
     uniform vec3 alphaStarPos;
     uniform vec3 twilightStarPos;
     uniform vec3 beaconStarPos;
-    uniform float albedo;
     uniform float specularIntensity;
     uniform float shininess;
 
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying vec3 vViewDirection;
-    varying vec2 vUv;
     
     // Function to calculate lighting contribution from a single star
     vec3 getStarContribution(vec3 starPos, vec3 normal, vec3 viewDir) {
@@ -211,9 +230,16 @@ export const blobShader = {
     void main() {
       vec3 normal = normalize(vNormal);
 
-      // --- Base Color from Texture ---
-      vec4 texColor = texture2D(colorTexture, vUv);
-      vec3 baseColor = texColor.rgb;
+      // --- Iridescence Calculation ---
+      float fresnel = 1.0 - max(dot(normal, vViewDirection), 0.0);
+      float rim = pow(fresnel, rimPower);
+      
+      float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.y + vWorldPosition.z) * 0.1 + time * colorSpeed, float(numColors));
+      int colorIndex1 = int(colorIndexFloat);
+      int colorIndex2 = (colorIndex1 + 1) % numColors;
+      vec3 iridescentColor = mix(colors[colorIndex1], colors[colorIndex2], fract(colorIndexFloat));
+      
+      vec3 color = mix(baseColor, iridescentColor, rim * iridescenceStrength);
 
       // --- Lighting Calculation ---
       vec3 lighting = vec3(0.0);
@@ -221,12 +247,12 @@ export const blobShader = {
       lighting += getStarContribution(twilightStarPos, normal, vViewDirection);
       lighting += getStarContribution(beaconStarPos, normal, vViewDirection);
       
-      vec3 litColor = baseColor * albedo * lighting;
+      vec3 litColor = color * lighting;
 
       // --- Final Combination ---
       vec3 finalColor = litColor;
 
-      gl_FragColor = vec4(finalColor, texColor.a * opacity);
+      gl_FragColor = vec4(finalColor, opacity);
     }
   `,
 };
