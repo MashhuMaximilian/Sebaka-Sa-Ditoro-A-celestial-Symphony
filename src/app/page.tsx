@@ -208,7 +208,7 @@ export const initialMaterialProperties: MaterialProperties = {
   Viridis: { 
     albedo: 3.04, normalScale: 0.75, displacementScale: 13.02, emissiveIntensity: 0, shininess: 5, specularIntensity: 1.41, aoMapIntensity: 0.00,
     noiseScale: 5.9, smokeDensity: 5.0,
-    lavaDotSize: 25.0, lavaDotSizeVariance: 15.0, lavaDensity: 0.7,
+    lavaDensity: 0.44, lavaDotSize: 41.9, lavaDotSizeVariance: 1.0,
   },
   Aetheris: { albedo: 4.51, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 19, specularIntensity: 0.00, aoMapIntensity: 0.00 },
   Gelidis: { albedo: 0.20, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 1, specularIntensity: 0.32, aoMapIntensity: 0.38 },

@@ -296,7 +296,6 @@ export const createBodyMesh = (
                 u_noiseScale: { value: initialProps.noiseScale ?? 5.9 },
                 u_smokeDensity: { value: initialProps.smokeDensity ?? 5.0 },
                 u_lavaDensity: { value: initialProps.lavaDensity ?? 0.7 },
-                u_lavaBrightness: { value: initialProps.lavaBrightness ?? 10.0 },
                 u_lavaDotSize: { value: initialProps.lavaDotSize ?? 25.0 },
                 u_lavaDotSizeVariance: { value: initialProps.lavaDotSizeVariance ?? 15.0 },
                 useNormalMap: { value: !!normalMap && initialProps.normalScale > 0 },

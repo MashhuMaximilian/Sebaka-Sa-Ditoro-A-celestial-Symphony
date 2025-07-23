@@ -288,7 +288,7 @@ export const volcanoShader = {
             float circle = 1.0 - smoothstep(dotRadius - 0.05, dotRadius, distToCenter);
             
             // Make the dot flash over time
-            float flash = (sin(u_time * 20.0 + cellRand * 100.0) + 1.0) * 0.5;
+            float flash = step(0.5, (sin(u_time * 20.0 + cellRand * 100.0) + 1.0) * 0.5);
 
             // Define colors
             vec3 red = vec3(1.0, 0.1, 0.0);

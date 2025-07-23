@@ -68,7 +68,6 @@ export interface MaterialProperties {
     noiseScale?: number;
     smokeDensity?: number;
     lavaDensity?: number;
-    lavaBrightness?: number;
     lavaDotSize?: number;
     lavaDotSizeVariance?: number;
   };
