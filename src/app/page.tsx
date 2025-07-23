@@ -255,8 +255,8 @@ export default function Home() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [fov, setFov] = useState(70);
 
-  const [characterLatitude, setCharacterLatitude] = useState(0);
-  const [characterLongitude, setCharacterLongitude] = useState(0);
+  const [characterLatitude, setCharacterLatitude] = useState(45);
+  const [characterLongitude, setCharacterLongitude] = useState(150);
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -316,8 +316,8 @@ export default function Home() {
           setIsInitialized(false);
           setViewFromSebaka(true);
           setFov(111);
-          setCharacterLatitude(0);
-          setCharacterLongitude(0);
+          setCharacterLatitude(45);
+          setCharacterLongitude(150);
           setActiveSebakaPanel(null);
           setSpeedMultiplier(2);
           setSpeedInput('2');
