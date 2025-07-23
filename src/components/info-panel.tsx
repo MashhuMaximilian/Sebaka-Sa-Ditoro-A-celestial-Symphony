@@ -319,6 +319,18 @@ const InfoPanel = ({
               <AccordionContent>
                 <div className="space-y-4 pt-2">
                   <div className="grid gap-2">
+                    <Label htmlFor="viridis-lava-density">Lava Density</Label>
+                    <div className="flex items-center gap-2">
+                      <Slider
+                        id="viridis-lava-density"
+                        min={0.1} max={1.5} step={0.01}
+                        value={[viridisProps.lavaDensity ?? 0.4]}
+                        onValueChange={(value) => handleMaterialSliderChange(data.name, 'lavaDensity', value)}
+                      />
+                      <span className="text-xs font-mono w-12 text-center">{(viridisProps.lavaDensity ?? 0.4).toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
                     <Label htmlFor="viridis-noise-scale">Noise Scale</Label>
                     <div className="flex items-center gap-2">
                       <Slider

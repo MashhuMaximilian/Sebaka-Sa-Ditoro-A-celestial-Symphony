@@ -95,6 +95,7 @@ export const volcanoShader = {
     u_smokeDensity: { value: 5.0 },
     u_lavaSoftnessMin: { value: 0.0 },
     u_lavaSoftnessMax: { value: 0.0 },
+    u_lavaDensity: { value: 0.4 },
 
     // Base texture
     planetTexture: { value: null as THREE.Texture | null },
@@ -129,8 +130,6 @@ export const volcanoShader = {
   },
 
   vertexShader: `
-    ${noiseGLSL}
-
     uniform bool useDisplacementMap;
     uniform sampler2D displacementMap;
     uniform float displacementScale;
@@ -142,6 +141,8 @@ export const volcanoShader = {
     varying mat3 vTBN;
     
     in vec4 tangent;
+
+    ${noiseGLSL}
 
     void main() {
       vUv = uv;
@@ -181,6 +182,7 @@ export const volcanoShader = {
     uniform float u_smokeDensity;
     uniform float u_lavaSoftnessMin;
     uniform float u_lavaSoftnessMax;
+    uniform float u_lavaDensity;
     uniform sampler2D planetTexture;
 
     // Standard lighting uniforms
@@ -257,20 +259,19 @@ export const volcanoShader = {
           if (u_time < phase1Midpoint) {
               animatedAlbedo = mix(albedo, 4.2, u_time / phase1Midpoint);
           } else {
-              animatedAlbedo = mix(4.2, 1.8, (u_time - phase1Midpoint) / phase1Midpoint);
+              animatedAlbedo = mix(4.2, albedo, (u_time - phase1Midpoint) / phase1Midpoint);
           }
       } else if (u_time < u_phaseSplit.y) { // Phase 2: Smoke Thickening
         float phase_time = (u_time - u_phaseSplit.x) / (u_phaseSplit.y - u_phaseSplit.x);
-        animatedAlbedo = mix(1.8, 0.9, pow(phase_time, 2.0));
+        animatedAlbedo = mix(albedo, 0.9, pow(phase_time, 2.0));
       } else { // Phase 3: Smoke Clearing
         float phase_time = (u_time - u_phaseSplit.y) / (u_phaseSplit.z - u_phaseSplit.y);
         animatedAlbedo = mix(0.9, albedo, phase_time);
       }
       
-      // --- Phase Blending & Eruption Effect ---
+      // --- Eruption Effect ---
       float eruptionFactor = 0.0;
       if (u_time < u_phaseSplit.x) {
-        // This factor fades the eruption in and out during phase 1
         float phase_progress = u_time / u_phaseSplit.x;
         eruptionFactor = sin(phase_progress * 3.14159); // Simple sine fade in/out
       }
@@ -281,16 +282,20 @@ export const volcanoShader = {
 
       // Dynamic noise for random eruptions
       float dynamic_noise = noise3D(vWorldPosition * 2.0 + u_time * 5.0);
-      // Combine static lava mask with dynamic noise
-      float combined_mask = v_lavaMask * dynamic_noise;
       
-      // Make the combined mask pulse
-      float pulse = (sin(u_time * 20.0) + 1.0) * 0.5; // Fast pulse
-      combined_mask *= pulse;
-
+      // Combine static lava mask with dynamic noise
+      float combined_mask = v_lavaMask + dynamic_noise;
+      
+      // Use the lavaDensity to control the threshold
+      float lava_glow = smoothstep(u_lavaDensity, u_lavaDensity + 0.1, combined_mask);
+      
+      // Make it pulse
+      float pulse = (sin(u_time * 20.0) + 1.0) * 0.5;
+      lava_glow *= pulse;
+      
       // Apply softness and create core
-      float softLavaMask = smoothstep(u_lavaSoftnessMin, u_lavaSoftnessMax, combined_mask);
-      float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, combined_mask);
+      float softLavaMask = smoothstep(u_lavaSoftnessMin, u_lavaSoftnessMax, lava_glow);
+      float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, lava_glow);
       vec3 lavaColor = mix(lavaBaseColor, hotWhite, hotCoreMask);
       
       vec3 lavaEmission = lavaColor * softLavaMask * eruptionFactor * 5.0;

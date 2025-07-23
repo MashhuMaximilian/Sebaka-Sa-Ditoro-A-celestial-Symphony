@@ -91,6 +91,9 @@ const updateMaterialProperties = (mesh: THREE.Mesh | THREE.Object3D, props: Mate
     if (uniforms.u_lavaSoftnessMax && props.lavaSoftnessMax !== undefined) {
       uniforms.u_lavaSoftnessMax.value = props.lavaSoftnessMax;
     }
+    if (uniforms.u_lavaDensity && props.lavaDensity !== undefined) {
+      uniforms.u_lavaDensity.value = props.lavaDensity;
+    }
   }
 };
 

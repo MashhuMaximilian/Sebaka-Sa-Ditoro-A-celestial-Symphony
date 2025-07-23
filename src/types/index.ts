@@ -69,5 +69,6 @@ export interface MaterialProperties {
     smokeDensity?: number;
     lavaSoftnessMin?: number;
     lavaSoftnessMax?: number;
+    lavaDensity?: number;
   };
 }
