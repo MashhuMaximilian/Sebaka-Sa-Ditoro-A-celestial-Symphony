@@ -120,23 +120,17 @@ export const blobShader = {
     // Iridescence & Color
     iridescenceStrength: { value: 8.0 },
     opacity: { value: 1.0 },
-    baseColor: { value: new THREE.Color(0x8c52ff) },
+    baseColor: { value: new THREE.Color(0xffffff) }, // Base color for fresnel mix
     colors: { value: iridescentPalette },
     numColors: { value: iridescentPalette.length },
     colorSpeed: { value: 0.5 },
     rimPower: { value: 4.0 },
     
-    // Lighting calculation
+    // Lighting calculation (will be used for specular highlights on top of iridescence)
     alphaStarPos: { value: new THREE.Vector3() },
     twilightStarPos: { value: new THREE.Vector3() },
     beaconStarPos: { value: new THREE.Vector3() },
-    alphaColor: { value: new THREE.Color(0xfff8e7) },
-    twilightColor: { value: new THREE.Color(0xfff0d4) },
-    beaconColor: { value: new THREE.Color(0xaaccff) },
-    alphaIntensity: { value: 1.8 },
-    twilightIntensity: { value: 1.2 },
-    beaconIntensity: { value: 150.0 },
-    ambientLevel: { value: 0.05 },
+    specularIntensity: { value: 1.0 },
     shininess: { value: 30.0 },
   },
   vertexShader: `
@@ -210,50 +204,29 @@ export const blobShader = {
     uniform vec3 alphaStarPos;
     uniform vec3 twilightStarPos;
     uniform vec3 beaconStarPos;
-    uniform vec3 alphaColor;
-    uniform vec3 twilightColor;
-    uniform vec3 beaconColor;
-    uniform float alphaIntensity;
-    uniform float twilightIntensity;
-    uniform float beaconIntensity;
-    uniform float ambientLevel;
+    uniform float specularIntensity;
     uniform float shininess;
 
     varying vec3 vWorldPosition;
     varying vec3 vNormal;
     varying vec3 vViewDirection;
 
-    // Function to calculate lighting contribution from a single star
-    vec3 getStarContribution(vec3 starPos, vec3 starColor, float starIntensity, vec3 normal, vec3 viewDir) {
+    // Function to calculate specular highlights from a single star
+    vec3 getSpecularContribution(vec3 starPos, vec3 starColor, vec3 normal, vec3 viewDir) {
         vec3 lightDir = normalize(starPos - vWorldPosition);
-        float dist = length(starPos - vWorldPosition);
-        // Attenuation for the character should be gentle to keep it lit
-        float attenuation = 1.0 / (1.0 + dist * dist * 0.0001); 
         
-        // Diffuse
-        float diff = max(dot(normal, lightDir), 0.0);
-        vec3 diffuse = starColor * diff * starIntensity;
-        
-        // Softer Specular
+        // Specular
         vec3 halfwayDir = normalize(lightDir + viewDir);
         float specAngle = max(dot(normal, halfwayDir), 0.0);
-        float spec = pow(specAngle, shininess * 0.5); // Softer shininess
-        vec3 specular = starColor * spec * starIntensity * 0.5; // Reduced intensity
+        float spec = pow(specAngle, shininess);
         
-        return (diffuse + specular) * attenuation;
+        return starColor * spec * specularIntensity;
     }
 
     void main() {
       vec3 normal = normalize(vNormal);
 
-      // --- 3D LIGHTING CALCULATION ---
-      vec3 lighting = vec3(0.0);
-      lighting += getStarContribution(alphaStarPos, alphaColor, alphaIntensity, normal, vViewDirection);
-      lighting += getStarContribution(twilightStarPos, twilightColor, twilightIntensity, normal, vViewDirection);
-      lighting += getStarContribution(beaconStarPos, beaconColor, beaconIntensity, normal, vViewDirection);
-      vec3 ambient = vec3(ambientLevel);
-
-      // Fresnel for rim lighting and iridescence mask
+      // --- Iridescence Calculation (like the rings) ---
       float fresnel = 1.0 - max(0.0, dot(normal, vViewDirection));
       float rim = pow(fresnel, rimPower);
 
@@ -263,12 +236,19 @@ export const blobShader = {
       int colorIndex2 = (colorIndex1 + 1) % numColors;
       vec3 iridescentColor = mix(colors[colorIndex1], colors[colorIndex2], fract(colorIndexFloat));
 
-      // Final color composition
-      // Start with the base color, apply lighting
-      vec3 litColor = baseColor * (lighting + ambient);
-      // Mix in the iridescence based on the fresnel effect
-      vec3 finalColor = mix(litColor, iridescentColor * (lighting + ambient + 0.5), fresnel * iridescenceStrength);
-      // Add the rim highlight on top, also lit
+      // Mix the base color (white) with the iridescent color based on the fresnel effect
+      vec3 finalColor = mix(baseColor, iridescentColor, fresnel * iridescenceStrength);
+      
+      // --- Additive Specular Highlights ---
+      vec3 specular = vec3(0.0);
+      specular += getSpecularContribution(alphaStarPos, vec3(1.0, 0.9, 0.8), normal, vViewDirection);
+      specular += getSpecularContribution(twilightStarPos, vec3(1.0, 0.8, 0.7), normal, vViewDirection);
+      specular += getSpecularContribution(beaconStarPos, vec3(0.8, 0.9, 1.0), normal, vViewDirection);
+
+      // Add specular on top of the iridescent color
+      finalColor += specular;
+      
+      // Add the rim highlight
       finalColor += iridescentColor * rim * 2.0;
 
       gl_FragColor = vec4(finalColor, opacity);

@@ -59,6 +59,8 @@ const InfoPanel = ({
         { label: "Rim Power", prop: "rimPower", min: 0, max: 10, step: 0.1, defaultValue: 1.9 },
         { label: "Color Speed", prop: "colorSpeed", min: 0, max: 5, step: 0.1, defaultValue: 2.2 },
         { label: "Opacity", prop: "opacity", min: 0, max: 1, step: 0.01, defaultValue: 1.0 },
+        { label: "Specular Intensity", prop: "specularIntensity", min: 0, max: 5, step: 0.01, defaultValue: 1.0 },
+        { label: "Shininess", prop: "shininess", min: 1, max: 256, step: 1, defaultValue: 30 },
       ] as const;
 
       const positionSliders = [
