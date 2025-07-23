@@ -53,11 +53,10 @@ const InfoPanel = ({
       }
     }));
   };
-
-  const renderStandardMaterialSettings = () => {
-    const bodyProps = materialProperties[data.name];
+  const renderStandardMaterialSettings = (bodyName: string) => {
+    const bodyProps = materialProperties[bodyName];
     if (!bodyProps) return null;
-    const bodyTexturePaths = texturePaths[data.name];
+    const bodyTexturePaths = texturePaths[bodyName];
     const hasNormalMap = !!bodyTexturePaths?.normal;
     const hasDisplacementMap = !!bodyTexturePaths?.displacement;
     const hasSpecularMap = !!bodyTexturePaths?.specular;
@@ -73,15 +72,15 @@ const InfoPanel = ({
                 <div className="space-y-4 pt-2">
                 {hasNormalMap && (
                     <div className="grid gap-2">
-                    <Label htmlFor={`${data.name}-normal`}>Normal Map Strength</Label>
+                    <Label htmlFor={`${bodyName}-normal`}>Normal Map Strength</Label>
                     <div className="flex items-center gap-2">
                         <Slider
-                        id={`${data.name}-normal`}
+                        id={`${bodyName}-normal`}
                         min={0}
                         max={15}
                         step={0.01}
                         value={[bodyProps.normalScale ?? 1.0]}
-                        onValueChange={(value) => handleMaterialSliderChange(data.name, 'normalScale', value)}
+                        onValueChange={(value) => handleMaterialSliderChange(bodyName, 'normalScale', value)}
                         />
                         <span className="text-xs font-mono w-12 text-center">{(bodyProps.normalScale ?? 1.0).toFixed(2)}</span>
                     </div>
@@ -89,47 +88,47 @@ const InfoPanel = ({
                 )}
                 {hasDisplacementMap && (
                     <div className="grid gap-2">
-                    <Label htmlFor={`${data.name}-displacement`}>Displacement Scale</Label>
+                    <Label htmlFor={`${bodyName}-displacement`}>Displacement Scale</Label>
                     <div className="flex items-center gap-2">
                         <Slider
-                            id={`${data.name}-displacement`}
+                            id={`${bodyName}-displacement`}
                             min={0}
                             max={25}
                             step={0.01}
                             value={[bodyProps.displacementScale ?? 0]}
-                            onValueChange={(value) => handleMaterialSliderChange(data.name, 'displacementScale', value)}
+                            onValueChange={(value) => handleMaterialSliderChange(bodyName, 'displacementScale', value)}
                         />
                         <span className="text-xs font-mono w-12 text-center">{(bodyProps.displacementScale ?? 0).toFixed(2)}</span>
                     </div>
                     </div>
                 )}
-                {data.type === 'Planet' && (
+                {('type' in data && data.type === 'Planet') && (
                     <div className="grid gap-2">
-                        <Label htmlFor={`${data.name}-albedo`}>Albedo (Brightness)</Label>
+                        <Label htmlFor={`${bodyName}-albedo`}>Albedo (Brightness)</Label>
                         <div className="flex items-center gap-2">
                             <Slider
-                                id={`${data.name}-albedo`}
+                                id={`${bodyName}-albedo`}
                                 min={0}
                                 max={5}
                                 step={0.01}
                                 value={[bodyProps.albedo ?? 1]}
-                                onValueChange={(value) => handleMaterialSliderChange(data.name, 'albedo', value)}
+                                onValueChange={(value) => handleMaterialSliderChange(bodyName, 'albedo', value)}
                             />
                             <span className="text-xs font-mono w-12 text-center">{(bodyProps.albedo ?? 1).toFixed(2)}</span>
                         </div>
                     </div>
                 )}
-                {data.type === 'Star' && (
+                {('type' in data && data.type === 'Star') && (
                     <div className="grid gap-2">
-                    <Label htmlFor={`${data.name}-emissive`}>Emissive Intensity</Label>
+                    <Label htmlFor={`${bodyName}-emissive`}>Emissive Intensity</Label>
                     <div className="flex items-center gap-2">
                         <Slider
-                        id={`${data.name}-emissive`}
+                        id={`${bodyName}-emissive`}
                         min={0}
                         max={20}
                         step={0.1}
                         value={[bodyProps.emissiveIntensity ?? 1]}
-                        onValueChange={(value) => handleMaterialSliderChange(data.name, 'emissiveIntensity', value)}
+                        onValueChange={(value) => handleMaterialSliderChange(bodyName, 'emissiveIntensity', value)}
                         />
                         <span className="text-xs font-mono w-12 text-center">{(bodyProps.emissiveIntensity ?? 1).toFixed(1)}</span>
                     </div>
@@ -138,29 +137,29 @@ const InfoPanel = ({
                 {hasSpecularMap && (
                     <>
                     <div className="grid gap-2">
-                        <Label htmlFor={`${data.name}-specular`}>Specular Intensity</Label>
+                        <Label htmlFor={`${bodyName}-specular`}>Specular Intensity</Label>
                         <div className="flex items-center gap-2">
                         <Slider
-                            id={`${data.name}-specular`}
+                            id={`${bodyName}-specular`}
                             min={0}
                             max={5}
                             step={0.01}
                             value={[bodyProps.specularIntensity ?? 0]}
-                            onValueChange={(value) => handleMaterialSliderChange(data.name, 'specularIntensity', value)}
+                            onValueChange={(value) => handleMaterialSliderChange(bodyName, 'specularIntensity', value)}
                         />
                         <span className="text-xs font-mono w-12 text-center">{(bodyProps.specularIntensity ?? 0).toFixed(2)}</span>
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor={`${data.name}-shininess`}>Shininess</Label>
+                        <Label htmlFor={`${bodyName}-shininess`}>Shininess</Label>
                         <div className="flex items-center gap-2">
                         <Slider
-                            id={`${data.name}-shininess`}
+                            id={`${bodyName}-shininess`}
                             min={1}
                             max={256}
                             step={1}
                             value={[bodyProps.shininess ?? 1]}
-                            onValueChange={(value) => handleMaterialSliderChange(data.name, 'shininess', value)}
+                            onValueChange={(value) => handleMaterialSliderChange(bodyName, 'shininess', value)}
                         />
                         <span className="text-xs font-mono w-12 text-center">{(bodyProps.shininess ?? 1).toFixed(0)}</span>
                         </div>
@@ -169,15 +168,15 @@ const InfoPanel = ({
                 )}
                 {hasAoMap && (
                     <div className="grid gap-2">
-                    <Label htmlFor={`${data.name}-ao`}>Ambient Occlusion Intensity</Label>
+                    <Label htmlFor={`${bodyName}-ao`}>Ambient Occlusion Intensity</Label>
                     <div className="flex items-center gap-2">
                         <Slider
-                        id={`${data.name}-ao`}
+                        id={`${bodyName}-ao`}
                         min={0}
                         max={2}
                         step={0.01}
                         value={[bodyProps.aoMapIntensity ?? 0]}
-                        onValueChange={(value) => handleMaterialSliderChange(data.name, 'aoMapIntensity', value)}
+                        onValueChange={(value) => handleMaterialSliderChange(bodyName, 'aoMapIntensity', value)}
                         />
                         <span className="text-xs font-mono w-12 text-center">{(bodyProps.aoMapIntensity ?? 0).toFixed(2)}</span>
                     </div>
@@ -360,12 +359,12 @@ const InfoPanel = ({
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-          {renderStandardMaterialSettings()}
+          {renderStandardMaterialSettings(data.name)}
         </>
       )
     }
 
-    return renderStandardMaterialSettings();
+    return renderStandardMaterialSettings(data.name);
   }
   
   return (

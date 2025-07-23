@@ -286,6 +286,7 @@ export const createBodyMesh = (
                 displacementMap: { value: displacementMap },
                 specularMap: { value: specularMap },
                 aoMap: { value: aoMap },
+                u_phaseSplit: { value: new THREE.Vector3(0.33, 0.66, 1.0) },
                 // Directly initialize with passed props
                 albedo: { value: initialProps.albedo ?? 1.0 },
                 normalScale: { value: new THREE.Vector2(initialProps.normalScale ?? 1.0, initialProps.normalScale ?? 1.0) },

@@ -176,10 +176,9 @@ export const volcanoShader = {
       float slow_noise = noise3D(position * 0.5 + u_time * 0.2);
       v_lavaMask = pow(base_noise, 4.0) + pow(slow_noise, 2.0);
       
-      vNormal = normalize(mat3(modelMatrix) * normal);
-      vec4 worldPosition4 = modelMatrix * vec4(displacedPos, 1.0);
-      vWorldPosition = worldPosition4.xyz;
-      gl_Position = projectionMatrix * viewMatrix * worldPosition4;
+      vNormal = N; // Pass object-space normal
+      vWorldPosition = (modelMatrix * vec4(displacedPos, 1.0)).xyz;
+      gl_Position = projectionMatrix * viewMatrix * vec4(vWorldPosition, 1.0);
     }
   `,
 
