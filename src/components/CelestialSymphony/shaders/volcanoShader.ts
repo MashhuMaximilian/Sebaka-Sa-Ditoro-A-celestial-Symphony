@@ -91,11 +91,10 @@ export const volcanoShader = {
     u_phaseSplit: { value: new THREE.Vector3(0.33, 0.66, 1.0) },
 
     // Lava and smoke properties
-    u_lavaColor: { value: new THREE.Color(0xFF4500) },
-    u_noiseScale: { value: 3.5 },
-    u_smokeDensity: { value: 1.5 },
-    u_lavaSoftnessMin: { value: 0.4 },
-    u_lavaSoftnessMax: { value: 0.8 },
+    u_noiseScale: { value: 5.9 },
+    u_smokeDensity: { value: 5.0 },
+    u_lavaSoftnessMin: { value: 0.11 },
+    u_lavaSoftnessMax: { value: 0.80 },
 
     // Base texture
     planetTexture: { value: null as THREE.Texture | null },
@@ -111,7 +110,7 @@ export const volcanoShader = {
     twilightIntensity: { value: 0.7 },
     beaconIntensity: { value: 200.0 },
     ambientLevel: { value: 0.02 },
-    albedo: { value: 1.0 },
+    albedo: { value: 3.04 }, // Base albedo
 
     // Maps
     useNormalMap: { value: false },
@@ -187,7 +186,6 @@ export const volcanoShader = {
 
     uniform float u_time;
     uniform vec3 u_phaseSplit;
-    uniform vec3 u_lavaColor;
     uniform float u_noiseScale;
     uniform float u_smokeDensity;
     uniform float u_lavaSoftnessMin;
@@ -278,9 +276,14 @@ export const volcanoShader = {
 
       // Phase 1: Eruption (fades out at the end of its phase)
       float eruptionFactor = 1.0 - smoothstep(u_phaseSplit.x - transitionWidth, u_phaseSplit.x, u_time);
-      // Soften the lava mask for smoother edges
+      
+      // --- Lava Color Calculation ---
+      vec3 magentaRed = vec3(0.8, 0.1, 0.3);
+      vec3 hotWhite = vec3(1.0, 1.0, 0.8);
       float softLavaMask = smoothstep(u_lavaSoftnessMin, u_lavaSoftnessMax, v_lavaMask);
-      vec3 lavaEmission = u_lavaColor * softLavaMask * eruptionFactor;
+      float hotCoreMask = smoothstep(u_lavaSoftnessMax, u_lavaSoftnessMax + 0.1, v_lavaMask); // A sharper step for the core
+      vec3 lavaColor = mix(magentaRed, hotWhite, hotCoreMask);
+      vec3 lavaEmission = lavaColor * softLavaMask * eruptionFactor;
       
       // Phase 2: Smoke (fades in, then fades out)
       float smokeFadeIn = smoothstep(u_phaseSplit.x - transitionWidth, u_phaseSplit.x, u_time);
