@@ -114,7 +114,7 @@ export const blobShader = {
     displacementScale: { value: 0.05 },
     noiseFrequency: { value: 8.3 },
     noiseSpeed: { value: 0.5 },
-    blobComplexity: { value: 4.0 }, // Note: now a float for the loop condition
+    blobComplexity: { value: 4.0 }, 
 
     // Iridescence & Color - matching spiderStrandShader
     iridescenceStrength: { value: 14.3 },
@@ -122,7 +122,6 @@ export const blobShader = {
     baseColor: { value: new THREE.Color(0xffffff) },
     colors: { value: iridescentPalette },
     numColors: { value: iridescentPalette.length },
-    colorSpeed: { value: 2.2 },
     rimPower: { value: 1.9 },
   },
   vertexShader: `
@@ -183,13 +182,11 @@ export const blobShader = {
     }
   `,
   fragmentShader: `
-    uniform float time;
     uniform float iridescenceStrength;
     uniform float opacity;
     uniform vec3 baseColor;
     uniform vec3 colors[10];
     uniform int numColors;
-    uniform float colorSpeed;
     uniform float rimPower;
 
     varying vec3 vWorldPosition;
@@ -200,11 +197,11 @@ export const blobShader = {
       // Use the corrected normal from the vertex shader
       vec3 normal = normalize(vNormal);
 
-      // --- Iridescence Calculation (EXACTLY like the rings/orbits) ---
+      // --- Iridescence Calculation (EXACTLY like the rings/orbits, but without time) ---
       float fresnel = pow(1.0 - max(0.0, dot(normal, vViewDirection)), rimPower);
       
-      // Iridescent color cycling based on world position and time
-      float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.y) * 0.1 + time * colorSpeed, float(numColors));
+      // Iridescent color is now stable, based on world position
+      float colorIndexFloat = mod((vWorldPosition.x + vWorldPosition.y) * 0.1, float(numColors));
       int colorIndex1 = int(colorIndexFloat);
       int colorIndex2 = (colorIndex1 + 1) % numColors;
       vec3 iridescentColor = mix(colors[colorIndex1], colors[colorIndex2], fract(colorIndexFloat));
@@ -212,14 +209,13 @@ export const blobShader = {
       // Mix the base color (white) with the iridescent color based on the fresnel effect
       vec3 finalColor = mix(baseColor, iridescentColor, fresnel * iridescenceStrength);
       
-      // New alpha calculation:
-      // The core is opaque, and the fresnel effect adds a semi-transparent glow at the edges.
+      // Alpha calculation: The core is opaque, and the fresnel effect adds a semi-transparent glow at the edges.
       // Opacity slider controls the overall transparency.
       float fresnelAlpha = pow(1.0 - max(0.0, dot(normal, vViewDirection)), rimPower * 0.5);
-      float finalAlpha = opacity * (1.0 - fresnelAlpha * (1.0 - 0.2)); // 0.2 is the base glow opacity
-      finalAlpha = max(finalAlpha, fresnelAlpha * opacity); // Ensure edges are at least as visible as fresnel dictates
+      float finalAlpha = opacity * (1.0 - fresnelAlpha * (1.0 - 0.2)); 
+      finalAlpha = max(finalAlpha, fresnelAlpha * opacity);
 
-      // For full opacity, we ensure the core is solid.
+      // When opacity is 1.0, we ensure the core is solid.
       gl_FragColor = vec4(finalColor, opacity < 1.0 ? finalAlpha : 1.0);
     }
   `,

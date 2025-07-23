@@ -77,7 +77,6 @@ export class SphericalCharacterController {
         uniforms.blobComplexity.value = materialProps.blobComplexity ?? 4.0;
         uniforms.iridescenceStrength.value = materialProps.iridescenceStrength ?? 14.3;
         uniforms.rimPower.value = materialProps.rimPower ?? 1.9;
-        uniforms.colorSpeed.value = materialProps.colorSpeed ?? 2.2;
         uniforms.opacity.value = materialProps.opacity ?? 1.0;
       }
     }

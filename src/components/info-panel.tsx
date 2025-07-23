@@ -57,7 +57,6 @@ const InfoPanel = ({
         { label: "Blob Complexity (Layers)", prop: "blobComplexity", min: 1, max: 8, step: 1, defaultValue: 5 },
         { label: "Iridescence Strength", prop: "iridescenceStrength", min: 0, max: 20, step: 0.1, defaultValue: 18.9 },
         { label: "Rim Power", prop: "rimPower", min: 0, max: 10, step: 0.1, defaultValue: 9.1 },
-        { label: "Color Speed", prop: "colorSpeed", min: 0, max: 5, step: 0.1, defaultValue: 3.8 },
         { label: "Opacity", prop: "opacity", min: 0, max: 1, step: 0.01, defaultValue: 1.0 },
       ] as const;
 
