@@ -70,7 +70,7 @@ export const texturePaths: { [key: string]: { [key: string]: string | undefined 
         normal: '/maps/Beacon_normal.png',
         specular: '/maps/Beacon_specular.png',
     },
-    Rutilus: {
+    Rutilis: {
         base: '/maps/RutiliusTexture.png',
         ambient: '/maps/RutiliusTexture_ambient.png',
         displacement: '/maps/RutiliusTexture_displacement.png',

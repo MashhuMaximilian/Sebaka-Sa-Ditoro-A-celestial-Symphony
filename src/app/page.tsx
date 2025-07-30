@@ -77,7 +77,7 @@ const initialStars: StarData[] = [
 
 const initialPlanets: PlanetData[] = [
   {
-      name: "Rutilus", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitPeriodDays: 169, eccentric: true, eccentricity: 0.1,
+      name: "Rutilis", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitPeriodDays: 169, eccentric: true, eccentricity: 0.1,
       type: 'Planet', classification: 'Terrestrial',
       orbitalRole: 'Innermost planet orbiting Alpha-Twilight binary', orbitalPeriod: '0.522 Sebakan years (169 days)', orbitalDistance: '0.7 AU (periapsis 0.63 AU, apoapsis 0.77 AU)',
       rotation: '40 days', axialTilt: '10°', moons: 'None',
@@ -202,7 +202,7 @@ export const initialMaterialProperties: MaterialProperties = {
   Alpha: { albedo: 1.0, normalScale: 1.00, displacementScale: 0.60, emissiveIntensity: 18.5, shininess: 10, specularIntensity: 0.00, aoMapIntensity: 1.82 },
   Twilight: { albedo: 1.0, normalScale: 1.00, displacementScale: 0.20, emissiveIntensity: 15.5, shininess: 10, specularIntensity: 0.00, aoMapIntensity: 0.88 },
   Beacon: { albedo: 1.0, normalScale: 2.11, displacementScale: 5.27, emissiveIntensity: 20.0, shininess: 1, specularIntensity: 0.00, aoMapIntensity: 0.00 },
-  Rutilus: { albedo: 3.08, normalScale: 0.00, displacementScale: 3.20, emissiveIntensity: 0, shininess: 21, specularIntensity: 0.00, aoMapIntensity: 2.00 },
+  Rutilis: { albedo: 3.08, normalScale: 0.00, displacementScale: 3.20, emissiveIntensity: 0, shininess: 21, specularIntensity: 0.00, aoMapIntensity: 2.00 },
   Sebaka: { albedo: 1.96, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 36, specularIntensity: 0.00, aoMapIntensity: 1.25 },
   Spectris: { albedo: 1.59, normalScale: 0.00, displacementScale: 0.00, emissiveIntensity: 0, shininess: 1, specularIntensity: 0.46, aoMapIntensity: 0.17 },
   Viridis: { 
