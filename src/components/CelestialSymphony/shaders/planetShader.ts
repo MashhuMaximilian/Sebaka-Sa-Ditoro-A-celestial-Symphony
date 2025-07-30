@@ -12,7 +12,7 @@ export const planetShader = {
     beaconColor: { value: new THREE.Color(0xaaccff) },
     alphaIntensity: { value: 1.0 },
     twilightIntensity: { value: 0.7 },
-    beaconIntensity: { value: 200.0 },
+    beaconIntensity: { value: 1200.0 },
     emissiveIntensity: { value: 0.0 },
     
     // Planet properties
