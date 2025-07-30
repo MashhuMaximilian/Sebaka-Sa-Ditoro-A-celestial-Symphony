@@ -63,6 +63,8 @@ export interface MaterialProperties {
     iridescenceStrength?: number;
     rimPower?: number;
     colorSpeed?: number;
+    latitude?: number;
+    longitude?: number;
 
     // Viridis Volcano properties
     noiseScale?: number;
@@ -70,5 +72,6 @@ export interface MaterialProperties {
     lavaDensity?: number;
     lavaDotSize?: number;
     lavaDotSizeVariance?: number;
+    lavaBrightness?: number;
   };
 }

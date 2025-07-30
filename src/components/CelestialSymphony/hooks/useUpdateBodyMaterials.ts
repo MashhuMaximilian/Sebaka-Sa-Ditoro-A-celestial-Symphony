@@ -43,7 +43,7 @@ const updateMaterialProperties = (mesh: THREE.Mesh | THREE.Object3D, props: Mate
     }
 
     if (uniforms.useAoMap && uniforms.aoMap.value) {
-        uniforms.useAoMap.value = props.aoMapIntensity > 0;
+        uniforms.useAoMap.value = (props.aoMapIntensity ?? 0) > 0;
     }
     if (uniforms.aoMapIntensity && props.aoMapIntensity !== undefined && uniforms.aoMapIntensity.value !== props.aoMapIntensity) {
         uniforms.aoMapIntensity.value = props.aoMapIntensity;
@@ -87,9 +87,6 @@ const updateMaterialProperties = (mesh: THREE.Mesh | THREE.Object3D, props: Mate
     }
     if (uniforms.u_lavaDensity && props.lavaDensity !== undefined) {
         uniforms.u_lavaDensity.value = props.lavaDensity;
-    }
-    if (uniforms.u_lavaBrightness && props.lavaBrightness !== undefined) {
-        uniforms.u_lavaBrightness.value = props.lavaBrightness;
     }
     if (uniforms.u_lavaDotSize && props.lavaDotSize !== undefined) {
         uniforms.u_lavaDotSize.value = props.lavaDotSize;

@@ -207,8 +207,8 @@ const InfoPanel = ({
       ] as const;
 
       const positionSliders = [
-          { label: "Latitude", prop: "latitude", min: -90, max: 90, step: 1, defaultValue: 0 },
-          { label: "Longitude", prop: "longitude", min: 0, max: 360, step: 1, defaultValue: 0 },
+          { label: "Latitude", prop: "latitude", min: -90, max: 90, step: 1, defaultValue: 45 },
+          { label: "Longitude", prop: "longitude", min: 0, max: 360, step: 1, defaultValue: 150 },
           { label: "Height From Surface", prop: "height", min: 0.01, max: 0.5, step: 0.01, defaultValue: 0.05 },
       ] as const;
       
