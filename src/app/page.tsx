@@ -531,19 +531,11 @@ export default function Home() {
           </p>
         </div>
         <div className="flex items-center gap-2 z-50">
-            <a
-              className="bmc-button"
-              href="https://www.buymeacoffee.com/mashhul"
-              data-name="bmc-button"
-              data-slug="mashhul"
-              data-color="#ea1757"
-              data-emoji="🎲"
-              data-font="Lato"
-              data-text="Buy me a dice set"
-              data-outline-color="#ffffff"
-              data-font-color="#ffffff"
-              data-coffee-color="#FFDD00"
-            ></a>
+            <a href="https://www.buymeacoffee.com/mashhul" target="_blank" rel="noopener noreferrer">
+              <Button style={{backgroundColor: '#ea1757', color: '#ffffff'}}>
+                🎲 Buy me a dice set
+              </Button>
+            </a>
             <DropdownMenu>
                 <TooltipProvider>
                     <Tooltip>
