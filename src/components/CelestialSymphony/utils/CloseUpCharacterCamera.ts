@@ -97,10 +97,13 @@ export class CloseUpCharacterCamera {
 
   private applyZoom(delta: number) {
     const zoomSpeed = 0.003;
+    const minZoom = this.isFreeCamera ? 0.01 : 0.05;
+    const maxZoom = this.isFreeCamera ? this.planetRadius * 2 : this.planetRadius * 0.2;
+    
     this.distance = THREE.MathUtils.clamp(
       this.distance + delta * zoomSpeed,
-      0.05,
-      this.planetRadius * 0.2,
+      minZoom,
+      maxZoom
     );
   }
 
@@ -179,21 +182,20 @@ export class CloseUpCharacterCamera {
     
     // Position camera at character's eyes
     const eyePosition = characterWorldPos.clone().add(new THREE.Vector3(0, eyeHeight, 0).applyQuaternion(this.character.quaternion));
-    this.camera.position.copy(eyePosition);
+    
+    const charUp = characterWorldPos.clone().sub(planetContainerWorldPos).normalize();
+    const orientationQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), charUp);
 
     if (this.isFreeCamera) {
       // Free camera: look around freely from the character's position
-      const lookDirection = new THREE.Vector3(0, 0, -1);
+      const lookDirection = new THREE.Vector3(0, 0, 1);
       lookDirection.applyAxisAngle(new THREE.Vector3(1, 0, 0), this.verticalAngle);
       lookDirection.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.horizontalAngle);
-      
-      // Get the character's "up" vector relative to the planet center
-      const charUp = characterWorldPos.clone().sub(planetContainerWorldPos).normalize();
-      
-      // Create a rotation quaternion from the "up" vector to correctly orient the camera's rotation space
-      const orientationQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), charUp);
       lookDirection.applyQuaternion(orientationQuat);
 
+      const cameraOffset = lookDirection.clone().multiplyScalar(this.distance);
+      this.camera.position.copy(eyePosition).sub(cameraOffset);
+      
       const lookAtPoint = eyePosition.clone().add(lookDirection);
       this.camera.lookAt(lookAtPoint);
       this.camera.up.copy(charUp);
