@@ -9,6 +9,9 @@ export default {
   ],
   theme: {
     extend: {
+      minHeight: {
+        svh: '100svh',
+      },
       fontFamily: {
         body: ['Inter', 'sans-serif'],
         headline: ['"Space Grotesk"', 'sans-serif'],
