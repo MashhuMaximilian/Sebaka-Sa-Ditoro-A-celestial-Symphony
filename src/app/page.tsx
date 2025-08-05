@@ -379,8 +379,8 @@ export default function Home() {
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
             <>
-                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label className="text-sm font-medium text-muted-foreground min-w-20 text-center">
+                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex items-center gap-2">
+                    <Label className="text-xs font-medium text-muted-foreground min-w-16 text-center">
                         Go to Time
                     </Label>
                     <Input
@@ -389,7 +389,7 @@ export default function Home() {
                         placeholder="Year"
                         value={targetYear}
                         onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
-                        className="w-full bg-card"
+                        className="w-full bg-card h-8"
                     />
                     <Input
                         id="day-input"
@@ -397,14 +397,14 @@ export default function Home() {
                         placeholder="Day"
                         value={targetDay}
                         onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
-                        className="w-full bg-card"
+                        className="w-full bg-card h-8"
                         min={1}
                         max={324}
                     />
-                    <Button onClick={handleGoToTime}>Go</Button>
+                    <Button onClick={handleGoToTime} size="sm">Go</Button>
                 </div>
-                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="speed-input" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
+                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex items-center gap-2">
+                    <Label htmlFor="speed-input" className="text-xs font-medium text-muted-foreground min-w-16 text-center">
                         Speed (hrs/s)
                     </Label>
                     <Input
@@ -412,15 +412,15 @@ export default function Home() {
                         type="number"
                         value={speedInput}
                         onChange={handleSpeedChange}
-                        className="w-full bg-card"
+                        className="w-full bg-card h-8"
                         min={0.1}
                         step={0.1}
                     />
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-foreground hover:bg-accent hover:text-accent-foreground">
-                                    <History className="h-5 w-5" />
+                                <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-foreground hover:bg-accent hover:text-accent-foreground h-8 w-8">
+                                    <History className="h-4 w-4" />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
@@ -433,9 +433,9 @@ export default function Home() {
         ),
         move: (
             <>
-                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="latitude-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Move North/South
+                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex items-center gap-2">
+                    <Label htmlFor="latitude-slider" className="text-xs font-medium text-muted-foreground min-w-16 text-center">
+                      N/S
                     </Label>
                     <Slider
                         id="latitude-slider"
@@ -446,11 +446,11 @@ export default function Home() {
                         onValueChange={(v) => setCharacterLatitude(v[0])}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{characterLatitude.toFixed(0)}°</span>
+                    <span className="text-xs font-medium text-foreground w-10 text-center">{characterLatitude.toFixed(0)}°</span>
                 </div>
-                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="longitude-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Move East/West
+                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex items-center gap-2">
+                    <Label htmlFor="longitude-slider" className="text-xs font-medium text-muted-foreground min-w-16 text-center">
+                      E/W
                     </Label>
                     <Slider
                         id="longitude-slider"
@@ -461,11 +461,11 @@ export default function Home() {
                         onValueChange={(v) => setCharacterLongitude(v[0])}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{characterLongitude.toFixed(0)}°</span>
+                    <span className="text-xs font-medium text-foreground w-10 text-center">{characterLongitude.toFixed(0)}°</span>
                 </div>
-                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                    <Label htmlFor="fov-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
-                      Field of View
+                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex items-center gap-2">
+                    <Label htmlFor="fov-slider" className="text-xs font-medium text-muted-foreground min-w-16 text-center">
+                      FoV
                     </Label>
                     <Slider
                         id="fov-slider"
@@ -476,7 +476,7 @@ export default function Home() {
                         onValueChange={handleFovChange}
                         className="w-full"
                     />
-                    <span className="text-sm font-medium text-foreground w-10 text-center">{fov.toFixed(0)}°</span>
+                    <span className="text-xs font-medium text-foreground w-10 text-center">{fov.toFixed(0)}°</span>
                 </div>
             </>
         )
@@ -646,7 +646,7 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-4xl px-4 space-y-2 pb-16 md:pb-4">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 space-y-2">
           {viewFromSebaka ? (
               <div className="flex flex-col-reverse items-center gap-2">
                   <div className="flex items-center justify-center gap-2 w-full">
@@ -667,9 +667,9 @@ export default function Home() {
                   {renderSebakaPanelContent()}
               </div>
           ) : (
-            <>
-              <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                  <Label className="text-sm font-medium text-muted-foreground min-w-20 text-center">
+            <div className="bg-card/80 backdrop-blur-sm p-2 rounded-lg shadow-lg flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                  <Label className="text-xs font-medium text-muted-foreground min-w-16 text-center">
                       Go to Time
                   </Label>
                   <Input
@@ -678,7 +678,7 @@ export default function Home() {
                       placeholder="Year"
                       value={targetYear}
                       onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
-                      className="w-full bg-card"
+                      className="w-full bg-card h-8"
                   />
                   <Input
                       id="day-input"
@@ -686,14 +686,14 @@ export default function Home() {
                       placeholder="Day"
                       value={targetDay}
                       onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
-                      className="w-full bg-card"
+                      className="w-full bg-card h-8"
                       min={1}
                       max={324}
                   />
-                  <Button onClick={handleGoToTime}>Go</Button>
+                  <Button onClick={handleGoToTime} size="sm">Go</Button>
               </div>
-              <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
-                  <Label htmlFor="speed-input" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
+              <div className="flex items-center gap-2">
+                  <Label htmlFor="speed-input" className="text-xs font-medium text-muted-foreground min-w-16 text-center">
                       Speed (hrs/s)
                   </Label>
                   <Input
@@ -701,15 +701,15 @@ export default function Home() {
                       type="number"
                       value={speedInput}
                       onChange={handleSpeedChange}
-                      className="w-full bg-card"
+                      className="w-full bg-card h-8"
                       min={0.1}
                       step={0.1}
                   />
                    <TooltipProvider>
                       <Tooltip>
                           <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-foreground hover:bg-accent hover:text-accent-foreground">
-                                  <History className="h-5 w-5" />
+                              <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-foreground hover:bg-accent hover:text-accent-foreground h-8 w-8">
+                                  <History className="h-4 w-4" />
                               </Button>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -718,12 +718,9 @@ export default function Home() {
                       </Tooltip>
                   </TooltipProvider>
               </div>
-            </>
+            </div>
           )}
       </div>
     </main>
   );
 }
-
-    
-    
