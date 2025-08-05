@@ -7,7 +7,6 @@ import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, Chevrons
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import ColorHarmonizerPanel from "@/components/color-harmonizer-panel";
-import BuyMeACoffeeButton from "@/components/buy-me-a-coffee-button";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -531,8 +530,20 @@ export default function Home() {
             Year: {currentYear.toLocaleString()} | Day: {currentDay.toLocaleString()}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-            <BuyMeACoffeeButton />
+        <div className="flex items-center gap-2 z-50">
+            <a
+              className="bmc-button"
+              href="https://www.buymeacoffee.com/mashhul"
+              data-name="bmc-button"
+              data-slug="mashhul"
+              data-color="#ea1757"
+              data-emoji="🎲"
+              data-font="Lato"
+              data-text="Buy me a dice set"
+              data-outline-color="#ffffff"
+              data-font-color="#ffffff"
+              data-coffee-color="#FFDD00"
+            ></a>
             <DropdownMenu>
                 <TooltipProvider>
                     <Tooltip>
