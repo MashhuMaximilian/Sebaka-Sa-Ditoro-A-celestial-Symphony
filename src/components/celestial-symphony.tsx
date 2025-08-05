@@ -39,6 +39,7 @@ export interface CelestialSymphonyProps {
   isInfoPanelOpen: boolean;
   setInfoPanelOpen: (isOpen: boolean) => void;
   elapsedHours: number;
+  isFreeCamera: boolean;
 }
 
 const CelestialSymphony = (props: CelestialSymphonyProps) => {

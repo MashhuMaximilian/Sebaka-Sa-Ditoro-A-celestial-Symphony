@@ -22,6 +22,7 @@ export class CloseUpCharacterCamera {
   public planet: THREE.Mesh;
   public planetContainer: THREE.Object3D;
   public domElement: HTMLElement;
+  public isFreeCamera: boolean = false;
   
   // Public state controlled by input handlers
   public horizontalAngle = Math.PI; // Renamed from yaw for clarity
@@ -104,10 +105,12 @@ export class CloseUpCharacterCamera {
     this.horizontalAngle = (this.horizontalAngle - dx * yawSpeed) % (Math.PI * 2);
     if (this.horizontalAngle < 0) this.horizontalAngle += Math.PI * 2;
 
+    const pitchLimit = this.isFreeCamera ? Math.PI / 2 - 0.05 : 0.2; // Allow full up-down if free
+
     this.verticalAngle = THREE.MathUtils.clamp(
       this.verticalAngle - dy * pitchSpeed,
       0.01, // Prevent looking underground
-      Math.PI / 2 - 0.05 // Allow looking up to see planet curvature when zoomed out
+      pitchLimit
     );
   }
 

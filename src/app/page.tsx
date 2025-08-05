@@ -257,6 +257,7 @@ export default function Home() {
 
   const [characterLatitude, setCharacterLatitude] = useState(45);
   const [characterLongitude, setCharacterLongitude] = useState(150);
+  const [isFreeCamera, setIsFreeCamera] = useState(false);
 
   const handleApplyPalette = (newColors: string[]) => {
     // Only apply colors to the 5 inner planets
@@ -519,6 +520,7 @@ export default function Home() {
         isInfoPanelOpen={isInfoPanelOpen}
         setInfoPanelOpen={setInfoPanelOpen}
         elapsedHours={elapsedHours}
+        isFreeCamera={isFreeCamera}
       />
 
       <div className="absolute top-0 left-0 w-full p-4 md:p-8 flex justify-between items-start">
@@ -621,6 +623,12 @@ export default function Home() {
                             <DropdownMenuItem onSelect={enterSebakaView}>
                                 <PersonStanding className="mr-2 h-4 w-4" />
                                 <span>View from Sebaka</span>
+                            </DropdownMenuItem>
+                        )}
+                        {viewFromSebaka && (
+                            <DropdownMenuItem onSelect={() => setIsFreeCamera(prev => !prev)}>
+                                <Camera className="mr-2 h-4 w-4" />
+                                <span>{isFreeCamera ? 'Lock Camera' : 'Free Camera'}</span>
                             </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />

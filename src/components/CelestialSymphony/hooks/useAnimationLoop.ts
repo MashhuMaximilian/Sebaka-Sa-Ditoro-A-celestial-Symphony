@@ -29,6 +29,7 @@ interface AnimationLoopParams {
     isInitialized: boolean;
     cameraTarget: string | null;
     characterMeshRef: React.MutableRefObject<THREE.Object3D | null>;
+    isFreeCamera: boolean;
 };
 
 export const useAnimationLoop = ({
@@ -51,6 +52,7 @@ export const useAnimationLoop = ({
   beaconPositionRef,
   isInitialized,
   characterMeshRef,
+  isFreeCamera
 }: AnimationLoopParams) => {
   const clockRef = useRef(new THREE.Clock());
   const elapsedHoursRef = useRef(0);
@@ -217,6 +219,7 @@ export const useAnimationLoop = ({
 
       if (viewFromSebaka && characterControllerRef.current && thirdPersonCameraRef.current && alphaStarBody && twilightStarBody && beaconStarBody) {
           const { latitude, longitude, height } = characterStateRef.current;
+          thirdPersonCameraRef.current.isFreeCamera = isFreeCamera;
           characterControllerRef.current.update(
             longitude, 
             latitude, 
@@ -261,5 +264,6 @@ export const useAnimationLoop = ({
     viewFromSebaka,
     characterStateRef,
     materialProperties,
+    isFreeCamera
   ]);
 };
