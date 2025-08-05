@@ -2,11 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera } from "lucide-react";
+import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera } from "lucide-react";
 
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
-import ColorHarmonizerPanel from "@/components/color-harmonizer-panel";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -259,19 +258,6 @@ export default function Home() {
   const [characterLongitude, setCharacterLongitude] = useState(150);
   const [isFreeCamera, setIsFreeCamera] = useState(false);
 
-  const handleApplyPalette = (newColors: string[]) => {
-    // Only apply colors to the 5 inner planets
-    const innerPlanets = initialPlanets.slice(0, 5);
-    const outerPlanets = initialPlanets.slice(5);
-
-    const updatedInnerPlanets = innerPlanets.map((planet, i) => ({
-      ...planet,
-      color: newColors[i % newColors.length],
-    }));
-
-    setPlanets([...updatedInnerPlanets, ...outerPlanets]);
-  };
-  
   const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSpeedInput(e.target.value);
     const value = parseFloat(e.target.value);
@@ -583,74 +569,55 @@ export default function Home() {
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Sheet>
-                 <DropdownMenu>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm">
-                                        <Settings className="h-5 w-5" />
-                                        <span className="sr-only">Settings</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Settings</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    <DropdownMenuContent className="w-56 backdrop-blur-sm">
-                        <DropdownMenuLabel>Settings</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                         <DropdownMenuItem onSelect={() => setUsePlainOrbits(prev => !prev)}>
-                            <Layers className="mr-2 h-4 w-4" />
-                            <span>{usePlainOrbits ? 'Iridescent Orbits' : 'Plain Orbits'}</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={handleResetView}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            <span>Reset View</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={() => setIsSebakaRotating(prev => !prev)}>
-                            <RotateCw className="mr-2 h-4 w-4" />
-                            <span>{isSebakaRotating ? 'Pause Rotation' : 'Resume Rotation'}</span>
-                        </DropdownMenuItem>
-                         <DropdownMenuItem onSelect={() => setIsViridisAnimationActive(prev => !prev)}>
-                            <Orbit className="mr-2 h-4 w-4" />
-                             <span>{isViridisAnimationActive ? 'Stop Viridis' : 'Start Viridis'}</span>
-                        </DropdownMenuItem>
-                        {!viewFromSebaka && (
-                            <DropdownMenuItem onSelect={enterSebakaView}>
-                                <PersonStanding className="mr-2 h-4 w-4" />
-                                <span>View from Sebaka</span>
-                            </DropdownMenuItem>
-                        )}
-                        {viewFromSebaka && (
-                            <DropdownMenuItem onSelect={() => setIsFreeCamera(prev => !prev)}>
-                                <Camera className="mr-2 h-4 w-4" />
-                                <span>{isFreeCamera ? 'Lock Camera' : 'Free Camera'}</span>
-                            </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator />
-                        <SheetTrigger asChild>
-                            <DropdownMenuItem>
-                                <Palette className="mr-2 h-4 w-4" />
-                                <span>Color Palette</span>
-                            </DropdownMenuItem>
-                        </SheetTrigger>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                <SheetContent className="backdrop-blur-sm bg-card/80" withoutOverlay>
-                    <SheetHeader>
-                    <SheetTitle>Color Harmonizer</SheetTitle>
-                    <SheetDescription>
-                        Use AI to generate a new harmonious color palette for the planets.
-                    </SheetDescription>
-                    </SheetHeader>
-                    <ColorHarmonizerPanel onApplyPalette={handleApplyPalette} />
-                </SheetContent>
-            </Sheet>
+            <DropdownMenu>
+              <TooltipProvider>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                          <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="icon" className="bg-card/80 backdrop-blur-sm">
+                                  <Settings className="h-5 w-5" />
+                                  <span className="sr-only">Settings</span>
+                              </Button>
+                          </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>Settings</p>
+                      </TooltipContent>
+                  </Tooltip>
+              </TooltipProvider>
+              <DropdownMenuContent className="w-56 backdrop-blur-sm">
+                  <DropdownMenuLabel>Settings</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={() => setUsePlainOrbits(prev => !prev)}>
+                      <Layers className="mr-2 h-4 w-4" />
+                      <span>{usePlainOrbits ? 'Iridescent Orbits' : 'Plain Orbits'}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={handleResetView}>
+                      <Eye className="mr-2 h-4 w-4" />
+                      <span>Reset View</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => setIsSebakaRotating(prev => !prev)}>
+                      <RotateCw className="mr-2 h-4 w-4" />
+                      <span>{isSebakaRotating ? 'Pause Rotation' : 'Resume Rotation'}</span>
+                  </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => setIsViridisAnimationActive(prev => !prev)}>
+                      <Orbit className="mr-2 h-4 w-4" />
+                        <span>{isViridisAnimationActive ? 'Stop Viridis' : 'Start Viridis'}</span>
+                  </DropdownMenuItem>
+                  {!viewFromSebaka && (
+                      <DropdownMenuItem onSelect={enterSebakaView}>
+                          <PersonStanding className="mr-2 h-4 w-4" />
+                          <span>View from Sebaka</span>
+                      </DropdownMenuItem>
+                  )}
+                  {viewFromSebaka && (
+                      <DropdownMenuItem onSelect={() => setIsFreeCamera(prev => !prev)}>
+                          <Camera className="mr-2 h-4 w-4" />
+                          <span>{isFreeCamera ? 'Lock Camera' : 'Free Camera'}</span>
+                      </DropdownMenuItem>
+                  )}
+              </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </div>
       

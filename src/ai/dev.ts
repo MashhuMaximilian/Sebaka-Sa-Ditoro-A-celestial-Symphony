@@ -2,7 +2,6 @@ import { config } from 'dotenv';
 config();
 
 import {genkit} from 'genkit';
-import '@/ai/flows/color-harmonizer.ts';
 
 // Graceful shutdown
 process.on('SIGINT', () => {
