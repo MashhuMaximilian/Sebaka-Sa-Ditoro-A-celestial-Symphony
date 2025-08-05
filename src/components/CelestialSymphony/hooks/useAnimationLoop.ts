@@ -230,7 +230,7 @@ export const useAnimationLoop = ({
             beaconStarBody.position
           );
           thirdPersonCameraRef.current.update();
-          controls.enabled = false;
+          controls.enabled = isFreeCamera ? false : !viewFromSebaka;
       } else {
         controls.enabled = true;
         controls.update();
