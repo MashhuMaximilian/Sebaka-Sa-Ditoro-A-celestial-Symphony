@@ -379,7 +379,7 @@ export default function Home() {
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
             <>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                         Go to Time
                     </Label>
@@ -403,7 +403,7 @@ export default function Home() {
                     />
                     <Button onClick={handleGoToTime}>Go</Button>
                 </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="speed-input" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                         Speed (hrs/s)
                     </Label>
@@ -433,7 +433,7 @@ export default function Home() {
         ),
         move: (
             <>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="latitude-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Move North/South
                     </Label>
@@ -448,7 +448,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{characterLatitude.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="longitude-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Move East/West
                     </Label>
@@ -463,7 +463,7 @@ export default function Home() {
                     />
                     <span className="text-sm font-medium text-foreground w-10 text-center">{characterLongitude.toFixed(0)}°</span>
                 </div>
-                <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
+                <div className="bg-black/50 backdrop-blur-sm p-4 rounded-lg shadow-lg flex items-center gap-4">
                     <Label htmlFor="fov-slider" className="text-sm font-medium text-muted-foreground min-w-20 text-center">
                       Field of View
                     </Label>
@@ -725,4 +725,5 @@ export default function Home() {
   );
 }
 
+    
     
