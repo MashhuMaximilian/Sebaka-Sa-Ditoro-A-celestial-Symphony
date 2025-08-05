@@ -190,7 +190,7 @@ export const useUpdateBodyMaterials = ({
         const sebakaMesh = allMeshes.current.find(p => p.name === 'Sebaka');
         if (sebakaMesh && sebakaMesh.material instanceof THREE.ShaderMaterial) {
             const uniforms = (sebakaMesh.material as THREE.ShaderMaterial).uniforms;
-            uniforms.useGrid.value = viewFromSebaka;
+            uniforms.useGrid.value = false;
         }
     }, [viewFromSebaka, allMeshes]);
 };
