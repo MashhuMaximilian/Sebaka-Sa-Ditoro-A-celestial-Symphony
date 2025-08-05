@@ -530,7 +530,7 @@ export default function Home() {
             Year: {currentYear.toLocaleString()} | Day: {currentDay.toLocaleString()}
           </p>
         </div>
-        <div className="flex items-center gap-2 z-50">
+        <div className="flex items-center justify-end gap-2 z-50 flex-wrap">
             <a href="https://www.buymeacoffee.com/mashhul" target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="bg-card/80 backdrop-blur-sm">
                 🎲 Buy me a dice set
@@ -646,10 +646,11 @@ export default function Home() {
         </div>
       </div>
       
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4 space-y-2">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md px-4">
           {viewFromSebaka ? (
-              <div className="flex flex-col-reverse items-center gap-2">
-                  <div className="flex items-center justify-center gap-2 w-full">
+              <div className="w-full space-y-2">
+                  {renderSebakaPanelContent()}
+                   <div className="flex items-center justify-center gap-2 w-full">
                       {(['time', 'move'] as const).map((panelId) => (
                            <Button 
                               key={panelId}
@@ -664,7 +665,6 @@ export default function Home() {
                           </Button>
                       ))}
                   </div>
-                  {renderSebakaPanelContent()}
               </div>
           ) : (
             <div className="bg-card/80 backdrop-blur-sm p-2 rounded-lg shadow-lg flex flex-col gap-2">
