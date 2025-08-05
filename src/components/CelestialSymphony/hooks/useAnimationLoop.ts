@@ -139,9 +139,7 @@ export const useAnimationLoop = ({
       
       updateAllBodyPositions(elapsedHoursRef.current, bodyData, allBodiesRef.current, beaconPositionRef.current);
 
-      if (!viewFromSebaka) {
-        onTimeUpdate(elapsedHoursRef.current);
-      }
+      onTimeUpdate(elapsedHoursRef.current);
       
       allBodiesRef.current.forEach(bodyObject => {
           const currentBodyData = bodyData.find(d => d.name === bodyObject.name);
