@@ -7,6 +7,7 @@ import { Palette, History, Eye, PersonStanding, Orbit, RotateCw, Focus, Chevrons
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import ColorHarmonizerPanel from "@/components/color-harmonizer-panel";
+import BuyMeACoffeeButton from "@/components/buy-me-a-coffee-button";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -531,7 +532,7 @@ export default function Home() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-            
+            <BuyMeACoffeeButton />
             <DropdownMenu>
                 <TooltipProvider>
                     <Tooltip>
