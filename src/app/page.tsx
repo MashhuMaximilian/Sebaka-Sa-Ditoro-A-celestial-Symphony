@@ -532,7 +532,7 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2 z-50">
             <a href="https://www.buymeacoffee.com/mashhul" target="_blank" rel="noopener noreferrer">
-              <Button style={{backgroundColor: '#ea1757', color: '#ffffff'}}>
+              <Button variant="outline" className="bg-card/80 backdrop-blur-sm">
                 🎲 Buy me a dice set
               </Button>
             </a>
@@ -724,3 +724,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
