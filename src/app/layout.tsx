@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Celestial Symphony",
@@ -25,6 +26,19 @@ export default function RootLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
           rel="stylesheet"
+        />
+        <Script
+          src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js"
+          data-name="bmc-button"
+          data-slug="mashhul"
+          data-color="#ea1757"
+          data-emoji="🎲"
+          data-font="Lato"
+          data-text="Buy me a dice set"
+          data-outline-color="#ffffff"
+          data-font-color="#ffffff"
+          data-coffee-color="#FFDD00"
+          strategy="afterInteractive"
         />
       </head>
       <body className="font-body antialiased">
