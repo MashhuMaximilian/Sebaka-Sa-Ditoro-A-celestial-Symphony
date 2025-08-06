@@ -227,7 +227,8 @@ export const useAnimationLoop = ({
             materialProperties.Character,
             alphaStarBody.position,
             twilightStarBody.position,
-            beaconStarBody.position
+            beaconStarBody.position,
+            isFreeCamera
           );
           thirdPersonCameraRef.current.update();
           controls.enabled = isFreeCamera ? false : !viewFromSebaka;

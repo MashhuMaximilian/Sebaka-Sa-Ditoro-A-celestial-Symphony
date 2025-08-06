@@ -65,6 +65,7 @@ export class SphericalCharacterController {
     alphaStarPos: THREE.Vector3,
     twilightStarPos: THREE.Vector3,
     beaconStarPos: THREE.Vector3,
+    isFreeCamera: boolean
   ) {
     const latRad = THREE.MathUtils.degToRad(90 - latitude);
     const lonRad = THREE.MathUtils.degToRad(longitude);   
@@ -92,7 +93,7 @@ export class SphericalCharacterController {
         uniforms.noiseFrequency.value = materialProps.noiseFrequency;
         uniforms.noiseSpeed.value = materialProps.noiseSpeed;
         uniforms.blobComplexity.value = materialProps.blobComplexity;
-        uniforms.opacity.value = materialProps.opacity;
+        uniforms.opacity.value = isFreeCamera ? 0.0 : (materialProps.opacity ?? 1.0);
         uniforms.iridescenceStrength.value = materialProps.iridescenceStrength;
         uniforms.rimPower.value = materialProps.rimPower;
         uniforms.colorSpeed.value = materialProps.colorSpeed;
