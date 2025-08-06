@@ -229,6 +229,7 @@ export const initialMaterialProperties: MaterialProperties = {
 };
 
 type ActiveSebakaPanel = 'time' | 'move';
+type OrbitMode = 'iridescent' | 'plain' | 'hidden';
 
 export default function Home() {
   const [planets, setPlanets] = useState<PlanetData[]>(initialPlanets);
@@ -241,8 +242,8 @@ export default function Home() {
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(true);
   const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
-  const [usePlainOrbits, setUsePlainOrbits] = useState(false);
-  const [showOrbits, setShowOrbits] = useState(true);
+  const [orbitMode, setOrbitMode] = useState<OrbitMode>('iridescent');
+
 
   const [currentYear, setCurrentYear] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
@@ -295,7 +296,7 @@ export default function Home() {
     resetSpeed();
     setIsSebakaRotating(true);
     setCameraTarget('Binary Stars');
-    setShowOrbits(true);
+    setOrbitMode('iridescent');
   }
 
   const enterSebakaView = () => {
@@ -308,7 +309,7 @@ export default function Home() {
           setActiveSebakaPanel(null);
           setSpeedMultiplier(2);
           setSpeedInput('2');
-          setShowOrbits(false);
+          setOrbitMode('hidden');
       }
   }
   
@@ -344,7 +345,7 @@ export default function Home() {
         setIsInitialized(false);
         setViewFromSebaka(false);
         setFov(70);
-        setShowOrbits(true);
+        setOrbitMode('iridescent');
     }
     setCameraTarget(target);
 
@@ -358,6 +359,20 @@ export default function Home() {
       setSpeedMultiplier(0);
       setSpeedInput('0');
     }
+  };
+
+  const handleOrbitModeToggle = () => {
+    setOrbitMode(prevMode => {
+      if (prevMode === 'iridescent') return 'plain';
+      if (prevMode === 'plain') return 'hidden';
+      return 'iridescent';
+    });
+  };
+
+  const getNextOrbitModeText = () => {
+    if (orbitMode === 'iridescent') return 'Plain Orbits';
+    if (orbitMode === 'plain') return 'Hide Orbits';
+    return 'Iridescent Orbits';
   };
   
   const renderSebakaPanelContent = () => {
@@ -499,8 +514,8 @@ export default function Home() {
         isInitialized={isInitialized}
         setIsInitialized={setIsInitialized}
         initialMaterialProperties={initialMaterialProperties}
-        usePlainOrbits={usePlainOrbits}
-        showOrbits={showOrbits}
+        usePlainOrbits={orbitMode === 'plain'}
+        showOrbits={orbitMode !== 'hidden'}
         fov={fov}
         selectedBody={selectedBody}
         isInfoPanelOpen={isInfoPanelOpen}
@@ -588,9 +603,9 @@ export default function Home() {
               <DropdownMenuContent className="w-56 backdrop-blur-sm">
                   <DropdownMenuLabel>Settings</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => setUsePlainOrbits(prev => !prev)}>
+                    <DropdownMenuItem onSelect={handleOrbitModeToggle}>
                       <Layers className="mr-2 h-4 w-4" />
-                      <span>{usePlainOrbits ? 'Iridescent Orbits' : 'Plain Orbits'}</span>
+                      <span>{getNextOrbitModeText()}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onSelect={handleResetView}>
                       <Eye className="mr-2 h-4 w-4" />
