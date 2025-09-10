@@ -112,7 +112,7 @@ export const celestialEvents: CelestialEvent[] = [
         approximatePeriodDays: 1166400, // ~3,600 Sebakan years
     },
     {
-        name: "Triple Cascade",
+        name: "The Great Cascade",
         description: "Extremely rare occultation of all three, a 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"],

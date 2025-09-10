@@ -404,8 +404,6 @@ export default function Home() {
 
     setIsJumpingTime(true);
 
-    // Use a short timeout to allow the UI to update with the loader
-    // before the potentially blocking synchronous search begins.
     setTimeout(() => {
       const params: EventSearchParams = {
         startHours: direction === 'first' ? 0 : elapsedHours,
@@ -423,7 +421,6 @@ export default function Home() {
           enterSebakaView();
         }
         
-        // Use another timeout to ensure view switch completes before setting coords
         setTimeout(() => {
           setCharacterLongitude(foundResult.viewingLongitude);
           setCharacterLatitude(foundResult.viewingLatitude);
@@ -432,9 +429,9 @@ export default function Home() {
 
       } else {
         console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
-        setIsJumpingTime(false); // Reset loading state if not found
+        setIsJumpingTime(false);
       }
-    }, 50); // 50ms delay
+    }, 50);
   }, [selectedEvent, elapsedHours, isJumpingTime, viewFromSebaka, enterSebakaView]);
   
   const renderSebakaPanelContent = () => {
