@@ -6,12 +6,24 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare alignment of Rutilus, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic night event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 0.1,
+        longitudeTolerance: 5,
         minSeparation: 6,
         sunSeparationMultiplier: 10, // Allow closer approach to suns
         viewingLongitude: 180,
         visibilityCondition: 'night',
         approximatePeriodDays: 795060, // ~2,454 Sebakan years
+    },
+    {
+        name: "Celestial Origin Alignment",
+        description: "The rare alignment of the five inner planets, recreating their positions at the dawn of the Sebakan calendar (Year 0, Day 1).",
+        type: 'conjunction',
+        primaryBodies: ["Rutilis", "Sebaka", "Spectris", "Viridis", "Aetheris"],
+        longitudeTolerance: 1.0,
+        minSeparation: 0.5,
+        sunSeparationMultiplier: 1.0,
+        viewingLongitude: 180,
+        visibilityCondition: 'night',
+        approximatePeriodDays: 987210, // A very long, estimated period for this grand alignment
     },
     {
         name: "Gathering of Witnesses",
@@ -116,23 +128,11 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Extremely rare occultation of all three, a 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"],
-        longitudeTolerance: 0.1,
-        overlapThreshold: 0.9,
+        longitudeTolerance: 0.2,
+        overlapThreshold: 0.2,
         sunSeparationMultiplier: 0.5, // Very close approach allowed
         viewingLongitude: 188,
         visibilityCondition: 'night',
         approximatePeriodDays: 15877620, // ~49,005 Sebakan years
-    },
-    {
-        name: "Quadruple Cascade (Inner Conjunction)",
-        description: "Extremely rare occultation of Rutilus, Spectris, Viridis, and Aetheris, an 'Inner Eclipse,' at night.",
-        type: 'occultation',
-        primaryBodies: ["Beacon", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 0.1,
-        overlapThreshold: 0.9,
-        //sunSeparationMultiplier: 0.1,
-        viewingLongitude: 180,
-        visibilityCondition: 'night',
-        approximatePeriodDays: 25000000, // ~77,160 Sebakan years
     },
 ];
