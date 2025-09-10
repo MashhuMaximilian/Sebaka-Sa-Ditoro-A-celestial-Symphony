@@ -266,12 +266,12 @@ export default function Home() {
   
   const [selectedEvent, setSelectedEvent] = useState<CelestialEvent | null>(null);
   const [isSearchingEvent, setIsSearchingEvent] = useState(false);
+  const [isJumpingTime, setIsJumpingTime] = useState(false);
 
-  // This effect synchronizes the UI state (sliders, date) after an event is found and the time jump is complete.
   useEffect(() => {
-    if (goToTime === null) return; // Only run when a jump is initiated
+    if (goToTime === null) return;
     
-    // Deconstruct the new time into year and day for UI display
+    setIsJumpingTime(true); // Disable controls during jump
     const totalDays = Math.floor(goToTime / HOURS_IN_SEBAKA_DAY);
     const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
     const newTargetDay = (totalDays % SEBAKA_YEAR_IN_DAYS + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
@@ -355,6 +355,7 @@ export default function Home() {
 
   const resetGoToTime = () => {
     setGoToTime(null);
+    setIsJumpingTime(false); // Re-enable controls
   };
   
   const handleFocusTargetChange = (target: string) => {
@@ -398,10 +399,10 @@ export default function Home() {
   };
   
   const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'last') => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || isSearchingEvent || isJumpingTime) return;
+
     setIsSearchingEvent(true);
     
-    // Give browser time to update UI with loader
     await new Promise(resolve => setTimeout(resolve, 50)); 
     
     const params: EventSearchParams = {
@@ -413,7 +414,6 @@ export default function Home() {
       HOURS_IN_SEBAKA_DAY
     };
     
-    // Use a web worker in a real app for this heavy computation
     const foundResult = findNextEvent(params);
     
     if (foundResult) {
@@ -425,11 +425,13 @@ export default function Home() {
     }
     
     setIsSearchingEvent(false);
-  }, [selectedEvent, elapsedHours]);
+  }, [selectedEvent, elapsedHours, isSearchingEvent, isJumpingTime]);
   
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;
     
+    const isLoading = isSearchingEvent || isJumpingTime;
+
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
             <>
@@ -445,6 +447,7 @@ export default function Home() {
                             value={targetYear}
                             onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
                             className="w-full bg-card h-8"
+                            disabled={isLoading}
                         />
                         <Input
                             id="day-input"
@@ -455,8 +458,9 @@ export default function Home() {
                             className="w-full bg-card h-8"
                             min={1}
                             max={324}
+                            disabled={isLoading}
                         />
-                        <Button onClick={handleGoToTime} size="sm" disabled={isSearchingEvent}>
+                        <Button onClick={handleGoToTime} size="sm" disabled={isLoading}>
                           Go
                         </Button>
                     </div>
@@ -465,7 +469,7 @@ export default function Home() {
                     <Label className="text-xs font-medium text-muted-foreground text-center">
                         Celestial Events
                     </Label>
-                    <Select onValueChange={handleEventSelect} disabled={isSearchingEvent}>
+                    <Select onValueChange={handleEventSelect} disabled={isLoading}>
                         <SelectTrigger className="w-full h-8 bg-card">
                             <SelectValue placeholder="Select an event..." />
                         </SelectTrigger>
@@ -476,13 +480,13 @@ export default function Home() {
                         </SelectContent>
                     </Select>
                     <div className="flex items-center justify-between gap-1">
-                         <Button onClick={() => handleGoToEvent('last')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isSearchingEvent}>
+                         <Button onClick={() => handleGoToEvent('last')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
                             {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Go to Last
                         </Button>
-                        <Button onClick={() => handleGoToEvent('previous')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isSearchingEvent}>
+                        <Button onClick={() => handleGoToEvent('previous')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
                              {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Previous
                         </Button>
-                         <Button onClick={() => handleGoToEvent('next')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isSearchingEvent}>
+                         <Button onClick={() => handleGoToEvent('next')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
                             Next {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
                         </Button>
                     </div>
@@ -499,11 +503,12 @@ export default function Home() {
                         className="w-full bg-card h-8"
                         min={0.1}
                         step={0.1}
+                        disabled={isLoading}
                     />
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-foreground hover:bg-accent hover:text-accent-foreground h-8 w-8">
+                                <Button variant="ghost" size="icon" onClick={resetSpeed} className="text-foreground hover:bg-accent hover:text-accent-foreground h-8 w-8" disabled={isLoading}>
                                     <History className="h-4 w-4" />
                                 </Button>
                             </TooltipTrigger>
@@ -799,5 +804,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
