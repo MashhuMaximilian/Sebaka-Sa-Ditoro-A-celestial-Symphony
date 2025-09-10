@@ -6,7 +6,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare alignment of Rutilus, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic night event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 5,
+        longitudeTolerance: 0.1,
         minSeparation: 6,
         sunSeparationMultiplier: 10, // Allow closer approach to suns
         viewingLongitude: 180,
@@ -128,8 +128,8 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Extremely rare occultation of all three, a 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"],
-        longitudeTolerance: 0.2,
-        overlapThreshold: 0.2,
+        longitudeTolerance: 0.1,
+        overlapThreshold: 0.9,
         sunSeparationMultiplier: 0.5, // Very close approach allowed
         viewingLongitude: 188,
         visibilityCondition: 'night',
