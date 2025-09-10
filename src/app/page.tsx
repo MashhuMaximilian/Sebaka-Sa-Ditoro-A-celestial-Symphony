@@ -34,6 +34,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { SheetTitle } from "@/components/ui/sheet";
 
 
 // 1 AU = 150 simulation units.
@@ -63,7 +64,7 @@ const initialStars: StarData[] = [
       lore: 'Represents quiet strength and endurance in Hypodia’s Sky-Writing, a counterpoint to Alpha’s vibrancy.'
   },
   {
-      name: "Beacon", color: "#B4DCFF", size: 27.84, orbitPeriodDays: 724464, orbitRadius: 200 * AU_TO_UNITS,
+      name: "Beacon", color: "#B4DCFF", size: 27.84, orbitPeriodDays: 724464, orbitRadius: 200 * AU_TO_UNITS, initialPhase: 0,
       type: 'Star', classification: 'B-type Blue-White Giant',
       orbitalRole: 'Distant Companion (orbits common barycenter of Alpha-Twilight)', orbitalPeriod: '~2,236 Sebakan years (724,464 days)', orbitalDistance: '200 AU',
       radius: '~4 R☉', mass: '5.0 M☉', luminosity: 1000,
@@ -400,7 +401,7 @@ export default function Home() {
     } else { // 'last'
       const occurrences = Math.floor(currentTotalDays / periodInDays);
       targetTotalDays = occurrences * periodInDays;
-      if (targetTotalDays === currentTotalDays) {
+      if (targetTotalDays === currentTotalDays && currentTotalDays > 0) {
         targetTotalDays = (occurrences - 1) * periodInDays;
       }
        if (targetTotalDays < 0) targetTotalDays = 0;
@@ -776,3 +777,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
