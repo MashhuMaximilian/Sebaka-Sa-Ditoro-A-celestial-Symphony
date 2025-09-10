@@ -387,21 +387,19 @@ export default function Home() {
   
     const periodInDays = selectedEvent.periodDays;
     const currentTotalDays = currentYear * SEBAKA_YEAR_IN_DAYS + (currentDay - 1);
-  
+    
     let targetTotalDays: number;
   
     if (direction === 'next') {
       const occurrences = Math.floor(currentTotalDays / periodInDays);
       targetTotalDays = (occurrences + 1) * periodInDays;
     } else if (direction === 'previous') {
-      const occurrences = Math.ceil(currentTotalDays / periodInDays);
-      targetTotalDays = Math.max(0, (occurrences - 1) * periodInDays);
+      // Find the occurrence *before* the current one.
+      const occurrences = Math.floor((currentTotalDays - 1) / periodInDays);
+      targetTotalDays = Math.max(0, occurrences * periodInDays);
     } else { // 'last'
       const occurrences = Math.floor(currentTotalDays / periodInDays);
       targetTotalDays = occurrences * periodInDays;
-      if (targetTotalDays === currentTotalDays && currentTotalDays > 0) {
-        targetTotalDays = Math.max(0, (occurrences - 1) * periodInDays);
-      }
     }
   
     const newTargetYear = Math.floor(targetTotalDays / SEBAKA_YEAR_IN_DAYS);
