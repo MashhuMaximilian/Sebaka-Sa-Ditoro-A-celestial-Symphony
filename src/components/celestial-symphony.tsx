@@ -21,6 +21,7 @@ export interface CelestialSymphonyProps {
   onBodyClick: (name: string) => void;
   viewFromSebaka: boolean;
   isSebakaRotating: boolean;
+  isSebakaVisible: boolean;
   characterLongitude: number;
   characterLatitude: number;
   isViridisAnimationActive: boolean;
@@ -99,6 +100,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     characterMesh: characterMeshRef.current,
     isViridisAnimationActive: props.isViridisAnimationActive,
     viewFromSebaka: props.viewFromSebaka,
+    isSebakaVisible: props.isSebakaVisible,
     materialProperties: materialProperties,
     elapsedHours: props.elapsedHours,
   });
@@ -152,3 +154,5 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
 };
 
 export default CelestialSymphony;
+
+    

@@ -105,6 +105,7 @@ interface UpdateBodyMaterialsProps {
     characterMesh: THREE.Object3D | null;
     isViridisAnimationActive: boolean;
     viewFromSebaka: boolean;
+    isSebakaVisible: boolean;
     materialProperties: MaterialProperties;
     elapsedHours: number;
 }
@@ -117,6 +118,7 @@ export const useUpdateBodyMaterials = ({
     characterMesh,
     isViridisAnimationActive,
     viewFromSebaka,
+    isSebakaVisible,
     materialProperties,
     elapsedHours,
 }: UpdateBodyMaterialsProps) => {
@@ -188,9 +190,10 @@ export const useUpdateBodyMaterials = ({
     // This effect handles toggling the grid view on Sebaka
     useEffect(() => {
         const sebakaMesh = allMeshes.current.find(p => p.name === 'Sebaka');
-        if (sebakaMesh && sebakaMesh.material instanceof THREE.ShaderMaterial) {
-            const uniforms = (sebakaMesh.material as THREE.ShaderMaterial).uniforms;
-            uniforms.useGrid.value = false;
+        if (sebakaMesh) {
+            sebakaMesh.visible = !viewFromSebaka || isSebakaVisible;
         }
-    }, [viewFromSebaka, allMeshes]);
+    }, [viewFromSebaka, isSebakaVisible, allMeshes]);
 };
+
+    

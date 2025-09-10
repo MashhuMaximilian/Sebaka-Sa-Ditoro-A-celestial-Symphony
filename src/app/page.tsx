@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight, Loader2, Globe } from "lucide-react";
 
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
@@ -244,6 +244,7 @@ export default function Home() {
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
   const [isSebakaRotating, setIsSebakaRotating] = useState(true);
+  const [isSebakaVisible, setIsSebakaVisible] = useState(true);
   const [isViridisAnimationActive, setIsViridisAnimationActive] = useState(true);
   const [cameraTarget, setCameraTarget] = useState<string | null>('Binary Stars');
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
@@ -412,13 +413,13 @@ export default function Home() {
       HOURS_IN_SEBAKA_DAY
     };
     
+    // Use a web worker in a real app for this heavy computation
     const foundResult = findNextEvent(params);
     
     if (foundResult) {
-      const { foundHours, viewingLatitude, viewingLongitude } = foundResult;
-      setCharacterLongitude(viewingLongitude);
-      setCharacterLatitude(viewingLatitude);
-      setGoToTime(foundHours);
+      setCharacterLongitude(foundResult.viewingLongitude);
+      setCharacterLatitude(foundResult.viewingLatitude);
+      setGoToTime(foundResult.foundHours);
     } else {
         console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
     }
@@ -581,6 +582,7 @@ export default function Home() {
         onBodyClick={handleBodyClick}
         viewFromSebaka={viewFromSebaka}
         isSebakaRotating={isSebakaRotating}
+        isSebakaVisible={isSebakaVisible}
         characterLongitude={characterLongitude}
         characterLatitude={characterLatitude}
         isViridisAnimationActive={isViridisAnimationActive}
@@ -703,6 +705,12 @@ export default function Home() {
                       </DropdownMenuItem>
                   )}
                   {viewFromSebaka && (
+                      <DropdownMenuItem onSelect={() => setIsSebakaVisible(prev => !prev)}>
+                          <Globe className="mr-2 h-4 w-4" />
+                          <span>{isSebakaVisible ? 'Hide Sebaka' : 'Show Sebaka'}</span>
+                      </DropdownMenuItem>
+                  )}
+                  {viewFromSebaka && (
                       <DropdownMenuItem onSelect={() => setIsFreeCamera(prev => !prev)}>
                           <Camera className="mr-2 h-4 w-4" />
                           <span>{isFreeCamera ? 'Lock Camera' : 'Free Camera'}</span>
@@ -791,3 +799,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

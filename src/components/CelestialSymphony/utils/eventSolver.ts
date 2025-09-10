@@ -107,10 +107,11 @@ function checkEventConditions(
 
     if (primaryBodyInfo.length !== event.primaryBodies.length) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
     
-    // Check if secondary bodies are present
+    // Check if secondary bodies are present and visible
     if (event.secondaryBodies) {
       for (const name of event.secondaryBodies) {
         if (!bodyPositions[name]) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+        // Could add a check here to ensure they are above the horizon
       }
     }
 
@@ -180,7 +181,7 @@ function checkEventConditions(
             
             if (event.overlapThreshold && event.overlapThreshold > 0) {
                 let overlapMet = false;
-                // For multi-body occultations, ensure they are all stacked
+                // For multi-body occultations (3+), ensure they are all stacked tightly.
                 if (primaryBodyInfo.length > 2) {
                     let maxSeparationInGroup = 0;
                     for (let i = 0; i < primaryBodyInfo.length; i++) {
@@ -191,10 +192,11 @@ function checkEventConditions(
                     const largestBody = primaryBodyInfo.reduce((a,b) => getApparentRadius(a.data.size, a.pos.distanceTo(viewpoint)) > getApparentRadius(b.data.size, b.pos.distanceTo(viewpoint)) ? a : b);
                     const largestApparentRadius = getApparentRadius(largestBody.data.size, largestBody.pos.distanceTo(viewpoint));
                     
-                    // Simple check: if the whole group is tighter than the largest body's apparent size, they are likely overlapping
+                    // A simple check: if the total spread of the group is less than the biggest planet's radius, they are very likely overlapping.
                     if(maxSeparationInGroup < largestApparentRadius * (1 + event.overlapThreshold)) {
                         overlapMet = true;
                     }
+
                 } else { // Pairwise check for 2-body occultations
                     for (let i = 0; i < primaryBodyInfo.length; i++) {
                         for (let j = i + 1; j < primaryBodyInfo.length; j++) {
@@ -252,29 +254,43 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     const sebakaTilt = sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
     
     const timeMultiplier = direction === 'next' ? 1 : -1;
-    const stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
-    let currentHours = startHours + stepHours; // Start one day from the current time
+    let currentHours = startHours + (HOURS_IN_SEBAKA_DAY * timeMultiplier); // Start one day from the current time
 
-    const maxSearchYears = 200000; // Safety brake after 200k years
-    const maxIterations = maxSearchYears * 324;
+    // For extremely rare events, we need a much larger step to avoid freezing.
+    const coarseStepDays = event.approximatePeriodDays > 100000 ? 100 : 1;
+    const coarseStepHours = coarseStepDays * HOURS_IN_SEBAKA_DAY * timeMultiplier;
+    const fineStepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
 
-    for(let i = 0; i < maxIterations; i++) {
-        currentHours += stepHours;
+    const maxSearchYears = 200000;
+    const maxIterations = (maxSearchYears * 324) / coarseStepDays;
 
-        if (timeMultiplier < 0 && currentHours < 0) break; // Don't search before year 0
+    for (let i = 0; i < maxIterations; i++) {
+        currentHours += coarseStepHours;
+        if (timeMultiplier < 0 && currentHours < 0) break;
 
         const bodyPositions = calculateBodyPositions(currentHours, processedBodyData);
         const { met, viewingLatitude, viewingLongitude } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (met) {
-            return {
-                foundHours: currentHours,
-                viewingLongitude: viewingLongitude,
-                viewingLatitude: viewingLatitude,
-            };
+            // Found a potential event, now fine-tune it day by day
+            let fineHours = currentHours - coarseStepHours; // Go back one coarse step
+            for (let j = 0; j < coarseStepDays; j++) {
+                fineHours += fineStepHours;
+                const finePositions = calculateBodyPositions(fineHours, processedBodyData);
+                const fineResult = checkEventConditions(event, finePositions, processedBodyData, sebakaTilt);
+                if (fineResult.met) {
+                     return {
+                        foundHours: fineHours,
+                        viewingLongitude: fineResult.viewingLongitude,
+                        viewingLatitude: fineResult.viewingLatitude,
+                    };
+                }
+            }
         }
     }
 
     console.warn(`Could not find event ${event.name} within ${maxSearchYears} years.`);
     return null;
 }
+
+    
