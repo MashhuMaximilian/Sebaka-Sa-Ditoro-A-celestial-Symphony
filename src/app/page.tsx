@@ -392,7 +392,7 @@ export default function Home() {
     if (!selectedEvent) return;
     setIsSearchingEvent(true);
     
-    // Give browser time to update UI
+    // Give browser time to update UI with loader
     await new Promise(resolve => setTimeout(resolve, 50)); 
     
     const params: EventSearchParams = {
@@ -407,15 +407,21 @@ export default function Home() {
     const foundTime = findNextEvent(params);
     
     if (foundTime !== null) {
-        const totalDays = Math.floor(foundTime / HOURS_IN_SEBAKA_DAY);
-        const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
-        const newTargetDay = ((totalDays % SEBAKA_YEAR_IN_DAYS) + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
-        
-        setTargetYear(newTargetYear);
-        setTargetDay(newTargetDay);
-        if (selectedEvent.viewingLongitude) {
-            setCharacterLongitude(selectedEvent.viewingLongitude);
-        }
+      const totalDays = Math.floor(foundTime / HOURS_IN_SEBAKA_DAY);
+      const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
+      const newTargetDay = ((totalDays % SEBAKA_YEAR_IN_DAYS) + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
+      
+      // Update the input fields to show the found date
+      setTargetYear(newTargetYear);
+      setTargetDay(newTargetDay);
+      
+      // Update the longitude for the best viewing angle
+      if (selectedEvent.viewingLongitude) {
+          setCharacterLongitude(selectedEvent.viewingLongitude);
+      }
+
+      // Directly trigger the time jump
+      setGoToTime(foundTime);
     } else {
         console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
     }
@@ -788,3 +794,5 @@ export default function Home() {
     </main>
   );
 }
+
+    
