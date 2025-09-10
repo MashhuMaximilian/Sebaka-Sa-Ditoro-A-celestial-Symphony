@@ -409,7 +409,7 @@ export default function Home() {
     if (foundTime !== null) {
         const totalDays = Math.floor(foundTime / HOURS_IN_SEBAKA_DAY);
         const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
-        const newTargetDay = (totalDays % SEBAKA_YEAR_IN_DAYS) + 1;
+        const newTargetDay = ((totalDays % SEBAKA_YEAR_IN_DAYS) + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
         
         setTargetYear(newTargetYear);
         setTargetDay(newTargetDay);
@@ -453,7 +453,7 @@ export default function Home() {
                             max={324}
                         />
                         <Button onClick={handleGoToTime} size="sm" disabled={isSearchingEvent}>
-                          {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : "Go"}
+                          Go
                         </Button>
                     </div>
                 </div>
@@ -473,13 +473,13 @@ export default function Home() {
                     </Select>
                     <div className="flex items-center justify-between gap-1">
                          <Button onClick={() => handleGoToEvent('last')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isSearchingEvent}>
-                            <ArrowLeft className="h-4 w-4" /> Go to Last
+                            {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Go to Last
                         </Button>
                         <Button onClick={() => handleGoToEvent('previous')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isSearchingEvent}>
-                            <ArrowLeft className="h-4 w-4" /> Previous
+                             {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Previous
                         </Button>
                          <Button onClick={() => handleGoToEvent('next')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isSearchingEvent}>
-                            Next <ArrowRight className="h-4 w-4" />
+                            Next {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
                         </Button>
                     </div>
                 </div>
