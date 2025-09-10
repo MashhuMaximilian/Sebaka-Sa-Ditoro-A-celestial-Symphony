@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "./ui/button";
 import { texturePaths } from "./CelestialSymphony/utils/createBodyMesh";
+import { SheetTitle } from "./ui/sheet";
 
 interface InfoPanelProps {
   data: PlanetData | StarData | { name: string };
@@ -383,7 +384,9 @@ const InfoPanel = ({
   return (
     <ScrollArea className="h-full w-full p-6">
     <div className="space-y-6 text-sm">
-        <h2 className="text-2xl font-bold">{data.name}</h2>
+        <SheetTitle>
+            <h2 className="text-2xl font-bold">{data.name}</h2>
+        </SheetTitle>
         
         { 'type' in data && (
             <>
