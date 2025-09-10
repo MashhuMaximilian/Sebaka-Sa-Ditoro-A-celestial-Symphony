@@ -382,8 +382,8 @@ const InfoPanel = ({
   }
   
   return (
-    <ScrollArea className="h-full w-full p-6">
-    <div className="space-y-6 text-sm">
+    <ScrollArea className="h-full w-full">
+      <div className="p-6 space-y-6 text-sm">
         <SheetTitle className="text-2xl font-bold">{data.name}</SheetTitle>
         
         { 'type' in data && (
@@ -428,7 +428,7 @@ const InfoPanel = ({
         )}
         
         {renderMaterialSettings()}
-    </div>
+      </div>
     </ScrollArea>
   );
 };

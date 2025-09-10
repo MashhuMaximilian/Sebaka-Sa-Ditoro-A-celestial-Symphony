@@ -409,7 +409,7 @@ export default function Home() {
     if (foundTime !== null) {
       const totalDays = Math.floor(foundTime / HOURS_IN_SEBAKA_DAY);
       const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
-      const newTargetDay = ((totalDays % SEBAKA_YEAR_IN_DAYS) + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
+      const newTargetDay = (totalDays % SEBAKA_YEAR_IN_DAYS + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
       
       // Update the input fields to show the found date
       setTargetYear(newTargetYear);
@@ -794,5 +794,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

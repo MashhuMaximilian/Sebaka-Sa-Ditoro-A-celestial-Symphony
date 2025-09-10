@@ -31,7 +31,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare near-alignment of Rutilus, Sebaka, Spectris, Viridis, and Aetheris in a “Celestial Crescent” (~20–30 nights), a prophetic event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        maxSeparation: 20,
+        maxSeparation: 10,
         viewingLongitude: 180,
         approximatePeriodDays: 795060, // ~2454 Sebakan years
     },
@@ -126,5 +126,14 @@ export const celestialEvents: CelestialEvent[] = [
         maxSeparation: 1, // Wider tolerance for this rare event
         viewingLongitude: 188,
         approximatePeriodDays: 15_877_620, // ~49005 Sebakan years
+    },
+    {
+        name: "Inner Conjunction",
+        description: "A rare alignment where all inner planets eclipse each other.",
+        type: 'occultation',
+        primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
+        maxSeparation: 1.0, // Aetheris is ~0.5 deg, so this is tight
+        viewingLongitude: 180,
+        approximatePeriodDays: 25_000_000, // Extremely rare
     },
 ];
