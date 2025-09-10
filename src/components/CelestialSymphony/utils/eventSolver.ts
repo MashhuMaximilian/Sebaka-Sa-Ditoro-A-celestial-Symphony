@@ -1,4 +1,5 @@
 
+
 import * as THREE from 'three';
 import { type CelestialEvent } from '../constants/events';
 import { type AnyBodyData } from '@/types';
@@ -114,43 +115,53 @@ function checkEventConditions(
     switch (event.type) {
         case 'conjunction':
         case 'cluster': {
-             let minAzimuth = Infinity, maxAzimuth = -Infinity;
-             finalBodyVectors.forEach(({ vec }) => {
-                // Azimuth is the angle on the XZ plane (like a compass)
-                const azimuth = Math.atan2(vec.z, vec.x);
-                minAzimuth = Math.min(minAzimuth, azimuth);
-                maxAzimuth = Math.max(maxAzimuth, azimuth);
-             });
-             let separation = THREE.MathUtils.radToDeg(maxAzimuth - minAzimuth);
-             if (separation > 180) separation = 360 - separation; // Handle wrap-around
-             return { met: separation <= event.maxSeparation, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+             // Calculate the average position vector
+            const avgVector = new THREE.Vector3();
+            finalBodyVectors.forEach(({ vec }) => avgVector.add(vec));
+            avgVector.normalize();
+
+            // Check if all bodies are within maxSeparation of the average vector
+            for (const { vec } of finalBodyVectors) {
+                if (getAngularSeparation(vec, avgVector) > event.maxSeparation) {
+                    return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                }
+            }
+            return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
         
         case 'occultation': {
             if (finalBodyVectors.length < 2) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
-            // Check all pairs for overlap
-            for (let i = 0; i < finalBodyVectors.length; i++) {
-                for (let j = i + 1; j < finalBodyVectors.length; j++) {
-                    const body1 = finalBodyVectors[i];
-                    const body2 = finalBodyVectors[j];
-                    
-                    const separation = getAngularSeparation(body1.vec, body2.vec);
-                    
-                    const r1 = getApparentRadius(body1.data.size, body1.pos, finalViewpoint);
-                    const r2 = getApparentRadius(body2.data.size, body2.pos, finalViewpoint);
-                    
-                    // Check if they are close enough to potentially overlap
-                    if (separation > r1 + r2) {
-                        return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude }; // Too far apart
-                    }
 
-                    // Check for minimum overlap if specified
-                    if (event.minOverlap) {
-                        const overlapAmount = (r1 + r2 - separation) / (2 * Math.min(r1, r2));
-                        if (overlapAmount < event.minOverlap) {
-                            return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude }; // Not enough overlap
-                        }
+            // For multi-body occultations, treat it as a very tight cluster
+            if (finalBodyVectors.length > 2) {
+                const avgVector = new THREE.Vector3();
+                finalBodyVectors.forEach(({ vec }) => avgVector.add(vec));
+                avgVector.normalize();
+
+                for (const { vec } of finalBodyVectors) {
+                    if (getAngularSeparation(vec, avgVector) > event.maxSeparation) {
+                        return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                     }
+                }
+                return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+            }
+
+            // Standard pairwise occultation
+            const body1 = finalBodyVectors[0];
+            const body2 = finalBodyVectors[1];
+            
+            const separation = getAngularSeparation(body1.vec, body2.vec);
+            const r1 = getApparentRadius(body1.data.size, body1.pos, finalViewpoint);
+            const r2 = getApparentRadius(body2.data.size, body2.pos, finalViewpoint);
+            
+            if (separation > r1 + r2) {
+                return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude }; // Too far apart
+            }
+
+            if (event.minOverlap) {
+                const overlapAmount = (r1 + r2 - separation) / (2 * Math.min(r1, r2));
+                if (overlapAmount < event.minOverlap) {
+                    return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude }; // Not enough overlap
                 }
             }
             return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -194,7 +205,8 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     
     // The Great Conjunction at year 0 is a fixed anchor point of the lore.
     if (event.name === "Great Conjunction" && startHours === 0 && direction !== 'next') {
-        return { foundHours: 0, viewingLongitude: event.viewingLongitude ?? 180, viewingLatitude: 0 };
+        const result = checkEventConditions(event, calculateBodyPositions(0, getBodyData(allBodiesData)), getBodyData(allBodiesData), 23.5);
+        return { foundHours: 0, viewingLongitude: event.viewingLongitude ?? 180, viewingLatitude: result.viewingLatitude };
     }
 
     const processedBodyData = getBodyData(allBodiesData);
