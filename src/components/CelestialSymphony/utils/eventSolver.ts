@@ -1,5 +1,4 @@
 
-
 import * as THREE from 'three';
 import { type CelestialEvent } from '../constants/events';
 import { type AnyBodyData } from '@/types';
@@ -29,7 +28,6 @@ interface BodyVectorInfo {
     apparentRadius: number;
 }
 
-// Get the vector from the viewpoint on Sebaka's surface to a celestial body
 function getBodyVector(
     bodyPos: THREE.Vector3,
     sebakaPos: THREE.Vector3,
@@ -43,11 +41,10 @@ function getBodyVector(
 
     const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(
         sebakaRadius,
-        Math.PI / 2 - latRad, // colatitude
+        Math.PI / 2 - latRad,
         lonRad
     );
     
-    // Apply Sebaka's axial tilt
     const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
     viewpointOffset.applyQuaternion(tiltQuat);
     
@@ -56,17 +53,14 @@ function getBodyVector(
     return new THREE.Vector3().subVectors(bodyPos, viewpoint);
 }
 
-// Calculate angular separation in degrees
 function getAngularSeparation(v1: THREE.Vector3, v2: THREE.Vector3): number {
     return THREE.MathUtils.radToDeg(v1.angleTo(v2));
 }
 
-// Calculate apparent radius of a body in degrees
 function getApparentRadius(bodySize: number, distance: number): number {
     return THREE.MathUtils.radToDeg(Math.atan(bodySize / distance));
 }
 
-// Check if the event conditions are met
 function checkEventConditions(
     event: CelestialEvent,
     bodyPositions: { [key: string]: THREE.Vector3 },
@@ -81,12 +75,10 @@ function checkEventConditions(
     
     const allRelevantBodyNames = [...event.primaryBodies, ...(event.secondaryBodies || [])];
 
-    // Find the optimal latitude by centering the primary bodies in the view
     const primaryBodyInfoForLat = (event.primaryBodies.map(name => {
         const bodyData = processedBodyData.find(d => d.name === name);
         const bodyPos = bodyPositions[name];
         if (!bodyData || !bodyPos) return null;
-        // Get vector from a baseline latitude of 0
         const vec = getBodyVector(bodyPos, sebakaPos, sebakaData.size, sebakaTilt, longitude, 0);
         return { vec };
     }).filter(Boolean) as { vec: THREE.Vector3 }[]);
@@ -101,13 +93,12 @@ function checkEventConditions(
     const avgY = totalY / primaryBodyInfoForLat.length;
     const optimalLatitude = -THREE.MathUtils.radToDeg(Math.asin(avgY));
 
-    // Now get all body info with the calculated optimal latitude
     const allBodyInfo = (allRelevantBodyNames.map(name => {
         const bodyData = processedBodyData.find(d => d.name === name);
         const bodyPos = bodyPositions[name];
         if (!bodyData || !bodyPos) return null;
         const vec = getBodyVector(bodyPos, sebakaPos, sebakaData.size, sebakaTilt, longitude, optimalLatitude).normalize();
-        const distance = bodyPos.distanceTo(sebakaPos); // simplified distance
+        const distance = bodyPos.distanceTo(sebakaPos);
         const apparentRadius = getApparentRadius(bodyData.size, distance);
         return { name, vec, pos: bodyPos, data: bodyData, apparentRadius };
     }).filter(Boolean) as BodyVectorInfo[]);
@@ -116,9 +107,9 @@ function checkEventConditions(
 
     if (primaryBodyInfo.length !== event.primaryBodies.length) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
     
-    // Check if secondary bodies are present and visible
     if (event.secondaryBodies) {
-      if (allBodyInfo.length !== allRelevantBodyNames.length) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+        const secondaryBodyInfo = allBodyInfo.filter(info => event.secondaryBodies?.includes(info.name));
+        if (secondaryBodyInfo.length !== event.secondaryBodies.length) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
     }
 
     switch (event.type) {
@@ -126,23 +117,22 @@ function checkEventConditions(
             if (primaryBodyInfo.length < 2) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
             
             let maxAngle = 0;
-            // Find the widest separation between any two planets in the group
             for (let i = 0; i < primaryBodyInfo.length; i++) {
                 for (let j = i + 1; j < primaryBodyInfo.length; j++) {
                     const angle = getAngularSeparation(primaryBodyInfo[i].vec, primaryBodyInfo[j].vec);
-                    if (angle > maxAngle) maxAngle = angle;
+                    if (angle > maxAngle) {
+                        maxAngle = angle;
+                    }
                 }
             }
+
             if (maxAngle > event.longitudeTolerance) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
-            
-            // If minSeparation is defined, ensure no two planets are closer than that
+
             if (event.minSeparation) {
                  for (let i = 0; i < primaryBodyInfo.length; i++) {
                     for (let j = i + 1; j < primaryBodyInfo.length; j++) {
                         const separation = getAngularSeparation(primaryBodyInfo[i].vec, primaryBodyInfo[j].vec);
-                        const r1 = primaryBodyInfo[i].apparentRadius;
-                        const r2 = primaryBodyInfo[j].apparentRadius;
-                        if (separation < (r1 + r2 + event.minSeparation)) {
+                        if (separation < event.minSeparation) {
                              return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                         }
                     }
@@ -159,6 +149,16 @@ function checkEventConditions(
             for (const { vec } of primaryBodyInfo) {
                 if (getAngularSeparation(vec, avgVector) > event.longitudeTolerance) {
                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                }
+            }
+            if (event.secondaryBodies) {
+                const secondaryBodyInfo = allBodyInfo.filter(info => event.secondaryBodies?.includes(info.name));
+                for (const { vec } of secondaryBodyInfo) {
+                     const separation = getAngularSeparation(vec, avgVector);
+                     // Allow secondary bodies to be further away
+                     if (separation > event.longitudeTolerance * 3) {
+                         return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                     }
                 }
             }
             return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -180,20 +180,6 @@ function checkEventConditions(
                 return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
             }
             
-            if (event.overlapThreshold && event.overlapThreshold > 0) {
-                // For a multi-body stack, ensure all are clustered tightly enough.
-                const avgVector = new THREE.Vector3();
-                primaryBodyInfo.forEach(({ vec }) => avgVector.add(vec));
-                avgVector.normalize();
-
-                for (const { vec, apparentRadius } of primaryBodyInfo) {
-                    const separationFromCenter = getAngularSeparation(vec, avgVector);
-                    // This is a simplified check: if separation from center is larger than its own radius, it's probably not "in the stack"
-                    if (separationFromCenter > (apparentRadius * (1 + event.overlapThreshold))) {
-                        return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
-                    }
-                }
-            }
             return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
         
@@ -216,9 +202,8 @@ function checkEventConditions(
     }
 }
 
-// Main solver function
 export function findNextEvent(params: EventSearchParams): EventSearchResult | null {
-    const { startHours, event, allBodiesData, direction, HOURS_IN_SEBAKA_DAY } = params;
+    const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY } = params;
 
     const processedBodyData = getBodyData(allBodiesData);
     const sebakaData = processedBodyData.find(b => b.name === 'Sebaka');
@@ -226,30 +211,44 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     const sebakaTilt = sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
     
     const timeMultiplier = direction === 'next' ? 1 : -1;
-    // Add a small offset to prevent finding the exact same event again
-    let currentHours = startHours + (1 * timeMultiplier);
+    // Start search one day after/before the current time to avoid finding the same event
+    let currentHours = startHours + (HOURS_IN_SEBAKA_DAY * timeMultiplier);
 
-    // Use a coarse step for very rare events to speed up search
-    const coarseStepDays = event.approximatePeriodDays > 5000 ? Math.max(1, Math.floor(event.approximatePeriodDays / 365 / 10)) : 1;
-    const coarseStepHours = coarseStepDays * HOURS_IN_SEBAKA_DAY * timeMultiplier;
+    const positionCache: { [hours: number]: { [name: string]: THREE.Vector3 } } = {};
+    const getCachedPositions = (hours: number) => {
+        // Cache positions daily to improve performance
+        const roundedHours = Math.floor(hours / HOURS_IN_SEBAKA_DAY) * HOURS_IN_SEBAKA_DAY;
+        if (!positionCache[roundedHours]) {
+            positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
+        }
+        return positionCache[roundedHours];
+    };
     
-    const maxSearchIterations = 500000; // Safety break to prevent infinite loops
+    // Define search steps - scale with event rarity for performance
+    let coarseStepDays = 100;
+    if (event.approximatePeriodDays > 10000) coarseStepDays = 365; // ~1 year
+    if (event.approximatePeriodDays > 1000000) coarseStepDays = 365 * 10; // ~10 years
+    let coarseStepHours = coarseStepDays * HOURS_IN_SEBAKA_DAY * timeMultiplier;
+
+    // Safety break to prevent infinite loops on extremely rare events
+    const maxSearchIterations = 10000;
 
     for (let i = 0; i < maxSearchIterations; i++) {
-        const bodyPositions = calculateBodyPositions(currentHours, processedBodyData);
+        const bodyPositions = getCachedPositions(currentHours);
         const { met } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (met) {
-            // Found a potential event with the coarse step. Now scan the previous interval finely.
-            let fineHours = currentHours - coarseStepHours;
+            // Coarse step found a match. Now scan the previous interval finely to find the *first* day.
+            let fineHoursStart = currentHours - coarseStepHours;
+            const fineStepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
             
             for (let j = 0; j < coarseStepDays; j++) {
-                const fineCheckHours = fineHours + (j * HOURS_IN_SEBAKA_DAY * timeMultiplier);
-                const finePositions = calculateBodyPositions(fineCheckHours, processedBodyData);
+                const fineCheckHours = fineHoursStart + j * fineStepHours;
+                const finePositions = getCachedPositions(fineCheckHours);
                 const fineResult = checkEventConditions(event, finePositions, processedBodyData, sebakaTilt);
 
                 if (fineResult.met) {
-                    // We found the first day of the event in this interval.
+                    // This is the first day the event is met in this window.
                     return {
                         foundHours: fineCheckHours,
                         viewingLongitude: fineResult.viewingLongitude,
@@ -257,8 +256,7 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
                     };
                 }
             }
-             // If we found a match on a coarse step but not in the fine scan, it means the event started
-             // exactly on the coarse step. Return that.
+            // If the fine scan didn't find it, it means the event started exactly on the coarse step day.
             const finalResult = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
             return {
                 foundHours: currentHours,
@@ -268,7 +266,7 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         }
 
         currentHours += coarseStepHours;
-        if (timeMultiplier < 0 && currentHours < 0) break;
+        if (timeMultiplier < 0 && currentHours < 0) break; // Don't search before year 0
     }
 
     console.warn(`Could not find event ${event.name} within the search limit.`);
