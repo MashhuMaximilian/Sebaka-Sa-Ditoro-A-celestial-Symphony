@@ -270,7 +270,6 @@ export default function Home() {
   useEffect(() => {
     if (goToTime === null) return;
     
-    // This effect is responsible for updating the display year/day when a jump is in progress
     const totalDays = Math.floor(goToTime / HOURS_IN_SEBAKA_DAY);
     const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
     const newTargetDay = (totalDays % SEBAKA_YEAR_IN_DAYS + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
@@ -343,7 +342,7 @@ export default function Home() {
     const day = Math.max(1, Math.min(SEBAKA_YEAR_IN_DAYS, targetDay));
     const newElapsedHours = (year * SEBAKA_YEAR_IN_DAYS + (day - 1)) * HOURS_IN_SEBAKA_DAY;
     setGoToTime(newElapsedHours);
-    setIsJumpingTime(true); // Disable controls on manual jump
+    setIsJumpingTime(true);
   }
 
   const handleTimeUpdate = (hours: number) => {
@@ -355,7 +354,7 @@ export default function Home() {
 
   const resetGoToTime = () => {
     setGoToTime(null);
-    setIsJumpingTime(false); // Re-enable controls
+    setIsJumpingTime(false);
   };
   
   const handleFocusTargetChange = (target: string) => {
@@ -398,16 +397,15 @@ export default function Home() {
     setSelectedEvent(event);
   };
   
-  const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'last') => {
+  const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'first') => {
     if (!selectedEvent || isJumpingTime) return;
 
     setIsJumpingTime(true);
     
-    // Give UI time to update to show loading state
     await new Promise(resolve => setTimeout(resolve, 50)); 
     
     const params: EventSearchParams = {
-      startHours: elapsedHours,
+      startHours: direction === 'first' ? 0 : elapsedHours,
       event: selectedEvent,
       allBodiesData: [...initialStars, ...initialPlanets],
       direction,
@@ -418,16 +416,17 @@ export default function Home() {
     const foundResult = findNextEvent(params);
     
     if (foundResult) {
+      if (!viewFromSebaka) {
+        enterSebakaView();
+      }
       setCharacterLongitude(foundResult.viewingLongitude);
       setCharacterLatitude(foundResult.viewingLatitude);
       setGoToTime(foundResult.foundHours);
     } else {
         console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
-        // If no event is found, re-enable buttons
         setIsJumpingTime(false);
     }
-    // `resetGoToTime` will set isJumpingTime to false on completion
-  }, [selectedEvent, elapsedHours, isJumpingTime]);
+  }, [selectedEvent, elapsedHours, isJumpingTime, viewFromSebaka]);
   
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;
@@ -482,8 +481,8 @@ export default function Home() {
                         </SelectContent>
                     </Select>
                     <div className="flex items-center justify-between gap-1">
-                         <Button onClick={() => handleGoToEvent('last')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
-                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Go to Last
+                         <Button onClick={() => handleGoToEvent('first')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
+                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Go to First
                         </Button>
                         <Button onClick={() => handleGoToEvent('previous')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
                              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Previous
