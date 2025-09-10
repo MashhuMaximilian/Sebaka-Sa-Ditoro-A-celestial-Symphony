@@ -151,25 +151,21 @@ function checkEventConditions(
         case 'occultation': {
             if (primaryBodyInfo.length < 2) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
             
-            // Sort bodies by distance from observer (closest first)
             const sortedBodies = [...primaryBodyInfo].sort((a, b) => a.distance - b.distance);
             
-            // Check for stacked overlaps
             for (let i = 0; i < sortedBodies.length - 1; i++) {
                 const foreground = sortedBodies[i];
                 const background = sortedBodies[i + 1];
                 
                 const separationAngleDeg = THREE.MathUtils.radToDeg(foreground.vec.angleTo(background.vec));
-                
-                // The angle between the two bodies must be less than the apparent radius of the background body.
-                // Using overlapThreshold to provide a buffer
-                const maxSeparation = background.apparentRadius * (1 + (event.overlapThreshold ?? 0.1));
+                const overlapThreshold = event.overlapThreshold ?? 0.1;
+                const maxSeparation = foreground.apparentRadius + background.apparentRadius * overlapThreshold;
+
                 if (separationAngleDeg > maxSeparation) {
                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                 }
             }
             
-            // Finally, check that all bodies are within the overall longitude tolerance
             const avgVector = new THREE.Vector3();
             sortedBodies.forEach(({ vec }) => avgVector.add(vec));
             avgVector.normalize();
@@ -222,22 +218,19 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         return positionCache[roundedHours];
     };
 
-    // --- New: Escape Current Event Duration ---
     if (direction !== 'first') {
         let isStillInEvent = true;
         let escapeHours = startHours;
         const initialCheck = checkEventConditions(event, getCachedPositions(escapeHours), processedBodyData, sebakaTilt);
 
         if (initialCheck.met) {
-            // Scan forward/backward day-by-day to find the edge of the current event occurrence
             while (isStillInEvent) {
                 escapeHours += HOURS_IN_SEBAKA_DAY * timeMultiplier;
                 const currentCheck = checkEventConditions(event, getCachedPositions(escapeHours), processedBodyData, sebakaTilt);
                 if (!currentCheck.met) {
                     isStillInEvent = false;
-                    searchStartHours = escapeHours; // Start search from the day *after* the event ends
+                    searchStartHours = escapeHours;
                 }
-                // Safety break: limit escape scan to 30 days.
                 if (Math.abs(escapeHours - startHours) > (30 * HOURS_IN_SEBAKA_DAY)) {
                      console.warn("Event duration escape exceeded 30 days, breaking.");
                      break;
@@ -246,53 +239,53 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         }
     }
     
-    // Start the actual search one day after the starting point (or after the escaped event).
     let currentHours = searchStartHours + (HOURS_IN_SEBAKA_DAY * timeMultiplier);
 
-    // Define search steps - scale with event rarity for performance
-    // 1% of period, but min 1 day and max 10 years
-    const coarseStepDays = Math.min(3650, Math.max(1, Math.floor(event.approximatePeriodDays / 100)));
+    const coarseStepDays = Math.min(365, Math.max(1, Math.floor(event.approximatePeriodDays / 100)));
     let coarseStepHours = coarseStepDays * HOURS_IN_SEBAKA_DAY * timeMultiplier;
-
-    // Safety break to prevent infinite loops on extremely rare events
-    const maxSearchYears = 1000000; // 1 million year search limit
-    const maxSearchIterations = Math.floor((maxSearchYears * SEBAKA_YEAR_IN_DAYS) / coarseStepDays);
-
+    
+    const maxSearchYears = 10000000;
+    const maxSearchIterations = Math.ceil(maxSearchYears * SEBAKA_YEAR_IN_DAYS / coarseStepDays);
 
     for (let i = 0; i < maxSearchIterations; i++) {
         const bodyPositions = getCachedPositions(currentHours);
         const { met } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (met) {
-            // Coarse step found a match. Now scan the previous interval finely to find the *first* day.
             let fineHoursStart = currentHours - coarseStepHours;
             const fineStepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
             
-            for (let j = 0; j < coarseStepDays; j++) {
+            for (let j = 0; j < coarseStepDays * 2; j++) {
                 const fineCheckHours = fineHoursStart + j * fineStepHours;
+                if (timeMultiplier > 0 && fineCheckHours < searchStartHours) continue;
+                if (timeMultiplier < 0 && fineCheckHours > searchStartHours) continue;
+
                 const finePositions = getCachedPositions(fineCheckHours);
                 const fineResult = checkEventConditions(event, finePositions, processedBodyData, sebakaTilt);
 
                 if (fineResult.met) {
-                    // This is the first day the event is met in this window.
-                    return {
-                        foundHours: fineCheckHours,
-                        viewingLongitude: fineResult.viewingLongitude,
-                        viewingLatitude: fineResult.viewingLatitude,
-                    };
+                    // Duration validation
+                    let durationDays = 0;
+                    let durationCheckHours = fineCheckHours;
+                    while(checkEventConditions(event, getCachedPositions(durationCheckHours), processedBodyData, sebakaTilt).met) {
+                        durationDays++;
+                        durationCheckHours += HOURS_IN_SEBAKA_DAY * timeMultiplier;
+                        if(durationDays > 5) break; // Check for max 5 days to confirm stability
+                    }
+
+                    if (durationDays >= 3) {
+                         return {
+                            foundHours: fineCheckHours,
+                            viewingLongitude: fineResult.viewingLongitude,
+                            viewingLatitude: fineResult.viewingLatitude,
+                        };
+                    }
                 }
             }
-            // If the fine scan didn't find it, it means the event started exactly on the coarse step day.
-            const finalResult = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
-            return {
-                foundHours: currentHours,
-                viewingLongitude: finalResult.viewingLongitude,
-                viewingLatitude: finalResult.viewingLatitude,
-            };
         }
 
         currentHours += coarseStepHours;
-        if (timeMultiplier < 0 && currentHours < 0) break; // Don't search before year 0
+        if (timeMultiplier < 0 && currentHours < 0) break;
     }
 
     console.warn(`Could not find event ${event.name} within ${maxSearchYears} years.`);
