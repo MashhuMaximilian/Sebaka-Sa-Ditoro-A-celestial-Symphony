@@ -1,6 +1,6 @@
 
 export type EventAlignmentType =
-    | 'conjunction' // All bodies within a tight arc
+    | 'conjunction' // All bodies within a tight arc, but not overlapping
     | 'occultation' // Two or more bodies overlap
     | 'cluster'     // Bodies within a wider arc
     | 'dominance'   // One body is prominent, others are far away
@@ -12,10 +12,10 @@ export interface CelestialEvent {
     type: EventAlignmentType;
     primaryBodies: string[];
     secondaryBodies?: string[];
-    longitudeTolerance: number; // Max longitude deviation in degrees
+    longitudeTolerance: number; // Max angular deviation from mean in degrees
+    minSeparation?: number; // Min separation for dominance events or non-overlapping conjunctions
     overlapThreshold?: number; // Min overlap fraction for occultations (0–1)
-    minSeparation?: number; // Min separation for dominance or non-overlapping conjunctions
-    viewingLongitude?: number;
+    viewingLongitude?: number; // Optimal longitude on Sebaka (degrees)
     visibilityCondition?: 'night' | 'twilight' | 'day';
     approximatePeriodDays: number; // Guide for detection window
 }
@@ -27,8 +27,8 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare alignment of Rutilus, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic night event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 20, // Max arc spread
-        minSeparation: 1.0,   // Min separation between any two planets
+        longitudeTolerance: 20, // A wide 20-degree arc
+        minSeparation: 1.0,    // But no two planets can be closer than 1.0 degree
         viewingLongitude: 180,
         visibilityCondition: 'night',
         approximatePeriodDays: 795060, // ~2,454 Sebakan years
@@ -81,7 +81,7 @@ export const celestialEvents: CelestialEvent[] = [
         type: 'dominance',
         primaryBodies: ["Aetheris"],
         secondaryBodies: ["Spectris", "Viridis"],
-        longitudeTolerance: 180, // Not relevant for dominance checks
+        longitudeTolerance: 180, // Not relevant for dominance
         minSeparation: 20,
         viewingLongitude: 180,
         visibilityCondition: 'night',
@@ -132,7 +132,7 @@ export const celestialEvents: CelestialEvent[] = [
     },
     {
         name: "Triple Cascade",
-        description: "Rare occultation of Viridis, Spectris, and Aetheris, a 'Triple Cascade,' at night.",
+        description: "Extremely rare occultation of all three, a 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"],
         longitudeTolerance: 0.5,
@@ -145,7 +145,7 @@ export const celestialEvents: CelestialEvent[] = [
         name: "Quadruple Cascade (Inner Conjunction)",
         description: "Extremely rare occultation of Rutilus, Spectris, Viridis, and Aetheris, an 'Inner Eclipse,' at night.",
         type: 'occultation',
-        primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
+        primaryBodies: ["Rutilus", "Spectris", "Viridis", "Aetheris"],
         longitudeTolerance: 0.5,
         overlapThreshold: 0.5,
         viewingLongitude: 180,
