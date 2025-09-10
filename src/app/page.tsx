@@ -402,6 +402,7 @@ export default function Home() {
 
     setIsJumpingTime(true);
     
+    // Give the UI a moment to update to the loading state
     await new Promise(resolve => setTimeout(resolve, 50)); 
     
     const params: EventSearchParams = {
@@ -424,9 +425,10 @@ export default function Home() {
       setGoToTime(foundResult.foundHours);
     } else {
         console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
+        // If nothing is found, re-enable the buttons
         setIsJumpingTime(false);
     }
-  }, [selectedEvent, elapsedHours, isJumpingTime, viewFromSebaka]);
+  }, [selectedEvent, elapsedHours, isJumpingTime, viewFromSebaka, enterSebakaView]);
   
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;

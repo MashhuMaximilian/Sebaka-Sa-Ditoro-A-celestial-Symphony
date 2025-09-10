@@ -53,7 +53,6 @@ function checkEventConditions(
         const bodyPos = bodyPositions[name];
         if (!bodyData || !bodyPos) return null;
         
-        // Simplified viewpoint on equator for latitude calculation
         const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(sebakaData.size, Math.PI / 2, THREE.MathUtils.degToRad(longitude));
         const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
         viewpointOffset.applyQuaternion(tiltQuat);
@@ -163,7 +162,9 @@ function checkEventConditions(
                 const separationAngleDeg = THREE.MathUtils.radToDeg(foreground.vec.angleTo(background.vec));
                 
                 // The angle between the two bodies must be less than the apparent radius of the background body.
-                if (separationAngleDeg > background.apparentRadius) {
+                // Using overlapThreshold to provide a buffer
+                const maxSeparation = background.apparentRadius * (1 + (event.overlapThreshold ?? 0.1));
+                if (separationAngleDeg > maxSeparation) {
                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                 }
             }
@@ -209,7 +210,7 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     const sebakaTilt = sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
     
     const timeMultiplier = direction === 'previous' ? -1 : 1;
-    let searchStartHours = startHours;
+    let searchStartHours = direction === 'first' ? 0 : startHours;
 
     const positionCache: { [hours: number]: { [name: string]: THREE.Vector3 } } = {};
     const getCachedPositions = (hours: number) => {
@@ -222,7 +223,6 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     };
 
     // --- New: Escape Current Event Duration ---
-    // If we're already in an event, fast-forward to the end of it before starting the search.
     if (direction !== 'first') {
         let isStillInEvent = true;
         let escapeHours = startHours;
@@ -237,25 +237,27 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
                     isStillInEvent = false;
                     searchStartHours = escapeHours; // Start search from the day *after* the event ends
                 }
-                // Safety break
-                if (Math.abs(escapeHours - startHours) > (365 * HOURS_IN_SEBAKA_DAY)) {
-                     console.warn("Event duration escape exceeded 1 year, breaking.");
+                // Safety break: limit escape scan to 30 days.
+                if (Math.abs(escapeHours - startHours) > (30 * HOURS_IN_SEBAKA_DAY)) {
+                     console.warn("Event duration escape exceeded 30 days, breaking.");
                      break;
                 }
             }
         }
     }
     
+    // Start the actual search one day after the starting point (or after the escaped event).
     let currentHours = searchStartHours + (HOURS_IN_SEBAKA_DAY * timeMultiplier);
 
     // Define search steps - scale with event rarity for performance
-    let coarseStepDays = 100;
-    if (event.approximatePeriodDays > 10000) coarseStepDays = 365; // ~1 year
-    if (event.approximatePeriodDays > 1000000) coarseStepDays = 365 * 10; // ~10 years
+    // 1% of period, but min 1 day and max 10 years
+    const coarseStepDays = Math.min(3650, Math.max(1, Math.floor(event.approximatePeriodDays / 100)));
     let coarseStepHours = coarseStepDays * HOURS_IN_SEBAKA_DAY * timeMultiplier;
 
     // Safety break to prevent infinite loops on extremely rare events
-    const maxSearchIterations = 10000;
+    const maxSearchYears = 1000000; // 1 million year search limit
+    const maxSearchIterations = Math.floor((maxSearchYears * SEBAKA_YEAR_IN_DAYS) / coarseStepDays);
+
 
     for (let i = 0; i < maxSearchIterations; i++) {
         const bodyPositions = getCachedPositions(currentHours);
@@ -293,6 +295,6 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         if (timeMultiplier < 0 && currentHours < 0) break; // Don't search before year 0
     }
 
-    console.warn(`Could not find event ${event.name} within the search limit.`);
+    console.warn(`Could not find event ${event.name} within ${maxSearchYears} years.`);
     return null;
 }
