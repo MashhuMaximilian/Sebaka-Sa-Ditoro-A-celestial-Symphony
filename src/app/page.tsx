@@ -1,12 +1,13 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
-import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import { celestialEvents, type CelestialEvent } from "@/components/CelestialSymphony/constants/events";
+import { findNextEvent, type EventSearchParams } from "@/components/CelestialSymphony/utils/eventSolver";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+}
+from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +36,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { SheetTitle } from "@/components/ui/sheet";
 
 
 // 1 AU = 150 simulation units.
@@ -263,19 +264,11 @@ export default function Home() {
   const [isFreeCamera, setIsFreeCamera] = useState(false);
   
   const [selectedEvent, setSelectedEvent] = useState<CelestialEvent | null>(null);
+  const [isSearchingEvent, setIsSearchingEvent] = useState(false);
 
   useEffect(() => {
-    if (goToTime !== null) {
-      const newTargetYear = Math.floor(goToTime / (SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY));
-      const remainingHours = goToTime % (SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY);
-      const newTargetDay = Math.floor(remainingHours / HOURS_IN_SEBAKA_DAY) + 1;
-      
-      setTargetYear(newTargetYear);
-      setTargetDay(newTargetDay);
-
-      if (selectedEvent?.viewingLongitude) {
+    if (goToTime !== null && selectedEvent?.viewingLongitude) {
         setCharacterLongitude(selectedEvent.viewingLongitude);
-      }
     }
   }, [goToTime, selectedEvent]);
 
@@ -395,40 +388,40 @@ export default function Home() {
     setSelectedEvent(event);
   };
   
-  const handleGoToEvent = (direction: 'next' | 'previous' | 'last') => {
-    if (!selectedEvent || !selectedEvent.periodDays) return;
-
-    const currentTotalDays = Math.floor(elapsedHours / HOURS_IN_SEBAKA_DAY);
-    const periodInDays = selectedEvent.periodDays;
-  
-    let targetTotalDays: number;
-  
-    if (direction === 'next') {
-        const remainder = currentTotalDays % periodInDays;
-        if (remainder === 0 && currentTotalDays > 0) {
-            targetTotalDays = currentTotalDays + periodInDays;
-        } else {
-            targetTotalDays = currentTotalDays - remainder + periodInDays;
+  const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'last') => {
+    if (!selectedEvent) return;
+    setIsSearchingEvent(true);
+    
+    // Give browser time to update UI
+    await new Promise(resolve => setTimeout(resolve, 50)); 
+    
+    const params: EventSearchParams = {
+      startHours: elapsedHours,
+      event: selectedEvent,
+      allBodiesData: [...initialStars, ...initialPlanets],
+      direction,
+      SEBAKA_YEAR_IN_DAYS,
+      HOURS_IN_SEBAKA_DAY
+    };
+    
+    const foundTime = findNextEvent(params);
+    
+    if (foundTime !== null) {
+        const totalDays = Math.floor(foundTime / HOURS_IN_SEBAKA_DAY);
+        const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
+        const newTargetDay = (totalDays % SEBAKA_YEAR_IN_DAYS) + 1;
+        
+        setTargetYear(newTargetYear);
+        setTargetDay(newTargetDay);
+        if (selectedEvent.viewingLongitude) {
+            setCharacterLongitude(selectedEvent.viewingLongitude);
         }
-    } else if (direction === 'previous') {
-        const remainder = currentTotalDays % periodInDays;
-        if (remainder === 0 && currentTotalDays > 0) {
-            targetTotalDays = Math.max(0, currentTotalDays - periodInDays);
-        } else {
-            targetTotalDays = Math.max(0, currentTotalDays - remainder);
-        }
-    } else { // 'last'
-        targetTotalDays = currentTotalDays - (currentTotalDays % periodInDays);
+    } else {
+        console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
     }
     
-    // Override for Great Conjunction's first event at Year 0, Day 1
-    if (selectedEvent.name === "Great Conjunction" && (direction === 'previous' || direction === 'last') && currentTotalDays < periodInDays) {
-        targetTotalDays = 0;
-    }
-
-    const newGoToTime = targetTotalDays * HOURS_IN_SEBAKA_DAY;
-    setGoToTime(newGoToTime);
-  };
+    setIsSearchingEvent(false);
+  }, [selectedEvent, elapsedHours]);
   
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;
@@ -459,14 +452,16 @@ export default function Home() {
                             min={1}
                             max={324}
                         />
-                        <Button onClick={handleGoToTime} size="sm">Go</Button>
+                        <Button onClick={handleGoToTime} size="sm" disabled={isSearchingEvent}>
+                          {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : "Go"}
+                        </Button>
                     </div>
                 </div>
                 <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex flex-col gap-2">
                     <Label className="text-xs font-medium text-muted-foreground text-center">
                         Celestial Events
                     </Label>
-                    <Select onValueChange={handleEventSelect}>
+                    <Select onValueChange={handleEventSelect} disabled={isSearchingEvent}>
                         <SelectTrigger className="w-full h-8 bg-card">
                             <SelectValue placeholder="Select an event..." />
                         </SelectTrigger>
@@ -477,13 +472,13 @@ export default function Home() {
                         </SelectContent>
                     </Select>
                     <div className="flex items-center justify-between gap-1">
-                         <Button onClick={() => handleGoToEvent('last')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent}>
+                         <Button onClick={() => handleGoToEvent('last')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isSearchingEvent}>
                             <ArrowLeft className="h-4 w-4" /> Go to Last
                         </Button>
-                        <Button onClick={() => handleGoToEvent('previous')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent}>
+                        <Button onClick={() => handleGoToEvent('previous')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isSearchingEvent}>
                             <ArrowLeft className="h-4 w-4" /> Previous
                         </Button>
-                         <Button onClick={() => handleGoToEvent('next')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent}>
+                         <Button onClick={() => handleGoToEvent('next')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isSearchingEvent}>
                             Next <ArrowRight className="h-4 w-4" />
                         </Button>
                     </div>
