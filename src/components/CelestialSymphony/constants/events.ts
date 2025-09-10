@@ -29,8 +29,8 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare near-alignment of Rutilus, Sebaka, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        maxSeparation: 20, // Looser for a wide arc
-        alignmentTolerance: 5, // Allow some deviation for the arc
+        maxSeparation: 20, // A wide arc
+        alignmentTolerance: 5,
         viewingLongitude: 180,
         visibilityCondition: 'night',
         approximatePeriodDays: 795060, // ~2454 Sebakan years
@@ -141,7 +141,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Extremely rare occultation of all three, a 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"],
-        maxSeparation: 1, // 0.5–1° tolerance
+        maxSeparation: 0.5, // Tighter for full eclipse effect
         minOverlap: 0.1,
         viewingLongitude: 188,
         visibilityCondition: 'night',
@@ -152,7 +152,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "A rare alignment where all inner planets eclipse each other.",
         type: 'occultation',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        maxSeparation: 1.0, // Tight eclipse
+        maxSeparation: 0.3, // Very tight for full eclipse
         minOverlap: 0.05,
         viewingLongitude: 180,
         visibilityCondition: 'night',

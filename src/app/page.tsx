@@ -269,11 +269,13 @@ export default function Home() {
   useEffect(() => {
     // This effect ensures that when an event is found and the target date is set,
     // the longitude (and latitude) are updated in the same render cycle.
-    if (goToTime !== null && selectedEvent?.viewingLongitude) {
+    if (goToTime !== null) {
+      if (selectedEvent?.viewingLongitude !== undefined) {
         setCharacterLongitude(selectedEvent.viewingLongitude);
-        if (selectedEvent.viewingLatitude) {
-          setCharacterLatitude(selectedEvent.viewingLatitude);
-        }
+      }
+      if (selectedEvent?.viewingLatitude !== undefined) {
+        setCharacterLatitude(selectedEvent.viewingLatitude);
+      }
     }
   }, [goToTime, selectedEvent]);
 
