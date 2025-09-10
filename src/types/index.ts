@@ -23,6 +23,7 @@ interface CelestialBody {
     moons?: string;
     rotationPeriodHours?: number;
     luminosity?: number;
+    initialPhase?: number; // Starting angle in degrees
 }
 
 export interface PlanetData extends CelestialBody {

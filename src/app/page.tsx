@@ -76,7 +76,7 @@ const initialStars: StarData[] = [
 
 const initialPlanets: PlanetData[] = [
   {
-      name: "Rutilis", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitPeriodDays: 169, eccentric: true, eccentricity: 0.1,
+      name: "Rutilis", color: "#FF6600", size: 3.189, orbitRadius: 0.7 * AU_TO_UNITS, orbitPeriodDays: 169, eccentric: true, eccentricity: 0.1, initialPhase: 0,
       type: 'Planet', classification: 'Terrestrial',
       orbitalRole: 'Innermost planet orbiting Alpha-Twilight binary', orbitalPeriod: '0.522 Sebakan years (169 days)', orbitalDistance: '0.7 AU (periapsis 0.63 AU, apoapsis 0.77 AU)',
       rotation: '40 days', axialTilt: '10°', moons: 'None',
@@ -88,7 +88,7 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 960,
   },
   {
-      name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitPeriodDays: 324, eccentric: true, eccentricity: 0.05,
+      name: "Sebaka", color: "#0096C8", size: 6.371, orbitRadius: 1.08 * AU_TO_UNITS, orbitPeriodDays: 324, eccentric: true, eccentricity: 0.05, initialPhase: 0,
       type: 'Planet', classification: 'Terrestrial (Homeworld)',
       orbitalRole: 'Second planet orbiting Alpha-Twilight binary', orbitalPeriod: '1 Sebakan year (324 days)', orbitalDistance: '1.08 AU (periapsis 1.026 AU, apoapsis 1.134 AU)',
       rotation: '24 hours', axialTilt: '23.5°', moons: 'None',
@@ -100,7 +100,7 @@ const initialPlanets: PlanetData[] = [
       rotationPeriodHours: 24,
   },
   {
-      name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitPeriodDays: 818, eccentric: true, eccentricity: 0.2,
+      name: "Spectris", color: "#B4B4C8", size: 5.097, orbitRadius: 2.0 * AU_TO_UNITS, orbitPeriodDays: 818, eccentric: true, eccentricity: 0.2, initialPhase: 0,
       type: 'Planet', classification: 'Terrestrial',
       orbitalRole: 'Third planet orbiting Alpha-Twilight binary', orbitalPeriod: '2.525 Sebakan years (818 days)', orbitalDistance: '2.0 AU (periapsis 1.6 AU, apoapsis 2.4 AU)',
       rotation: '30 hours', axialTilt: '15°', moons: '1 (28-day orbital period)',
@@ -119,6 +119,7 @@ const initialPlanets: PlanetData[] = [
     orbitPeriodDays: 1500,
     eccentric: true,
     eccentricity: 0.1,
+    initialPhase: 0,
     type: 'Planet',
     classification: 'Terrestrial',
     orbitalRole: 'Fourth planet orbiting Alpha-Twilight binary',
@@ -136,7 +137,7 @@ const initialPlanets: PlanetData[] = [
     rotationPeriodHours: 20,
   },
   {
-      name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true, eccentricity: 0.5,
+      name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true, eccentricity: 0.5, initialPhase: 0,
       type: 'Planet', classification: 'Gas Giant',
       orbitalRole: 'Fifth planet orbiting Alpha-Twilight binary', orbitalPeriod: '13.09 Sebakan years (4,241 days)', orbitalDistance: '6.0 AU (periapsis 3.0 AU, apoapsis 9.0 AU)',
       rotation: '10 hours', axialTilt: '25°', moons: 'Multiple (5–10 visible)',
@@ -155,6 +156,7 @@ const initialPlanets: PlanetData[] = [
       orbitPeriodDays: 8991,
       eccentric: true,
       eccentricity: 0.1,
+      initialPhase: 180,
       type: 'Planet',
       classification: 'Ice Giant',
       orbitalRole: 'First planet orbiting Beacon',
@@ -179,6 +181,7 @@ const initialPlanets: PlanetData[] = [
       orbitPeriodDays: 26820,
       eccentric: true,
       eccentricity: 0.2,
+      initialPhase: 90,
       type: 'Planet',
       classification: 'Ice Dwarf',
       orbitalRole: 'Second planet orbiting Beacon',
