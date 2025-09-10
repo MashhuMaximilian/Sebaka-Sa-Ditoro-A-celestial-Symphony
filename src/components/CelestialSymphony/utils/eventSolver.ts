@@ -26,6 +26,7 @@ interface BodyVectorInfo {
     pos: THREE.Vector3;
     data: ProcessedBodyData;
     apparentRadius: number;
+    distance: number;
 }
 
 function getBodyVector(
@@ -97,10 +98,15 @@ function checkEventConditions(
         const bodyData = processedBodyData.find(d => d.name === name);
         const bodyPos = bodyPositions[name];
         if (!bodyData || !bodyPos) return null;
-        const vec = getBodyVector(bodyPos, sebakaPos, sebakaData.size, sebakaTilt, longitude, optimalLatitude).normalize();
-        const distance = bodyPos.distanceTo(sebakaPos);
+        const viewpoint = new THREE.Vector3().setFromSphericalCoords(sebakaData.size, Math.PI / 2 - THREE.MathUtils.degToRad(optimalLatitude), THREE.MathUtils.degToRad(longitude));
+        const tiltedViewpoint = viewpoint.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
+        const observerPos = sebakaPos.clone().add(tiltedViewpoint);
+
+        const vec = bodyPos.clone().sub(observerPos);
+        const distance = vec.length();
         const apparentRadius = getApparentRadius(bodyData.size, distance);
-        return { name, vec, pos: bodyPos, data: bodyData, apparentRadius };
+        
+        return { name, vec: vec.normalize(), pos: bodyPos, data: bodyData, apparentRadius, distance };
     }).filter(Boolean) as BodyVectorInfo[]);
 
     const primaryBodyInfo = allBodyInfo.filter(info => event.primaryBodies.includes(info.name));
@@ -116,17 +122,20 @@ function checkEventConditions(
         case 'conjunction': {
             if (primaryBodyInfo.length < 2) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
             
-            let maxAngle = 0;
-            for (let i = 0; i < primaryBodyInfo.length; i++) {
-                for (let j = i + 1; j < primaryBodyInfo.length; j++) {
-                    const angle = getAngularSeparation(primaryBodyInfo[i].vec, primaryBodyInfo[j].vec);
-                    if (angle > maxAngle) {
-                        maxAngle = angle;
-                    }
-                }
+            let minAngle = Infinity, maxAngle = -Infinity;
+            const vectors = primaryBodyInfo.map(info => info.vec);
+            const avgVector = vectors.reduce((acc, v) => acc.add(v), new THREE.Vector3()).normalize();
+            
+            vectors.forEach(v => {
+                const angle = v.angleTo(avgVector);
+                minAngle = Math.min(minAngle, angle);
+                maxAngle = Math.max(maxAngle, angle);
+            });
+            const totalSpread = getAngularSeparation(vectors[0], vectors[vectors.length - 1]); // This is simplistic, better to find min/max
+            
+            if (maxAngle * 2 > THREE.MathUtils.degToRad(event.longitudeTolerance)) {
+                 return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
             }
-
-            if (maxAngle > event.longitudeTolerance) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
 
             if (event.minSeparation) {
                  for (let i = 0; i < primaryBodyInfo.length; i++) {
@@ -155,7 +164,6 @@ function checkEventConditions(
                 const secondaryBodyInfo = allBodyInfo.filter(info => event.secondaryBodies?.includes(info.name));
                 for (const { vec } of secondaryBodyInfo) {
                      const separation = getAngularSeparation(vec, avgVector);
-                     // Allow secondary bodies to be further away
                      if (separation > event.longitudeTolerance * 3) {
                          return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                      }
@@ -166,18 +174,28 @@ function checkEventConditions(
         
         case 'occultation': {
             if (primaryBodyInfo.length < 2) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
-
-            let maxSeparationInGroup = 0;
-            for (let i = 0; i < primaryBodyInfo.length; i++) {
-                for (let j = i + 1; j < primaryBodyInfo.length; j++) {
-                     maxSeparationInGroup = Math.max(maxSeparationInGroup, getAngularSeparation(primaryBodyInfo[i].vec, primaryBodyInfo[j].vec));
+             // Sort bodies by distance from viewer (closest first)
+            const sortedBodies = [...primaryBodyInfo].sort((a, b) => a.distance - b.distance);
+            
+            // Check for alignment
+            const avgVector = new THREE.Vector3();
+            sortedBodies.forEach(({ vec }) => avgVector.add(vec));
+            avgVector.normalize();
+            for (const { vec } of sortedBodies) {
+                if (getAngularSeparation(vec, avgVector) > event.longitudeTolerance) {
+                    return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                 }
             }
 
-            const largestBody = primaryBodyInfo.reduce((a,b) => a.apparentRadius > b.apparentRadius ? a : b);
-            
-            if (maxSeparationInGroup > (largestBody.apparentRadius + event.longitudeTolerance)) {
-                return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+            // Check for stacking overlap
+            for (let i = 0; i < sortedBodies.length - 1; i++) {
+                const foreground = sortedBodies[i];
+                const background = sortedBodies[i+1];
+                const separation = getAngularSeparation(foreground.vec, background.vec);
+                const requiredOverlapSeparation = background.apparentRadius + foreground.apparentRadius;
+                if(separation > requiredOverlapSeparation) {
+                    return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                }
             }
             
             return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -211,12 +229,10 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     const sebakaTilt = sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
     
     const timeMultiplier = direction === 'next' ? 1 : -1;
-    // Start search one day after/before the current time to avoid finding the same event
     let currentHours = startHours + (HOURS_IN_SEBAKA_DAY * timeMultiplier);
 
     const positionCache: { [hours: number]: { [name: string]: THREE.Vector3 } } = {};
     const getCachedPositions = (hours: number) => {
-        // Cache positions daily to improve performance
         const roundedHours = Math.floor(hours / HOURS_IN_SEBAKA_DAY) * HOURS_IN_SEBAKA_DAY;
         if (!positionCache[roundedHours]) {
             positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
@@ -224,13 +240,12 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         return positionCache[roundedHours];
     };
     
-    // Define search steps - scale with event rarity for performance
+    // Make coarse step adaptive
     let coarseStepDays = 100;
-    if (event.approximatePeriodDays > 10000) coarseStepDays = 365; // ~1 year
-    if (event.approximatePeriodDays > 1000000) coarseStepDays = 365 * 10; // ~10 years
+    if (event.approximatePeriodDays > 10000) coarseStepDays = 365;
+    if (event.approximatePeriodDays > 1000000) coarseStepDays = 365 * 10;
     let coarseStepHours = coarseStepDays * HOURS_IN_SEBAKA_DAY * timeMultiplier;
 
-    // Safety break to prevent infinite loops on extremely rare events
     const maxSearchIterations = 10000;
 
     for (let i = 0; i < maxSearchIterations; i++) {
@@ -239,11 +254,11 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
 
         if (met) {
             // Coarse step found a match. Now scan the previous interval finely to find the *first* day.
-            let fineHoursStart = currentHours - coarseStepHours;
+            let fineSearchStart = currentHours - coarseStepHours;
             const fineStepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
-            
+
             for (let j = 0; j < coarseStepDays; j++) {
-                const fineCheckHours = fineHoursStart + j * fineStepHours;
+                const fineCheckHours = fineSearchStart + (j * fineStepHours);
                 const finePositions = getCachedPositions(fineCheckHours);
                 const fineResult = checkEventConditions(event, finePositions, processedBodyData, sebakaTilt);
 
@@ -266,9 +281,11 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         }
 
         currentHours += coarseStepHours;
-        if (timeMultiplier < 0 && currentHours < 0) break; // Don't search before year 0
+        if (direction === 'previous' && currentHours < 0) break;
     }
 
     console.warn(`Could not find event ${event.name} within the search limit.`);
     return null;
 }
+
+    
