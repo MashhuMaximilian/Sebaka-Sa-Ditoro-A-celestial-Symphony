@@ -383,36 +383,33 @@ export default function Home() {
   };
   
   const handleGoToEvent = (direction: 'next' | 'previous' | 'last') => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || !selectedEvent.periodDays) return;
   
     const periodInDays = selectedEvent.periodDays;
-    if (!periodInDays) return;
-  
     const currentTotalDays = currentYear * SEBAKA_YEAR_IN_DAYS + (currentDay - 1);
   
     let targetTotalDays: number;
+  
     if (direction === 'next') {
       const occurrences = Math.floor(currentTotalDays / periodInDays);
       targetTotalDays = (occurrences + 1) * periodInDays;
     } else if (direction === 'previous') {
       const occurrences = Math.ceil(currentTotalDays / periodInDays);
-      targetTotalDays = (occurrences - 1) * periodInDays;
-      if (targetTotalDays < 0) targetTotalDays = 0; // Don't go to negative time
+      targetTotalDays = Math.max(0, (occurrences - 1) * periodInDays);
     } else { // 'last'
       const occurrences = Math.floor(currentTotalDays / periodInDays);
       targetTotalDays = occurrences * periodInDays;
       if (targetTotalDays === currentTotalDays && currentTotalDays > 0) {
-        targetTotalDays = (occurrences - 1) * periodInDays;
+        targetTotalDays = Math.max(0, (occurrences - 1) * periodInDays);
       }
-       if (targetTotalDays < 0) targetTotalDays = 0;
     }
-
+  
     const newTargetYear = Math.floor(targetTotalDays / SEBAKA_YEAR_IN_DAYS);
     const newTargetDay = Math.floor(targetTotalDays % SEBAKA_YEAR_IN_DAYS) + 1;
     
     setTargetYear(newTargetYear);
     setTargetDay(newTargetDay);
-  }
+  };
   
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;
@@ -777,5 +774,3 @@ export default function Home() {
     </main>
   );
 }
-
-    
