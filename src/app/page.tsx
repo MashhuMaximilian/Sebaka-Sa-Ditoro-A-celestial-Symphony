@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight, Loader2, Globe } from "lucide-react";
 
-import type { PlanetData, StarData, MaterialProperties } from "@/types";
+import type { PlanetData, StarData, MaterialProperties, AnyBodyData } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import { celestialEvents, type CelestialEvent } from "@/components/CelestialSymphony/constants/events";
 import { findNextEvent, type EventSearchParams } from "@/components/CelestialSymphony/utils/eventSolver";
@@ -48,7 +48,7 @@ const initialStars: StarData[] = [
       name: "Alpha", color: "#FFD700", size: 6.96, orbitPeriodDays: 26,
       type: 'Star', classification: 'G-type Yellow Dwarf',
       orbitalRole: 'Central Binary (orbits common barycenter)', orbitalPeriod: '26 Earth days (0.08 Sebakan years)', orbitalDistance: '0.2 AU',
-      radius: '~1.0 R☉', mass: '1.0 M☉', luminosity: 1,
+      radius: '~1.0 R☉', mass: '1.0', luminosity: 1,
       surface: 'Typical yellow dwarf stellar surface, radiating warm golden light.',
       characteristics: 'Dominant light source, slightly larger and more luminous than Twilight.',
       appearance: 'Appears as the primary sun, a bright golden disk. Creates vibrant golden sunrises, primary driver of day-night cycle.',
@@ -58,7 +58,7 @@ const initialStars: StarData[] = [
       name: "Twilight", color: "#D95B00", size: 4.87, orbitPeriodDays: 26,
       type: 'Star', classification: 'K-type Orange Dwarf',
       orbitalRole: 'Central Binary (orbits common barycenter)', orbitalPeriod: '26 Earth days (0.08 Sebakan years)', orbitalDistance: '0.2 AU',
-      radius: '~0.7 R☉', mass: '0.6 M☉', luminosity: 0.7,
+      radius: '~0.7 R☉', mass: '0.6', luminosity: 0.7,
       surface: 'Typical orange dwarf stellar surface, emitting a warm reddish glow.',
       characteristics: 'Less luminous than Alpha, creates a subtler light.',
       appearance: 'Appears as a secondary sun, smaller and redder than Alpha. Visible during day, prominent at dusk, creating reddish sunsets.',
@@ -68,7 +68,7 @@ const initialStars: StarData[] = [
       name: "Beacon", color: "#B4DCFF", size: 27.84, orbitPeriodDays: 724464, orbitRadius: 200 * AU_TO_UNITS, initialPhase: 0,
       type: 'Star', classification: 'B-type Blue-White Giant',
       orbitalRole: 'Distant Companion (orbits common barycenter of Alpha-Twilight)', orbitalPeriod: '~2,236 Sebakan years (724,464 days)', orbitalDistance: '200 AU',
-      radius: '~4 R☉', mass: '5.0 M☉', luminosity: 1000,
+      radius: '~4 R☉', mass: '5.0', luminosity: 1000,
       surface: 'Brilliant blue-white giant, intensely luminous.',
       characteristics: 'Significantly more luminous than Alpha and Twilight combined. Hosts its own planetary subsystem (Gelidis, Liminis).',
       appearance: 'A brilliant, unblinking point of light (brighter than Sirius), often visible at twilight and occasionally during the day. Its slow generational shift provides a marker for cultural ages.',
@@ -116,7 +116,7 @@ const initialPlanets: PlanetData[] = [
   {
     name: "Viridis",
     color: "#9ACD32",
-    size: 8.282,
+    size: 8.282, // 1.3 R⊕
     orbitRadius: 3.0 * AU_TO_UNITS,
     orbitPeriodDays: 1500,
     eccentric: true,
@@ -139,7 +139,9 @@ const initialPlanets: PlanetData[] = [
     rotationPeriodHours: 20,
   },
   {
-      name: "Aetheris", color: "#5082C8", size: 95.565, orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true, eccentricity: 0.5, initialPhase: 0,
+      name: "Aetheris", color: "#5082C8", 
+      size: 95.565, // 15.0 R⊕
+      orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true, eccentricity: 0.5, initialPhase: 0,
       type: 'Planet', classification: 'Gas Giant',
       orbitalRole: 'Fifth planet orbiting Alpha-Twilight binary', orbitalPeriod: '13.09 Sebakan years (4,241 days)', orbitalDistance: '6.0 AU (periapsis 3.0 AU, apoapsis 9.0 AU)',
       rotation: '10 hours', axialTilt: '25°', moons: 'Multiple (5–10 visible)',
@@ -153,7 +155,7 @@ const initialPlanets: PlanetData[] = [
   {
       name: "Gelidis",
       color: "#1E90FF",
-      size: 25.484,
+      size: 25.484, // 4.0 R⊕
       orbitRadius: 10 * AU_TO_UNITS,
       orbitPeriodDays: 8991,
       eccentric: true,
@@ -178,7 +180,7 @@ const initialPlanets: PlanetData[] = [
   {
       name: "Liminis",
       color: "#F5F5F5",
-      size: 1.274,
+      size: 1.274, // 0.2 R⊕
       orbitRadius: 18.9 * AU_TO_UNITS,
       orbitPeriodDays: 26820,
       eccentric: true,
@@ -240,7 +242,7 @@ export default function Home() {
   const [planets, setPlanets] = useState<PlanetData[]>(initialPlanets);
   const [speedMultiplier, setSpeedMultiplier] = useState(24);
   const [speedInput, setSpeedInput] = useState('24');
-  const [selectedBody, setSelectedBody] = useState<PlanetData | StarData | { name: string } | null>(null);
+  const [selectedBody, setSelectedBody] = useState<AnyBodyData | { name: string } | null>(null);
   const [isInfoPanelOpen, setInfoPanelOpen] = useState(false);
   const [viewFromSebaka, setViewFromSebaka] = useState(false);
   const [isSebakaRotating, setIsSebakaRotating] = useState(true);
@@ -437,7 +439,7 @@ export default function Home() {
 
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
-            <>
+            <div className="space-y-2">
                 <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex flex-col gap-2">
                     <Label className="text-xs font-medium text-muted-foreground text-center">
                         Manual Time Jump
@@ -521,10 +523,10 @@ export default function Home() {
                         </Tooltip>
                     </TooltipProvider>
                 </div>
-            </>
+            </div>
         ),
         move: (
-            <>
+            <div className="space-y-2">
                 <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex items-center gap-2">
                     <Label htmlFor="latitude-slider" className="text-xs font-medium text-muted-foreground min-w-16 text-center">
                       N/S
@@ -570,7 +572,7 @@ export default function Home() {
                     />
                     <span className="text-xs font-medium text-foreground w-10 text-center">{fov.toFixed(0)}°</span>
                 </div>
-            </>
+            </div>
         )
     };
     
@@ -807,3 +809,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

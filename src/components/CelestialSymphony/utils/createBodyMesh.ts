@@ -1,6 +1,6 @@
 
 import * as THREE from 'three';
-import type { BodyData } from '../hooks/useBodyData';
+import type { ProcessedBodyData } from '../hooks/useBodyData';
 import { planetShader } from '../shaders/planetShader';
 import { spiderStrandShader } from '../shaders/spiderStrandShader';
 import { fresnelShader } from '../shaders/fresnelShader';
@@ -121,7 +121,7 @@ export const texturePaths: { [key: string]: { [key: string]: string | undefined 
     }
 };
 
-const createStar = (body: BodyData, initialProps: MaterialProperties[string]) => {
+const createStar = (body: ProcessedBodyData, initialProps: MaterialProperties[string]) => {
     const starGroup = new THREE.Group();
     starGroup.name = body.name;
 
@@ -247,7 +247,7 @@ const createStar = (body: BodyData, initialProps: MaterialProperties[string]) =>
 
 
 export const createBodyMesh = (
-    body: BodyData,
+    body: ProcessedBodyData,
     viewFromSebaka: boolean,
     sebakaGridTexture: THREE.CanvasTexture | null,
     initialProps: MaterialProperties[string]
@@ -390,3 +390,5 @@ export const createBodyMesh = (
     tiltAxis.add(mesh);
     return tiltAxis;
 };
+
+    

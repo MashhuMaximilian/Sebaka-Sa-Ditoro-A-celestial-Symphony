@@ -39,72 +39,95 @@ export const calculateBodyPositions = (
 ): { [key: string]: THREE.Vector3 } => {
     
     const positions: { [key: string]: THREE.Vector3 } = {};
-    const beaconPosition = new THREE.Vector3();
+    let barycenter = new THREE.Vector3(0, 0, 0);
 
-    // Calculate Beacon's position first as other planets may depend on it.
-    const beaconData = bodyData.find(d => d.name === 'Beacon');
-    if (beaconData && beaconData.orbitRadius) {
-        // Using the pre-calculated radsPerHour and initialPhaseRad
-        const beaconAngle = (beaconData.initialPhaseRad ?? 0) + currentHours * (beaconData.radsPerHour ?? 0);
-        const beaconX = beaconData.orbitRadius * Math.cos(beaconAngle);
-        const beaconZ = beaconData.orbitRadius * Math.sin(beaconAngle);
-        beaconPosition.set(beaconX, 0, beaconZ);
+    // Calculate binary star positions first to establish the barycenter
+    const alphaData = bodyData.find(d => d.name === 'Alpha');
+    const twilightData = bodyData.find(d => d.name === 'Twilight');
+
+    if (alphaData) {
+        const M = (alphaData.initialPhaseRad + currentHours * alphaData.radsPerHour) % (2 * Math.PI);
+        const r1 = 0.1 * 150; // 0.1 AU in simulation units
+        const x = -r1 * Math.cos(M);
+        const z = -r1 * Math.sin(M);
+        positions['Alpha'] = new THREE.Vector3(x, 0, z);
     }
-    positions['Beacon'] = beaconPosition;
+
+    if (twilightData) {
+        const M = (twilightData.initialPhaseRad + currentHours * twilightData.radsPerHour) % (2 * Math.PI);
+        const r1 = 0.1 * 150;
+        const x = r1 * Math.cos(M);
+        const z = r1 * Math.sin(M);
+        positions['Twilight'] = new THREE.Vector3(x, 0, z);
+    }
+    
+    // Calculate the dynamic barycenter of the binary system
+    if (alphaData && twilightData && positions['Alpha'] && positions['Twilight']) {
+        const m1 = parseFloat(alphaData.mass || '1.0');
+        const m2 = parseFloat(twilightData.mass || '0.6');
+        const totalMass = m1 + m2;
+        barycenter = positions['Alpha'].clone().multiplyScalar(m1)
+            .add(positions['Twilight'].clone().multiplyScalar(m2))
+            .divideScalar(totalMass);
+    }
+
 
     bodyData.forEach(data => {
-        if (data.name === 'Beacon') return;
+        // Skip binary stars as they are already calculated
+        if (data.name === 'Alpha' || data.name === 'Twilight') return;
 
-        let orbitCenter = new THREE.Vector3(0, 0, 0);
+        let orbitCenter = barycenter; // Default orbit center is the binary barycenter
 
-        // Planets orbiting Beacon are relative to its position
-        if (data.name === 'Gelidis' || data.name === 'Liminis') {
-            orbitCenter.copy(beaconPosition);
-        }
-
-        const semiMajorAxis = data.orbitRadius || 0;
-        let x: number;
-        let z: number;
-
-        // Calculate Mean Anomaly (M) using pre-calculated values
-        const M = ((data.initialPhaseRad ?? 0) + currentHours * (data.radsPerHour ?? 0)) % (2 * Math.PI);
-
-        if (data.type === 'Planet' && data.eccentric && data.eccentricity && data.eccentricity > 0) {
-            const e = data.eccentricity;
-            
-            // Solve for Eccentric Anomaly (E)
-            const E = solveKepler(M, e);
-
-            // Calculate True Anomaly (v)
-            const v = 2 * Math.atan2(
-                Math.sqrt(1 + e) * Math.sin(E / 2),
-                Math.sqrt(1 - e) * Math.cos(E / 2)
-            );
-
-            // Calculate distance to star (r)
-            const r = semiMajorAxis * (1 - e * Math.cos(E));
-            
-            // Calculate heliocentric coordinates. The star is at the focus of the ellipse.
-            x = orbitCenter.x + r * Math.cos(v);
-            z = orbitCenter.z + r * Math.sin(v);
-
-        } else if (data.type === 'Star' && (data.name === 'Alpha' || data.name === 'Twilight')) {
-            // Special case for binary stars orbiting a common barycenter
-            const r1 = 0.1 * 150; // 0.1 AU in simulation units
-            const binaryAngle = M; // Use Mean Anomaly for circular binary orbit
-            x = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.cos(binaryAngle);
-            z = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.sin(binaryAngle);
-        } else {
-            // Default to circular orbit if not eccentric
-            const r = semiMajorAxis;
-            x = orbitCenter.x + r * Math.cos(M);
-            z = orbitCenter.z + r * Math.sin(M);
+        // Beacon orbits the main barycenter.
+        if (data.name === 'Beacon') {
+            const M = (data.initialPhaseRad + currentHours * data.radsPerHour) % (2 * Math.PI);
+            const r = data.orbitRadius || 0;
+            const x = orbitCenter.x + r * Math.cos(M);
+            const z = orbitCenter.z + r * Math.sin(M);
+            positions[data.name] = new THREE.Vector3(x, orbitCenter.y, z);
         }
         
-        // All orbits are co-planar on the XZ plane
-        const y = orbitCenter.y; 
-        positions[data.name] = new THREE.Vector3(x, y, z);
+        // Planets orbiting Beacon are relative to its new position.
+        // This must run after Beacon's position is calculated.
+        if ((data.name === 'Gelidis' || data.name === 'Liminis')) {
+             if (positions['Beacon']) {
+                orbitCenter = positions['Beacon'];
+             }
+        }
+
+        if (data.type === 'Planet') {
+             // Calculate Mean Anomaly (M) using pre-calculated values
+            const M = (data.initialPhaseRad + currentHours * data.radsPerHour) % (2 * Math.PI);
+            
+            let x: number;
+            let z: number;
+
+            if (data.eccentric && data.eccentricity && data.eccentricity > 0) {
+                const e = data.eccentricity;
+                const semiMajorAxis = data.orbitRadius || 0;
+                
+                const E = solveKepler(M, e);
+                const v = 2 * Math.atan2(
+                    Math.sqrt(1 + e) * Math.sin(E / 2),
+                    Math.sqrt(1 - e) * Math.cos(E / 2)
+                );
+
+                const r = semiMajorAxis * (1 - e * Math.cos(E));
+                
+                x = orbitCenter.x + r * Math.cos(v);
+                z = orbitCenter.z + r * Math.sin(v);
+            } else {
+                // Default to circular orbit
+                const r = data.orbitRadius || 0;
+                x = orbitCenter.x + r * Math.cos(M);
+                z = orbitCenter.z + r * Math.sin(M);
+            }
+
+            positions[data.name] = new THREE.Vector3(x, orbitCenter.y, z);
+        }
     });
 
     return positions;
 };
+
+    
