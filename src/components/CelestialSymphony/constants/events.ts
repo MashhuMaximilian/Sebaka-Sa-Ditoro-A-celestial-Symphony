@@ -27,8 +27,8 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare alignment of Rutilus, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic night event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 20, // A wide 20-degree arc
-        minSeparation: 0.5,    // But no two planets can be closer than 0.5 degrees
+        longitudeTolerance: 15, // A wide 20-degree arc
+        minSeparation: 5,    // But no two planets can be closer than 0.5 degrees
         viewingLongitude: 180,
         visibilityCondition: 'night',
         approximatePeriodDays: 795060, // ~2,454 Sebakan years

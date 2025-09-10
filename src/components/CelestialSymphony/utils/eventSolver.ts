@@ -1,4 +1,5 @@
 
+
 import * as THREE from 'three';
 import { type CelestialEvent } from '../constants/events';
 import { type AnyBodyData } from '@/types';
@@ -112,6 +113,44 @@ function checkEventConditions(
             for (const { vec } of primaryBodyInfo) {
                 if (vec.angleTo(avgVector) > THREE.MathUtils.degToRad(event.longitudeTolerance)) {
                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                }
+            }
+
+            // Check for planet-planet overlap
+            for (let i = 0; i < primaryBodyInfo.length; i++) {
+                for (let j = i + 1; j < primaryBodyInfo.length; j++) {
+                    const separationAngle = THREE.MathUtils.radToDeg(primaryBodyInfo[i].vec.angleTo(primaryBodyInfo[j].vec));
+                    const minAllowedSeparation = primaryBodyInfo[i].apparentRadius + primaryBodyInfo[j].apparentRadius;
+                    if (separationAngle < minAllowedSeparation) {
+                        return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                    }
+                }
+            }
+
+            // Check for sun-planet overlap
+            const suns = processedBodyData.filter(d => d.type === 'Star');
+            for (const sun of suns) {
+                const sunPos = bodyPositions[sun.name];
+                if (!sunPos) continue;
+
+                const lonRad = THREE.MathUtils.degToRad(longitude);
+                const latRad = THREE.MathUtils.degToRad(optimalLatitude);
+                const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(sebakaData.size, Math.PI / 2 - latRad, lonRad);
+                const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
+                viewpointOffset.applyQuaternion(tiltQuat);
+                const observerPos = new THREE.Vector3().addVectors(sebakaPos, viewpointOffset);
+
+                const sunVec = sunPos.clone().sub(observerPos);
+                const sunDistance = sunVec.length();
+                const sunApparentRadius = getApparentRadius(sun.size, sunDistance);
+                sunVec.normalize();
+                
+                for (const planet of primaryBodyInfo) {
+                    const separationAngle = THREE.MathUtils.radToDeg(planet.vec.angleTo(sunVec));
+                    const minAllowedSeparation = planet.apparentRadius + sunApparentRadius;
+                    if (separationAngle < minAllowedSeparation) {
+                        return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                    }
                 }
             }
 
