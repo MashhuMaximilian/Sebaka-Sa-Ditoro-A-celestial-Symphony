@@ -333,7 +333,7 @@ export default function Home() {
 
   const handleTimeUpdate = (hours: number) => {
     setElapsedHours(hours);
-    const totalDays = hours / HOURS_IN_SEBAKA_DAY;
+    const totalDays = Math.floor(hours / HOURS_IN_SEBAKA_DAY);
     setCurrentYear(Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS));
     setCurrentDay(Math.floor(totalDays % SEBAKA_YEAR_IN_DAYS) + 1);
   }
@@ -383,30 +383,48 @@ export default function Home() {
   };
   
   const handleGoToEvent = (direction: 'next' | 'previous' | 'last') => {
-    if (!selectedEvent || !selectedEvent.periodDays) return;
-  
-    const periodInDays = selectedEvent.periodDays;
+    if (!selectedEvent) return;
+
     const currentTotalDays = currentYear * SEBAKA_YEAR_IN_DAYS + (currentDay - 1);
+    let occurrences = selectedEvent.occurrences?.map(occ => occ[0] * SEBAKA_YEAR_IN_DAYS + (occ[1] - 1)) ?? [];
     
-    let targetTotalDays: number;
+    // For periodic events, generate more occurrences if needed
+    if (selectedEvent.type === 'periodic' && selectedEvent.periodDays) {
+        const lastKnownOccurrence = occurrences.length > 0 ? occurrences[occurrences.length - 1] : 0;
+        for (let next = lastKnownOccurrence + selectedEvent.periodDays; next < currentTotalDays + selectedEvent.periodDays * 5; next += selectedEvent.periodDays) {
+            if (!occurrences.includes(next)) {
+                occurrences.push(next);
+            }
+        }
+    }
+    occurrences.sort((a, b) => a - b);
+  
+    let targetTotalDays: number | null = null;
   
     if (direction === 'next') {
-      const occurrences = Math.floor(currentTotalDays / periodInDays);
-      targetTotalDays = (occurrences + 1) * periodInDays;
+        targetTotalDays = occurrences.find(day => day > currentTotalDays) ?? null;
     } else if (direction === 'previous') {
-      // Find the occurrence *before* the current one.
-      const occurrences = Math.floor((currentTotalDays - 1) / periodInDays);
-      targetTotalDays = Math.max(0, occurrences * periodInDays);
+        const prevOccurrences = occurrences.filter(day => day < currentTotalDays);
+        targetTotalDays = prevOccurrences.length > 0 ? prevOccurrences[prevOccurrences.length - 1] : null;
     } else { // 'last'
-      const occurrences = Math.floor(currentTotalDays / periodInDays);
-      targetTotalDays = occurrences * periodInDays;
+        const lastOccurrences = occurrences.filter(day => day <= currentTotalDays);
+        targetTotalDays = lastOccurrences.length > 0 ? lastOccurrences[lastOccurrences.length - 1] : null;
     }
   
+    if (targetTotalDays === null) {
+      // Handle case where no event is found (e.g., asking for 'next' on the last known event)
+      // You could add a toast notification here later.
+      return; 
+    }
+
     const newTargetYear = Math.floor(targetTotalDays / SEBAKA_YEAR_IN_DAYS);
     const newTargetDay = Math.floor(targetTotalDays % SEBAKA_YEAR_IN_DAYS) + 1;
     
     setTargetYear(newTargetYear);
     setTargetDay(newTargetDay);
+    if(selectedEvent.viewingLongitude) {
+        setCharacterLongitude(selectedEvent.viewingLongitude);
+    }
   };
   
   const renderSebakaPanelContent = () => {
