@@ -1,6 +1,5 @@
 
-
-export type EventAlignmentType = 
+export type EventAlignmentType =
     | 'conjunction' // All bodies within a tight arc
     | 'occultation' // Two or more bodies overlap
     | 'cluster'     // Bodies within a wider arc
@@ -13,80 +12,76 @@ export interface CelestialEvent {
     type: EventAlignmentType;
     primaryBodies: string[];
     secondaryBodies?: string[];
-    maxSeparation: number; // Maximum angular separation in degrees
-    minSeparation?: number; // Minimum separation for dominance events
-    minOverlap?: number; // Minimum overlap fraction for occultations (0–1)
-    alignmentTolerance?: number; // Dynamic tolerance for alignment precision
-    viewingLongitude?: number; // Optimal longitude on Sebaka (degrees)
-    viewingLatitude?: number; // Optimal latitude on Sebaka (degrees)
-    visibilityCondition?: 'night' | 'twilight' | 'day'; // Time of day
-    approximatePeriodDays: number; // Rough estimate for solver optimization
+    longitudeTolerance: number; // Max longitude deviation in degrees
+    overlapThreshold?: number; // Min overlap fraction for occultations (0–1)
+    minSeparation?: number; // Min separation for dominance or non-overlapping conjunctions
+    viewingLongitude?: number;
+    visibilityCondition?: 'night' | 'twilight' | 'day';
+    approximatePeriodDays: number; // Guide for detection window
 }
+
 
 export const celestialEvents: CelestialEvent[] = [
     {
         name: "Great Conjunction",
-        description: "Rare near-alignment of Rutilus, Sebaka, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic event.",
+        description: "Rare alignment of Rutilus, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic night event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        maxSeparation: 20, // A wide arc
-        alignmentTolerance: 5,
+        longitudeTolerance: 20, // Max arc spread
+        minSeparation: 1.0,   // Min separation between any two planets
         viewingLongitude: 180,
         visibilityCondition: 'night',
-        approximatePeriodDays: 795060, // ~2454 Sebakan years
+        approximatePeriodDays: 795060, // ~2,454 Sebakan years
     },
     {
         name: "Gathering of Witnesses",
-        description: "Annual visibility of Rutilus, Spectris, Viridis, Aetheris, and Beacon in a loose arc, a festive period.",
+        description: "Annual visibility of Rutilus, Spectris, Viridis, Aetheris, and Beacon in a loose arc, a festive night event.",
         type: 'cluster',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
         secondaryBodies: ["Beacon"],
-        maxSeparation: 15,
+        longitudeTolerance: 15,
         viewingLongitude: 270,
         visibilityCondition: 'night',
         approximatePeriodDays: 324, // 1 Sebakan year
     },
     {
         name: "Twin Conjunction",
-        description: "Rutilus and Spectris appear close (~2–5°), creating a 'Double Ember' effect, celebrated as the Ember Dance.",
+        description: "Rutilus and Spectris appear close, creating a 'Double Ember' effect, a twilight event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris"],
-        maxSeparation: 5,
-        alignmentTolerance: 2,
+        longitudeTolerance: 5,
         viewingLongitude: 240,
         visibilityCondition: 'twilight',
         approximatePeriodDays: 972, // ~3 Sebakan years
     },
     {
         name: "Triad Alignment",
-        description: "Rutilus, Spectris, and Viridis form a triangle (~10°), known as the 'Triad Lantern' during the Lantern Festival.",
+        description: "Rutilus, Spectris, and Viridis form a triangle, the 'Triad Lantern' during the Lantern Festival, at night.",
         type: 'triangle',
         primaryBodies: ["Rutilis", "Spectris", "Viridis"],
-        maxSeparation: 10,
-        alignmentTolerance: 3,
+        longitudeTolerance: 10,
         viewingLongitude: 210,
         visibilityCondition: 'night',
         approximatePeriodDays: 1620, // ~5 Sebakan years
     },
     {
         name: "Quadrant Convergence",
-        description: "Rutilus, Spectris, Viridis, and Aetheris align (~15°), with Beacon, called the 'Quadrant Veil' for Veil Nights.",
+        description: "Rutilus, Spectris, Viridis, and Aetheris align with Beacon, the 'Quadrant Veil' for Veil Nights.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
         secondaryBodies: ["Beacon"],
-        maxSeparation: 15,
-        alignmentTolerance: 5,
+        longitudeTolerance: 15,
         viewingLongitude: 270,
         visibilityCondition: 'night',
         approximatePeriodDays: 3240, // ~10 Sebakan years
     },
     {
         name: "Aetheris Dominance",
-        description: "Aetheris at periapsis forms a 'Blue Halo,' a time for Halo Ascendance and rune discoveries.",
+        description: "Aetheris at periapsis forms a 'Blue Halo,' a night event for Halo Ascendance.",
         type: 'dominance',
         primaryBodies: ["Aetheris"],
         secondaryBodies: ["Spectris", "Viridis"],
-        maxSeparation: 180, // Not relevant, set high
+        longitudeTolerance: 180, // Not relevant for dominance checks
         minSeparation: 20,
         viewingLongitude: 180,
         visibilityCondition: 'night',
@@ -94,68 +89,67 @@ export const celestialEvents: CelestialEvent[] = [
     },
     {
         name: "Pre-Conjunction Prelude",
-        description: "Near-alignment of inner planets, with a 'Pre-Conjunction Blaze,' marking Blaze Vigil before the Great Conjunction.",
+        description: "Near-alignment of inner planets, the 'Pre-Conjunction Blaze,' a twilight event before Great Conjunction.",
         type: 'cluster',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        maxSeparation: 20,
-        alignmentTolerance: 5,
+        longitudeTolerance: 20,
         viewingLongitude: 90,
         visibilityCondition: 'twilight',
         approximatePeriodDays: 32400, // ~100 Sebakan years
     },
     {
         name: "Spectris-Viridis Occultation",
-        description: "Rare eclipse, a 'Ringed Eclipse.'",
+        description: "Rare eclipse, a 'Ringed Eclipse,' at night.",
         type: 'occultation',
         primaryBodies: ["Spectris", "Viridis"],
-        maxSeparation: 0.35, // 0.2° + 0.15°
-        minOverlap: 0.1,
+        longitudeTolerance: 0.2,
+        overlapThreshold: 0.5,
         viewingLongitude: 170,
         visibilityCondition: 'night',
-        approximatePeriodDays: 489870, // ~1515 Sebakan years
+        approximatePeriodDays: 489870, // ~1,515 Sebakan years
     },
     {
         name: "Spectris-Aetheris Occultation",
-        description: "Rare 'Giant’s Veil' eclipse.",
+        description: "Rare 'Giant’s Veil' eclipse, at night.",
         type: 'occultation',
         primaryBodies: ["Spectris", "Aetheris"],
-        maxSeparation: 0.7, // 0.5° + 0.2°
-        minOverlap: 0.1,
+        longitudeTolerance: 0.3,
+        overlapThreshold: 0.5,
         viewingLongitude: 185,
         visibilityCondition: 'night',
-        approximatePeriodDays: 1589220, // ~4905 Sebakan years
+        approximatePeriodDays: 1589220, // ~4,905 Sebakan years
     },
     {
         name: "Viridis-Aetheris Occultation",
-        description: "Rare 'Storm Shroud' eclipse.",
+        description: "Rare 'Storm Shroud' eclipse, at night.",
         type: 'occultation',
         primaryBodies: ["Viridis", "Aetheris"],
-        maxSeparation: 0.65, // 0.5° + 0.15°
-        minOverlap: 0.1,
+        longitudeTolerance: 0.3,
+        overlapThreshold: 0.5,
         viewingLongitude: 190,
         visibilityCondition: 'night',
-        approximatePeriodDays: 1166400, // ~3600 Sebakan years
+        approximatePeriodDays: 1166400, // ~3,600 Sebakan years
     },
     {
         name: "Triple Cascade",
-        description: "Extremely rare occultation of all three, a 'Triple Cascade.'",
+        description: "Rare occultation of Viridis, Spectris, and Aetheris, a 'Triple Cascade,' at night.",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"],
-        maxSeparation: 0.5, // Tighter for full eclipse effect
-        minOverlap: 0.1,
+        longitudeTolerance: 0.5,
+        overlapThreshold: 0.3,
         viewingLongitude: 188,
         visibilityCondition: 'night',
-        approximatePeriodDays: 15877620, // ~49005 Sebakan years
+        approximatePeriodDays: 15877620, // ~49,005 Sebakan years
     },
     {
-        name: "Inner Conjunction",
-        description: "A rare alignment where all inner planets eclipse each other.",
+        name: "Quadruple Cascade (Inner Conjunction)",
+        description: "Extremely rare occultation of Rutilus, Spectris, Viridis, and Aetheris, an 'Inner Eclipse,' at night.",
         type: 'occultation',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        maxSeparation: 0.3, // Very tight for full eclipse
-        minOverlap: 0.05,
+        longitudeTolerance: 0.5,
+        overlapThreshold: 0.5,
         viewingLongitude: 180,
         visibilityCondition: 'night',
-        approximatePeriodDays: 25000000, // Extremely rare
+        approximatePeriodDays: 25000000, // ~77,160 Sebakan years
     },
 ];
