@@ -24,6 +24,10 @@ interface CelestialBody {
     rotationPeriodHours?: number;
     luminosity?: number;
     initialPhase?: number; // Starting angle in degrees
+    
+    // Calculated properties
+    radsPerHour?: number;
+    initialPhaseRad?: number;
 }
 
 export interface PlanetData extends CelestialBody {

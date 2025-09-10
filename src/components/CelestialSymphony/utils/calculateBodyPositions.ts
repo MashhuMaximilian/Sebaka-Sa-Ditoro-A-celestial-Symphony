@@ -1,6 +1,6 @@
 
 import * as THREE from 'three';
-import type { ProcessedBodyData } from './getBodyData';
+import type { ProcessedBodyData } from '../hooks/useBodyData';
 
 /**
  * Solves Kepler's equation M = E - e * sin(E) for E (eccentric anomaly)
@@ -41,9 +41,11 @@ export const calculateBodyPositions = (
     const positions: { [key: string]: THREE.Vector3 } = {};
     const beaconPosition = new THREE.Vector3();
 
+    // Calculate Beacon's position first as other planets may depend on it.
     const beaconData = bodyData.find(d => d.name === 'Beacon');
     if (beaconData && beaconData.orbitRadius) {
-        const beaconAngle = beaconData.initialPhaseRad + currentHours * beaconData.radsPerHour;
+        // Using the pre-calculated radsPerHour and initialPhaseRad
+        const beaconAngle = (beaconData.initialPhaseRad ?? 0) + currentHours * (beaconData.radsPerHour ?? 0);
         const beaconX = beaconData.orbitRadius * Math.cos(beaconAngle);
         const beaconZ = beaconData.orbitRadius * Math.sin(beaconAngle);
         beaconPosition.set(beaconX, 0, beaconZ);
@@ -64,8 +66,8 @@ export const calculateBodyPositions = (
         let x: number;
         let z: number;
 
-        // Calculate Mean Anomaly (M)
-        const M = (data.initialPhaseRad + currentHours * data.radsPerHour) % (2 * Math.PI);
+        // Calculate Mean Anomaly (M) using pre-calculated values
+        const M = ((data.initialPhaseRad ?? 0) + currentHours * (data.radsPerHour ?? 0)) % (2 * Math.PI);
 
         if (data.type === 'Planet' && data.eccentric && data.eccentricity && data.eccentricity > 0) {
             const e = data.eccentricity;
@@ -88,8 +90,8 @@ export const calculateBodyPositions = (
 
         } else if (data.type === 'Star' && (data.name === 'Alpha' || data.name === 'Twilight')) {
             // Special case for binary stars orbiting a common barycenter
-            const r1 = 0.1 * 150; // 0.1 AU
-            const binaryAngle = data.initialPhaseRad + currentHours * data.radsPerHour;
+            const r1 = 0.1 * 150; // 0.1 AU in simulation units
+            const binaryAngle = M; // Use Mean Anomaly for circular binary orbit
             x = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.cos(binaryAngle);
             z = (data.name === 'Alpha' ? -1 : 1) * r1 * Math.sin(binaryAngle);
         } else {
