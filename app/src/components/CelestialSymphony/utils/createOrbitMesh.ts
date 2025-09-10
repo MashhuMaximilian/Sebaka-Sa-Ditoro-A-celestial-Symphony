@@ -1,9 +1,9 @@
 
 import * as THREE from 'three';
-import type { BodyData } from '../hooks/useBodyData';
+import type { ProcessedBodyData } from '../hooks/useBodyData';
 import { spiderStrandShader } from '../shaders/spiderStrandShader';
 
-export const createOrbitMesh = (body: BodyData, usePlainOrbits: boolean): THREE.Mesh | null => {
+export const createOrbitMesh = (body: ProcessedBodyData, usePlainOrbits: boolean): THREE.Mesh | null => {
     if ((body.type === 'Planet' || body.name === 'Beacon') && body.orbitRadius) {
         
         let tubeRadius: number;
@@ -18,7 +18,7 @@ export const createOrbitMesh = (body: BodyData, usePlainOrbits: boolean): THREE.
 
         let orbitGeometry: THREE.BufferGeometry;
 
-        if (body.type === 'Planet' && body.eccentric && body.eccentricity && body.eccentricity > 0) {
+        if (body.eccentric && body.eccentricity && body.eccentricity > 0) {
             const eccentricity = body.eccentricity;
             const semiMajorAxis = body.orbitRadius;
             const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
@@ -37,6 +37,7 @@ export const createOrbitMesh = (body: BodyData, usePlainOrbits: boolean): THREE.
             );
 
             const points2D = curve.getPoints(tubularSegments);
+            // The points are in the XY plane by default. We map Y to Z to place the orbit on our desired plane.
             const points3D = points2D.map(p => new THREE.Vector3(p.x, 0, p.y));
             orbitGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points3D), tubularSegments, tubeRadius, radialSegments, true);
         } else {
@@ -66,11 +67,9 @@ export const createOrbitMesh = (body: BodyData, usePlainOrbits: boolean): THREE.
         
         const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
         
-        if (body.type === 'Planet' && body.eccentric) {
-            // For elliptical tube geometries, the points are in the XY plane by default.
-            // No initial rotation is needed as we map y to z.
-        } else {
-            // For torus geometries, they are created in the XY plane, so we rotate them.
+        // For circular (Torus) orbits, they are created in the XY plane by default, so we rotate them to the XZ plane.
+        // For elliptical (Tube) orbits, we have already mapped the points to the XZ plane, so no rotation is needed.
+        if (!(body.eccentric && body.eccentricity && body.eccentricity > 0)) {
             orbit.rotation.x = Math.PI / 2;
         }
 
