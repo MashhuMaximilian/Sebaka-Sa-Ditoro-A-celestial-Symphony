@@ -401,34 +401,40 @@ export default function Home() {
   
   const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'first') => {
     if (!selectedEvent || isJumpingTime) return;
-
+  
     setIsJumpingTime(true);
     
     // Give the UI a moment to update to the loading state
     await new Promise(resolve => setTimeout(resolve, 50)); 
     
-    const params: EventSearchParams = {
-      startHours: direction === 'first' ? 0 : elapsedHours,
-      event: selectedEvent,
-      allBodiesData: [...initialStars, ...initialPlanets],
-      direction,
-      SEBAKA_YEAR_IN_DAYS,
-      HOURS_IN_SEBAKA_DAY
-    };
-    
-    const foundResult = findNextEvent(params);
-    
-    if (foundResult) {
-      if (!viewFromSebaka) {
-        enterSebakaView();
-      }
-      setCharacterLongitude(foundResult.viewingLongitude);
-      setCharacterLatitude(foundResult.viewingLatitude);
-      setGoToTime(foundResult.foundHours);
-    } else {
+    try {
+      const params: EventSearchParams = {
+        startHours: direction === 'first' ? 0 : elapsedHours,
+        event: selectedEvent,
+        allBodiesData: [...initialStars, ...initialPlanets],
+        direction,
+        SEBAKA_YEAR_IN_DAYS,
+        HOURS_IN_SEBAKA_DAY
+      };
+      
+      const foundResult = findNextEvent(params);
+      
+      if (foundResult) {
+        if (!viewFromSebaka) {
+          enterSebakaView();
+          // Give view a moment to switch before setting coords and time
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        setCharacterLongitude(foundResult.viewingLongitude);
+        setCharacterLatitude(foundResult.viewingLatitude);
+        setGoToTime(foundResult.foundHours);
+      } else {
         console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
-        // If nothing is found, re-enable the buttons
         setIsJumpingTime(false);
+      }
+    } catch (error) {
+      console.error("Error during event search:", error);
+      setIsJumpingTime(false);
     }
   }, [selectedEvent, elapsedHours, isJumpingTime, viewFromSebaka, enterSebakaView]);
   
@@ -809,5 +815,3 @@ export default function Home() {
     </main>
   );
 }
-
-    

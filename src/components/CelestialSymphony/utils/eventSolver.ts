@@ -1,5 +1,4 @@
 
-
 import * as THREE from 'three';
 import { type CelestialEvent } from '../constants/events';
 import { type AnyBodyData } from '@/types';
@@ -48,7 +47,6 @@ function checkEventConditions(
     
     const allRelevantBodyNames = [...event.primaryBodies, ...(event.secondaryBodies || [])];
 
-    // First pass to calculate optimal latitude
     const primaryBodyInfoForLat = (event.primaryBodies.map(name => {
         const bodyData = processedBodyData.find(d => d.name === name);
         const bodyPos = bodyPositions[name];
@@ -73,7 +71,6 @@ function checkEventConditions(
     const avgY = totalY / primaryBodyInfoForLat.length;
     const optimalLatitude = -THREE.MathUtils.radToDeg(Math.asin(avgY));
 
-    // Second pass with optimal latitude for final check
     const allBodyInfo = (allRelevantBodyNames.map(name => {
         const bodyData = processedBodyData.find(d => d.name === name);
         const bodyPos = bodyPositions[name];
@@ -116,7 +113,6 @@ function checkEventConditions(
                 }
             }
 
-            // Check for planet-planet overlap
             for (let i = 0; i < primaryBodyInfo.length; i++) {
                 for (let j = i + 1; j < primaryBodyInfo.length; j++) {
                     const separationAngle = THREE.MathUtils.radToDeg(primaryBodyInfo[i].vec.angleTo(primaryBodyInfo[j].vec));
@@ -127,7 +123,6 @@ function checkEventConditions(
                 }
             }
 
-            // Check for sun-planet overlap
             const suns = processedBodyData.filter(d => d.type === 'Star');
             for (const sun of suns) {
                 const sunPos = bodyPositions[sun.name];
@@ -155,10 +150,10 @@ function checkEventConditions(
             }
 
             if (event.minSeparation) {
-                 for (let i = 0; i < primaryBodyInfo.length; i++) {
+                for (let i = 0; i < primaryBodyInfo.length; i++) {
                     for (let j = i + 1; j < primaryBodyInfo.length; j++) {
                         if (primaryBodyInfo[i].vec.angleTo(primaryBodyInfo[j].vec) < THREE.MathUtils.degToRad(event.minSeparation)) {
-                             return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                            return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                         }
                     }
                 }
@@ -179,9 +174,9 @@ function checkEventConditions(
             if (event.secondaryBodies) {
                 const secondaryBodyInfo = allBodyInfo.filter(info => event.secondaryBodies?.includes(info.name));
                 for (const { vec } of secondaryBodyInfo) {
-                     if (vec.angleTo(avgVector) > THREE.MathUtils.degToRad(event.longitudeTolerance * 3)) {
-                         return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
-                     }
+                    if (vec.angleTo(avgVector) > THREE.MathUtils.degToRad(event.longitudeTolerance * 3)) {
+                        return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                    }
                 }
             }
             return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -224,9 +219,9 @@ function checkEventConditions(
             const secondaryInfo = allBodyInfo.filter(info => event.secondaryBodies?.includes(info.name));
 
             for (const secondary of secondaryInfo) {
-                 if (dominantVec.angleTo(secondary.vec) < THREE.MathUtils.degToRad(event.minSeparation)) {
-                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
-                 }
+                if (dominantVec.angleTo(secondary.vec) < THREE.MathUtils.degToRad(event.minSeparation)) {
+                    return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                }
             }
             return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
@@ -236,7 +231,7 @@ function checkEventConditions(
     }
 }
 
-export function findNextEvent(params: EventSearchParams): EventSearchResult | null {
+export function findFrequentEvent(params: EventSearchParams): EventSearchResult | null {
     const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY } = params;
 
     const processedBodyData = getBodyData(allBodiesData);
@@ -256,37 +251,37 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         return positionCache[roundedHours];
     };
 
-    // To prevent getting stuck in the same event, move out of it first
     if (direction !== 'first' && checkEventConditions(event, getCachedPositions(startHours), processedBodyData, sebakaTilt).met) {
-        while (checkEventConditions(event, getCachedPositions(currentHours), processedBodyData, sebakaTilt).met) {
-            currentHours += HOURS_IN_SEBAKA_DAY * 10 * timeMultiplier; // Jump 10 days at a time to escape
-            if (Math.abs(currentHours - startHours) > 365 * 24 * 5) { // Safety break after 5 years
-                console.warn("Could not escape current event occurrence.");
-                break;
-            }
+        currentHours += HOURS_IN_SEBAKA_DAY * 10 * timeMultiplier;
+        let escapeCount = 0;
+        const maxEscapeDays = 365 * 2; // 2 years max
+        while (checkEventConditions(event, getCachedPositions(currentHours), processedBodyData, sebakaTilt).met && escapeCount < maxEscapeDays) {
+            currentHours += HOURS_IN_SEBAKA_DAY * timeMultiplier;
+            escapeCount += 10;
         }
     }
 
-    // Search window: 10,000 Sebakan years
-    const maxSearchHours = 10000 * SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY;
-    const stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier; // 1-day step for precision
-
-    const limitHours = startHours + (maxSearchHours * timeMultiplier);
+    const maxSearchYears = 100;
+    const maxSearchHours = maxSearchYears * SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY;
+    const stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
 
     let foundHours = null;
     let viewingLatitude = 0;
     let viewingLongitude = event.viewingLongitude ?? 180;
+    let iterationCount = 0;
+    const maxIterations = 1e5;
 
-    while ((timeMultiplier > 0 && currentHours < limitHours) || (timeMultiplier < 0 && currentHours > limitHours)) {
+    while (iterationCount < maxIterations && 
+           ((timeMultiplier > 0 && currentHours < startHours + maxSearchHours) || 
+            (timeMultiplier < 0 && currentHours > startHours - maxSearchHours))) {
         const bodyPositions = getCachedPositions(currentHours);
         const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (result.met) {
-            // Validate duration (at least 3 days)
             let durationDays = 0;
             let durationCheckHours = currentHours;
             let isStable = true;
-            while (durationDays < 3) {
+            while (durationDays < 2 && isStable) {
                 const durationPositions = getCachedPositions(durationCheckHours);
                 if (!checkEventConditions(event, durationPositions, processedBodyData, sebakaTilt).met) {
                     isStable = false;
@@ -294,6 +289,96 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
                 }
                 durationDays += 1;
                 durationCheckHours += stepHours;
+                iterationCount += 1;
+                if (iterationCount >= maxIterations) break;
+            }
+
+            if (isStable) {
+                foundHours = currentHours;
+                viewingLatitude = result.viewingLatitude;
+                viewingLongitude = result.viewingLongitude;
+                break;
+            }
+        }
+
+        currentHours += stepHours;
+        iterationCount += 1;
+    }
+
+    if (foundHours === null) {
+        console.warn(`Could not find frequent event ${event.name} within ${maxSearchYears} years.`);
+        return null;
+    }
+
+    return { foundHours, viewingLongitude, viewingLatitude };
+}
+
+export function findRareEvent(params: EventSearchParams): EventSearchResult | null {
+    const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY } = params;
+
+    const processedBodyData = getBodyData(allBodiesData);
+    const sebakaData = processedBodyData.find(b => b.name === 'Sebaka');
+    if (!sebakaData) return null;
+    const sebakaTilt = sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
+
+    const timeMultiplier = direction === 'previous' ? -1 : 1;
+    let currentHours = direction === 'first' ? 0 : startHours;
+
+    const positionCache: { [hours: number]: { [name: string]: THREE.Vector3 } } = {};
+    const getCachedPositions = (hours: number) => {
+        const roundedHours = Math.round(hours / HOURS_IN_SEBAKA_DAY) * HOURS_IN_SEBAKA_DAY;
+        if (!positionCache[roundedHours]) {
+            positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
+            const cacheKeys = Object.keys(positionCache).map(Number).sort((a, b) => a - b);
+            if (cacheKeys.length > 100) {
+                const cutoff = cacheKeys[0];
+                delete positionCache[cutoff];
+            }
+        }
+        return positionCache[roundedHours];
+    };
+
+    if (direction !== 'first' && checkEventConditions(event, getCachedPositions(startHours), processedBodyData, sebakaTilt).met) {
+        currentHours += HOURS_IN_SEBAKA_DAY * 30 * timeMultiplier;
+        let escapeCount = 0;
+        const maxEscapeDays = 365 * 10;
+        while (checkEventConditions(event, getCachedPositions(currentHours), processedBodyData, sebakaTilt).met && escapeCount < maxEscapeDays) {
+            currentHours += HOURS_IN_SEBAKA_DAY * 30 * timeMultiplier;
+            escapeCount += 30;
+        }
+    }
+
+    const maxSearchYears = 50000;
+    const maxSearchHours = maxSearchYears * SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY;
+    let stepHours = HOURS_IN_SEBAKA_DAY * 7 * timeMultiplier;
+    const fineStepHours = HOURS_IN_SEBAKA_DAY / 24 * timeMultiplier;
+
+    let foundHours = null;
+    let viewingLatitude = 0;
+    let viewingLongitude = event.viewingLongitude ?? 180;
+    let iterationCount = 0;
+    const maxIterations = 5e5;
+
+    while (iterationCount < maxIterations && 
+           ((timeMultiplier > 0 && currentHours < startHours + maxSearchHours) || 
+            (timeMultiplier < 0 && currentHours > startHours - maxSearchHours))) {
+        const bodyPositions = getCachedPositions(currentHours);
+        const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
+
+        if (result.met) {
+            let durationDays = 0;
+            let durationCheckHours = currentHours;
+            let isStable = true;
+            while (durationDays < 3 && isStable) {
+                const durationPositions = getCachedPositions(durationCheckHours);
+                if (!checkEventConditions(event, durationPositions, processedBodyData, sebakaTilt).met) {
+                    isStable = false;
+                    break;
+                }
+                durationDays += 1;
+                durationCheckHours += fineStepHours;
+                iterationCount += 1;
+                if (iterationCount >= maxIterations) break;
             }
 
             if (isStable) {
@@ -302,24 +387,35 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
                 viewingLongitude = result.viewingLongitude;
                 break;
             } else {
-                // If it wasn't stable, jump forward by the unstable duration to avoid re-checking noisy results
                 currentHours = durationCheckHours;
-                continue;
             }
         }
 
         currentHours += stepHours;
-        if (timeMultiplier < 0 && currentHours < 0) break;
+        iterationCount += 1;
+
+        if (iterationCount % 1000 === 0 && stepHours > HOURS_IN_SEBAKA_DAY) {
+            stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
+        }
     }
 
     if (foundHours === null) {
-        console.warn(`Could not find event ${event.name} within 10,000 Sebakan years.`);
+        console.warn(`Could not find rare event ${event.name} within ${maxSearchYears} years.`);
         return null;
     }
 
-    return {
-        foundHours,
-        viewingLongitude,
-        viewingLatitude,
-    };
+    return { foundHours, viewingLongitude, viewingLatitude };
+}
+
+
+export function findNextEvent(params: EventSearchParams): EventSearchResult | null {
+    const { event, SEBAKA_YEAR_IN_DAYS } = params;
+    
+    // Use findRareEvent for events with approximate periods over 100 years,
+    // otherwise use findFrequentEvent.
+    if (event.approximatePeriodDays > 100 * SEBAKA_YEAR_IN_DAYS) {
+        return findRareEvent(params);
+    } else {
+        return findFrequentEvent(params);
+    }
 }
