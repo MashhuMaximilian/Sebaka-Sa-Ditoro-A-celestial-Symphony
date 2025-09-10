@@ -1,6 +1,6 @@
 
 import * as THREE from 'three';
-import type { ProcessedBodyData } from './getBodyData';
+import type { ProcessedBodyData } from '../hooks/useBodyData';
 import { calculateBodyPositions } from './calculateBodyPositions';
 
 export const updateAllBodyPositions = (

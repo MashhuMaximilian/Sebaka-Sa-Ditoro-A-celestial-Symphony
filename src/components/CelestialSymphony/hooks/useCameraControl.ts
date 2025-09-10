@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import * as THREE from "three";
 import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import type { BodyData } from "./useBodyData";
+import type { ProcessedBodyData } from "./useBodyData";
 
 interface CameraControlProps {
     camera: THREE.PerspectiveCamera | undefined;
@@ -11,7 +11,7 @@ interface CameraControlProps {
     viewFromSebaka: boolean;
     allBodiesRef: React.MutableRefObject<THREE.Object3D[]>;
     planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
-    bodyData: BodyData[];
+    bodyData: ProcessedBodyData[];
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     originalCameraPosRef: React.MutableRefObject<THREE.Vector3>;
     orbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;

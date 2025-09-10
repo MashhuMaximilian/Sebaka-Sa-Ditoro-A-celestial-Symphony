@@ -4,11 +4,10 @@ import type { PlanetData, StarData, AnyBodyData } from "@/types";
 import { HOURS_IN_SEBAKA_DAY } from "../constants/config";
 import * as THREE from 'three';
 
-// Renamed from BodyData to avoid confusion
-export interface ProcessedBodyData extends AnyBodyData {
+export type ProcessedBodyData = AnyBodyData & {
     radsPerHour: number;
     initialPhaseRad: number;
-}
+};
 
 export const getBodyData = (allBodies: AnyBodyData[]): ProcessedBodyData[] => {
     return allBodies.map(body => {
