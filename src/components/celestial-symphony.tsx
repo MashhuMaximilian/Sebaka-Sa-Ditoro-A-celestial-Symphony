@@ -10,7 +10,7 @@ import { useInitializeScene } from "./CelestialSymphony/hooks/useInitializeScene
 import { useUpdateBodyMaterials } from "./CelestialSymphony/hooks/useUpdateBodyMaterials";
 import { useBodyData } from "./CelestialSymphony/hooks/useBodyData";
 import InfoPanel from "./info-panel";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "./ui/sheet";
+import { Sheet, SheetContent } from "./ui/sheet";
 import * as THREE from 'three';
 
 
@@ -23,7 +23,6 @@ export interface CelestialSymphonyProps {
   isSebakaRotating: boolean;
   characterLongitude: number;
   characterLatitude: number;
-  onCharacterLatLongChange: (lat: number, long: number) => void;
   isViridisAnimationActive: boolean;
   onTimeUpdate: (elapsedHours: number) => void;
   goToTime: number | null;
@@ -46,19 +45,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
   const bodyData = useBodyData(props.stars, props.planets);
   const [materialProperties, setMaterialProperties] = useState(props.initialMaterialProperties);
   
-  // Character-specific state that can be updated without full re-renders
-  const characterStateRef = useRef({
-    latitude: props.characterLatitude,
-    longitude: props.characterLongitude,
-    height: props.initialMaterialProperties.Character.height ?? 0.01,
-  });
-
-  useEffect(() => {
-    characterStateRef.current.latitude = props.characterLatitude;
-    characterStateRef.current.longitude = props.characterLongitude;
-  }, [props.characterLatitude, props.characterLongitude]);
-
-
   const {
     mountRef,
     sceneRef,
@@ -119,7 +105,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
 
   useAnimationLoop({
     ...props,
-    characterStateRef,
     materialProperties: materialProperties,
     bodyData,
     scene: sceneRef.current,
@@ -135,11 +120,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
   });
 
   const handleCharacterPropChange = (prop: keyof MaterialProperties['Character'], value: number) => {
-    // Update local ref for animation loop
-    if (prop === 'latitude' || prop === 'longitude' || prop === 'height') {
-        characterStateRef.current[prop] = value;
-    }
-    
     // Update state for InfoPanel and material system
     setMaterialProperties(prev => ({
         ...prev,
@@ -155,12 +135,6 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
       <div ref={mountRef} className="absolute inset-0 w-full h-full" />
       <Sheet open={props.isInfoPanelOpen} onOpenChange={props.setInfoPanelOpen}>
         <SheetContent side="left" className="w-[65vw] max-w-2xl p-0 bg-card/80 backdrop-blur-sm" withoutOverlay>
-            <SheetHeader className="sr-only">
-              <SheetTitle>Celestial Body Information</SheetTitle>
-              <SheetDescription>
-                Detailed information and material properties for the selected celestial body.
-              </SheetDescription>
-            </SheetHeader>
             {props.selectedBody && (
                 <InfoPanel 
                   data={props.selectedBody}

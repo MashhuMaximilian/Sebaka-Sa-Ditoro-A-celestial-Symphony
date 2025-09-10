@@ -12,7 +12,6 @@ interface AnimationLoopParams {
     speedMultiplier?: number;
     viewFromSebaka: boolean;
     isSebakaRotating: boolean;
-    characterStateRef: React.MutableRefObject<{ latitude: number, longitude: number, height: number }>;
     materialProperties: MaterialProperties;
     onTimeUpdate: (elapsedHours: number) => void;
     goToTime: number | null;
@@ -30,13 +29,14 @@ interface AnimationLoopParams {
     cameraTarget: string | null;
     characterMeshRef: React.MutableRefObject<THREE.Object3D | null>;
     isFreeCamera: boolean;
+    characterLatitude: number;
+    characterLongitude: number;
 };
 
 export const useAnimationLoop = ({
   speedMultiplier = 24,
   viewFromSebaka,
   isSebakaRotating,
-  characterStateRef,
   materialProperties,
   onTimeUpdate,
   goToTime,
@@ -52,7 +52,9 @@ export const useAnimationLoop = ({
   beaconPositionRef,
   isInitialized,
   characterMeshRef,
-  isFreeCamera
+  isFreeCamera,
+  characterLatitude,
+  characterLongitude,
 }: AnimationLoopParams) => {
   const clockRef = useRef(new THREE.Clock());
   const elapsedHoursRef = useRef(0);
@@ -122,6 +124,8 @@ export const useAnimationLoop = ({
       }
       onTimeUpdate(goToTime);
       onGoToTimeComplete();
+      // Set the clock to the new time to avoid a jump on the next frame
+      clockRef.current = new THREE.Clock(true);
     }
   }, [goToTime, bodyData, allBodiesRef, beaconPositionRef, onTimeUpdate, isInitialized, onGoToTimeComplete]);
 
@@ -218,12 +222,12 @@ export const useAnimationLoop = ({
       }
 
       if (viewFromSebaka && characterControllerRef.current && thirdPersonCameraRef.current && alphaStarBody && twilightStarBody && beaconStarBody) {
-          const { latitude, longitude, height } = characterStateRef.current;
+          const { height } = materialProperties.Character;
           thirdPersonCameraRef.current.isFreeCamera = isFreeCamera;
           characterControllerRef.current.update(
-            longitude, 
-            latitude, 
-            height, 
+            characterLongitude, 
+            characterLatitude, 
+            height ?? 0.01, 
             materialProperties.Character,
             alphaStarBody.position,
             twilightStarBody.position,
@@ -263,8 +267,9 @@ export const useAnimationLoop = ({
     onTimeUpdate,
     isInitialized,
     viewFromSebaka,
-    characterStateRef,
     materialProperties,
-    isFreeCamera
+    isFreeCamera,
+    characterLatitude,
+    characterLongitude,
   ]);
 };

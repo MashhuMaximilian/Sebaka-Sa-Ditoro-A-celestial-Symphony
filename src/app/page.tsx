@@ -2,10 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera } from "lucide-react";
+import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight } from "lucide-react";
 
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
+import { celestialEvents, type CelestialEvent } from "@/components/CelestialSymphony/constants/events";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,13 +19,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -244,7 +244,6 @@ export default function Home() {
   const [activeSebakaPanel, setActiveSebakaPanel] = useState<ActiveSebakaPanel | null>(null);
   const [orbitMode, setOrbitMode] = useState<OrbitMode>('iridescent');
 
-
   const [currentYear, setCurrentYear] = useState(0);
   const [currentDay, setCurrentDay] = useState(0);
   const [targetYear, setTargetYear] = useState(0);
@@ -258,6 +257,8 @@ export default function Home() {
   const [characterLatitude, setCharacterLatitude] = useState(45);
   const [characterLongitude, setCharacterLongitude] = useState(150);
   const [isFreeCamera, setIsFreeCamera] = useState(false);
+  
+  const [selectedEvent, setSelectedEvent] = useState<CelestialEvent | null>(null);
 
   const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSpeedInput(e.target.value);
@@ -324,9 +325,6 @@ export default function Home() {
     setGoToTime(newElapsedHours);
     setCurrentYear(year);
     setCurrentDay(day);
-
-    // Reset goToTime after a short delay to allow it to be re-triggered
-    setTimeout(() => setGoToTime(null), 10);
   }
 
   const handleTimeUpdate = (hours: number) => {
@@ -374,6 +372,43 @@ export default function Home() {
     if (orbitMode === 'plain') return 'Hide Orbits';
     return 'Iridescent Orbits';
   };
+
+  const handleEventSelect = (eventName: string) => {
+    const event = celestialEvents.find(e => e.name === eventName) ?? null;
+    setSelectedEvent(event);
+  };
+  
+  const handleGoToEvent = (direction: 'next' | 'previous' | 'last') => {
+    if (!selectedEvent) return;
+  
+    const periodInDays = selectedEvent.periodDays;
+    if (!periodInDays) return;
+  
+    const currentTotalDays = currentYear * SEBAKA_YEAR_IN_DAYS + (currentDay - 1);
+  
+    let targetTotalDays: number;
+    if (direction === 'next') {
+      const occurrences = Math.floor(currentTotalDays / periodInDays);
+      targetTotalDays = (occurrences + 1) * periodInDays;
+    } else if (direction === 'previous') {
+      const occurrences = Math.ceil(currentTotalDays / periodInDays);
+      targetTotalDays = (occurrences - 1) * periodInDays;
+      if (targetTotalDays < 0) targetTotalDays = 0; // Don't go to negative time
+    } else { // 'last'
+      const occurrences = Math.floor(currentTotalDays / periodInDays);
+      targetTotalDays = occurrences * periodInDays;
+      if (targetTotalDays === currentTotalDays) {
+        targetTotalDays = (occurrences - 1) * periodInDays;
+      }
+       if (targetTotalDays < 0) targetTotalDays = 0;
+    }
+
+    const newTargetYear = Math.floor(targetTotalDays / SEBAKA_YEAR_IN_DAYS);
+    const newTargetDay = Math.floor(targetTotalDays % SEBAKA_YEAR_IN_DAYS) + 1;
+    
+    setTargetYear(newTargetYear);
+    setTargetDay(newTargetDay);
+  }
   
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;
@@ -381,29 +416,57 @@ export default function Home() {
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
             <>
-                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex items-center gap-2">
-                    <Label className="text-xs font-medium text-muted-foreground min-w-16 text-center">
-                        Go to Time
+                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex flex-col gap-2">
+                    <Label className="text-xs font-medium text-muted-foreground text-center">
+                        Manual Time Jump
                     </Label>
-                    <Input
-                        id="year-input"
-                        type="number"
-                        placeholder="Year"
-                        value={targetYear}
-                        onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
-                        className="w-full bg-card h-8"
-                    />
-                    <Input
-                        id="day-input"
-                        type="number"
-                        placeholder="Day"
-                        value={targetDay}
-                        onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
-                        className="w-full bg-card h-8"
-                        min={1}
-                        max={324}
-                    />
-                    <Button onClick={handleGoToTime} size="sm">Go</Button>
+                     <div className="flex items-center gap-2">
+                        <Input
+                            id="year-input"
+                            type="number"
+                            placeholder="Year"
+                            value={targetYear}
+                            onChange={(e) => setTargetYear(parseInt(e.target.value, 10) || 0)}
+                            className="w-full bg-card h-8"
+                        />
+                        <Input
+                            id="day-input"
+                            type="number"
+                            placeholder="Day"
+                            value={targetDay}
+                            onChange={(e) => setTargetDay(parseInt(e.target.value, 10) || 1)}
+                            className="w-full bg-card h-8"
+                            min={1}
+                            max={324}
+                        />
+                        <Button onClick={handleGoToTime} size="sm">Go</Button>
+                    </div>
+                </div>
+                <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex flex-col gap-2">
+                    <Label className="text-xs font-medium text-muted-foreground text-center">
+                        Celestial Events
+                    </Label>
+                    <Select onValueChange={handleEventSelect}>
+                        <SelectTrigger className="w-full h-8 bg-card">
+                            <SelectValue placeholder="Select an event..." />
+                        </SelectTrigger>
+                        <SelectContent className="backdrop-blur-sm">
+                            {celestialEvents.map(event => (
+                                <SelectItem key={event.name} value={event.name}>{event.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <div className="flex items-center justify-between gap-1">
+                         <Button onClick={() => handleGoToEvent('last')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent}>
+                            <ArrowLeft className="h-4 w-4" /> Go to Last
+                        </Button>
+                        <Button onClick={() => handleGoToEvent('previous')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent}>
+                            <ArrowLeft className="h-4 w-4" /> Previous
+                        </Button>
+                         <Button onClick={() => handleGoToEvent('next')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent}>
+                            Next <ArrowRight className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
                 <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex items-center gap-2">
                     <Label htmlFor="speed-input" className="text-xs font-medium text-muted-foreground min-w-16 text-center">
@@ -502,10 +565,6 @@ export default function Home() {
         isSebakaRotating={isSebakaRotating}
         characterLongitude={characterLongitude}
         characterLatitude={characterLatitude}
-        onCharacterLatLongChange={(lat, long) => {
-            setCharacterLatitude(lat);
-            setCharacterLongitude(long);
-        }}
         isViridisAnimationActive={isViridisAnimationActive}
         onTimeUpdate={handleTimeUpdate}
         goToTime={goToTime}
