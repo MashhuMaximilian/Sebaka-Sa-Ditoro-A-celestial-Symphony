@@ -88,6 +88,7 @@ function checkEventConditions(
 
     if (initialVectorsForLat.length !== allRelevantBodyNames.length) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
 
+    // Calculate the optimal latitude to center the event in the sky
     let totalDeclination = 0;
     const primaryBodyInfoForLat = initialVectorsForLat.filter(info => event.primaryBodies.includes(info.name));
     primaryBodyInfoForLat.forEach(body => {
@@ -106,39 +107,41 @@ function checkEventConditions(
 
     if (primaryBodyInfo.length !== event.primaryBodies.length) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
     
-    const viewpoint = new THREE.Vector3().addVectors(sebakaPos, getBodyVector(new THREE.Vector3(), sebakaPos, sebakaData.size, sebakaTilt, longitude, optimalLatitude));
-    
+    // Check if secondary bodies are present
     if (event.secondaryBodies) {
       for (const name of event.secondaryBodies) {
         if (!bodyPositions[name]) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
       }
     }
 
+    const viewpoint = new THREE.Vector3();
+    const viewpointOffsetForRadius = getBodyVector(new THREE.Vector3(), sebakaPos, sebakaData.size, sebakaTilt, longitude, optimalLatitude);
+    viewpoint.addVectors(sebakaPos, viewpointOffsetForRadius);
+
     switch (event.type) {
         case 'conjunction': {
             if (primaryBodyInfo.length < 2) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
             
             let maxAngle = 0;
-            let minAngle = Infinity;
-
+            // Find the widest separation between any two planets in the group
             for (let i = 0; i < primaryBodyInfo.length; i++) {
                 for (let j = i + 1; j < primaryBodyInfo.length; j++) {
                     const angle = getAngularSeparation(primaryBodyInfo[i].vec, primaryBodyInfo[j].vec);
                     if (angle > maxAngle) maxAngle = angle;
-                    if (angle < minAngle) minAngle = angle;
                 }
             }
 
+            // The whole group must fit within the tolerance (defines the arc)
             if (maxAngle > event.longitudeTolerance) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
-
+            
+            // If minSeparation is defined, ensure no two planets are closer than that
             if (event.minSeparation) {
                  for (let i = 0; i < primaryBodyInfo.length; i++) {
                     for (let j = i + 1; j < primaryBodyInfo.length; j++) {
-                        const body1 = primaryBodyInfo[i];
-                        const body2 = primaryBodyInfo[j];
-                        const separation = getAngularSeparation(body1.vec, body2.vec);
-                        const r1 = getApparentRadius(body1.data.size, body1.pos.distanceTo(viewpoint));
-                        const r2 = getApparentRadius(body2.data.size, body2.pos.distanceTo(viewpoint));
+                        const separation = getAngularSeparation(primaryBodyInfo[i].vec, primaryBodyInfo[j].vec);
+                        const r1 = getApparentRadius(primaryBodyInfo[i].data.size, primaryBodyInfo[i].pos.distanceTo(viewpoint));
+                        const r2 = getApparentRadius(primaryBodyInfo[j].data.size, primaryBodyInfo[j].pos.distanceTo(viewpoint));
+                        // Check if they are closer than their combined radii plus the minimum separation buffer
                         if (separation < (r1 + r2 + event.minSeparation)) {
                              return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                         }
@@ -168,6 +171,7 @@ function checkEventConditions(
             primaryBodyInfo.forEach(({ vec }) => avgVector.add(vec));
             avgVector.normalize();
 
+            // All bodies must be within a very tight cone
             for (const { vec } of primaryBodyInfo) {
                 if (getAngularSeparation(vec, avgVector) > event.longitudeTolerance) {
                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -176,7 +180,7 @@ function checkEventConditions(
             
             if (event.overlapThreshold && event.overlapThreshold > 0) {
                 let overlapMet = false;
-                 // For multi-occultations, ensure all are tightly packed.
+                // For multi-body occultations, ensure they are all stacked
                 if (primaryBodyInfo.length > 2) {
                     let maxSeparationInGroup = 0;
                     for (let i = 0; i < primaryBodyInfo.length; i++) {
@@ -184,10 +188,11 @@ function checkEventConditions(
                              maxSeparationInGroup = Math.max(maxSeparationInGroup, getAngularSeparation(primaryBodyInfo[i].vec, primaryBodyInfo[j].vec));
                         }
                     }
-                    // A simple check: if the whole group is tighter than the largest body's apparent size, they are likely overlapping
                     const largestBody = primaryBodyInfo.reduce((a,b) => getApparentRadius(a.data.size, a.pos.distanceTo(viewpoint)) > getApparentRadius(b.data.size, b.pos.distanceTo(viewpoint)) ? a : b);
                     const largestApparentRadius = getApparentRadius(largestBody.data.size, largestBody.pos.distanceTo(viewpoint));
-                    if(maxSeparationInGroup < largestApparentRadius) {
+                    
+                    // Simple check: if the whole group is tighter than the largest body's apparent size, they are likely overlapping
+                    if(maxSeparationInGroup < largestApparentRadius * (1 + event.overlapThreshold)) {
                         overlapMet = true;
                     }
                 } else { // Pairwise check for 2-body occultations
@@ -210,9 +215,8 @@ function checkEventConditions(
                         if (overlapMet) break;
                     }
                 }
-                 if (!overlapMet && primaryBodyInfo.length > 1) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                if (!overlapMet) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
             }
-
             return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
         
@@ -248,97 +252,29 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     const sebakaTilt = sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
     
     const timeMultiplier = direction === 'next' ? 1 : -1;
+    const stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
+    let currentHours = startHours + stepHours; // Start one day from the current time
 
-    // --- New Intelligent Search Strategy ---
-    const approxPeriodHours = event.approximatePeriodDays * HOURS_IN_SEBAKA_DAY;
-    
-    // 1. Make an intelligent first jump to get near the next likely event window.
-    let initialSearchHours: number;
-    if (direction === 'next') {
-        const remainder = startHours % approxPeriodHours;
-        initialSearchHours = startHours - remainder + approxPeriodHours;
-    } else { // 'previous' or 'last'
-        const remainder = startHours % approxPeriodHours;
-        initialSearchHours = startHours - remainder;
-        if (initialSearchHours >= startHours) {
-            initialSearchHours -= approxPeriodHours;
-        }
-    }
-    // For "last", we start from the most recent cycle start and go backward.
-     if (direction === 'last') {
-        initialSearchHours = startHours - (startHours % approxPeriodHours);
-    } else {
-        // Add a small offset to avoid re-finding the exact same event start time.
-        initialSearchHours += timeMultiplier * HOURS_IN_SEBAKA_DAY;
-    }
+    const maxSearchYears = 200000; // Safety brake after 200k years
+    const maxIterations = maxSearchYears * 324;
 
-    // 2. Define a search window around the predicted time.
-    // Use a larger window for more frequent events to catch variance.
-    const searchWindowDays = Math.max(365, event.approximatePeriodDays * 0.1); 
-    const searchWindowHours = searchWindowDays * HOURS_IN_SEBAKA_DAY;
-    
-    let searchStart = initialSearchHours - (searchWindowHours / 2);
-    const searchEnd = initialSearchHours + (searchWindowHours / 2);
+    for(let i = 0; i < maxIterations; i++) {
+        currentHours += stepHours;
 
-    const coarseStepHours = Math.max(HOURS_IN_SEBAKA_DAY, Math.floor(approxPeriodHours / 365)) * timeMultiplier;
-    const fineStepHours = 1 * HOURS_IN_SEBAKA_DAY * timeMultiplier;
+        if (timeMultiplier < 0 && currentHours < 0) break; // Don't search before year 0
 
-    let coarseFoundHours: number | null = null;
-    let lastMetState = false;
+        const bodyPositions = calculateBodyPositions(currentHours, processedBodyData);
+        const { met, viewingLatitude, viewingLongitude } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
-    // 3. Coarse search within the window
-    for (let hours = searchStart; timeMultiplier > 0 ? hours < searchEnd : hours > searchStart; hours += coarseStepHours) {
-        if (hours < 0) continue;
-        const bodyPositions = calculateBodyPositions(hours, processedBodyData);
-        const { met } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
-
-        if (met && !lastMetState) {
-            coarseFoundHours = hours;
-            break;
-        }
-        lastMetState = met;
-    }
-
-    if (coarseFoundHours === null) {
-        // If the window was missed, try one more time on the next cycle for robustness
-        const nextWindowStart = initialSearchHours + approxPeriodHours - (searchWindowHours / 2);
-        for (let hours = nextWindowStart; timeMultiplier > 0 ? hours < nextWindowStart + searchWindowHours : hours > nextWindowStart - searchWindowHours; hours += coarseStepHours) {
-             if (hours < 0) continue;
-             const bodyPositions = calculateBodyPositions(hours, processedBodyData);
-             const { met } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
-             if (met && !lastMetState) {
-                coarseFoundHours = hours;
-                break;
-            }
-            lastMetState = met;
-        }
-
-        if (coarseFoundHours === null) {
-            console.warn(`Coarse search failed for ${event.name}`);
-            return null; // No potential window found
-        }
-    }
-    
-    // 4. Fine search to pinpoint the exact day
-    let fineTuneStartHours = coarseFoundHours - coarseStepHours; // start one coarse step back
-    const fineTuneIterations = Math.abs(coarseStepHours / fineStepHours) + 1;
-
-    for (let j = 0; j < fineTuneIterations; j++) {
-        const fineHours = fineTuneStartHours + (j * Math.abs(fineStepHours));
-        if (fineHours < 0 && timeMultiplier < 0) continue;
-
-        const finePositions = calculateBodyPositions(fineHours, processedBodyData);
-        const fineResult = checkEventConditions(event, finePositions, processedBodyData, sebakaTilt);
-
-        if (fineResult.met) {
-             return {
-                foundHours: fineHours,
-                viewingLongitude: fineResult.viewingLongitude,
-                viewingLatitude: fineResult.viewingLatitude,
+        if (met) {
+            return {
+                foundHours: currentHours,
+                viewingLongitude: viewingLongitude,
+                viewingLatitude: viewingLatitude,
             };
         }
     }
 
-    console.warn(`Fine search failed for ${event.name} after finding coarse window.`);
+    console.warn(`Could not find event ${event.name} within ${maxSearchYears} years.`);
     return null;
 }

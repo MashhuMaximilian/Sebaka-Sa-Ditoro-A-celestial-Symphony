@@ -1,6 +1,6 @@
 
-export type EventAlignmentType =
-    | 'conjunction' // All bodies within a tight arc, but not overlapping
+export type EventAlignmentType = 
+    | 'conjunction' // All bodies within a tight arc but not overlapping
     | 'occultation' // Two or more bodies overlap
     | 'cluster'     // Bodies within a wider arc
     | 'dominance'   // One body is prominent, others are far away
@@ -27,8 +27,8 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare alignment of Rutilus, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic night event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 20, // Wide 20-degree arc
-        minSeparation: 1.0,    // But no two planets can be closer than 1.0 degree
+        longitudeTolerance: 20, // A wide 20-degree arc
+        minSeparation: 0.5,    // But no two planets can be closer than 0.5 degrees
         viewingLongitude: 180,
         visibilityCondition: 'night',
         approximatePeriodDays: 795060, // ~2,454 Sebakan years
