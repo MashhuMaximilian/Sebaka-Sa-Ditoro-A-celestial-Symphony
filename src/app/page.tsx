@@ -592,7 +592,7 @@ export default function Home() {
         <div className="loading-overlay">
           <div className="loading-content">
             <Loader2 className="h-16 w-16 animate-spin text-foreground" />
-            <p className="text-lg font-medium text-foreground mt-4">Searching for event... This may take up to 30 seconds.</p>
+            <p className="text-lg font-medium text-foreground mt-4">Searching meticulously across thousands of years... This may take a while.</p>
           </div>
         </div>
       )}

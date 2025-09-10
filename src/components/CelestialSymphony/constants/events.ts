@@ -7,7 +7,7 @@ export const celestialEvents: CelestialEvent[] = [
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
         longitudeTolerance: 0.1,
-        minSeparation: 5,
+        minSeparation: 6,
         sunSeparationMultiplier: 10, // Allow closer approach to suns
         viewingLongitude: 180,
         visibilityCondition: 'night',
@@ -112,7 +112,7 @@ export const celestialEvents: CelestialEvent[] = [
         approximatePeriodDays: 1166400, // ~3,600 Sebakan years
     },
     {
-        name: "The Great Cascade",
+        name: "The Great Eclipse",
         description: "Extremely rare occultation of all three, a 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"],
