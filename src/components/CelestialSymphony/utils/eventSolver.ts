@@ -278,7 +278,7 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         if (fineHours < 0 && timeMultiplier < 0) continue;
 
         const finePositions = calculateBodyPositions(fineHours, processedBodyData);
-        const fineResult = checkEventConditions(event, finePositions, processedBodydData, sebakaTilt);
+        const fineResult = checkEventConditions(event, finePositions, processedBodyData, sebakaTilt);
         if (fineResult.met) {
              return {
                 foundHours: fineHours,
