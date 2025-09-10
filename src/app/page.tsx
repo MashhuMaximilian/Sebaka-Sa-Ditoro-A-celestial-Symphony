@@ -265,13 +265,12 @@ export default function Home() {
   const [isFreeCamera, setIsFreeCamera] = useState(false);
   
   const [selectedEvent, setSelectedEvent] = useState<CelestialEvent | null>(null);
-  const [isSearchingEvent, setIsSearchingEvent] = useState(false);
   const [isJumpingTime, setIsJumpingTime] = useState(false);
 
   useEffect(() => {
     if (goToTime === null) return;
     
-    setIsJumpingTime(true); // Disable controls during jump
+    // This effect is responsible for updating the display year/day when a jump is in progress
     const totalDays = Math.floor(goToTime / HOURS_IN_SEBAKA_DAY);
     const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
     const newTargetDay = (totalDays % SEBAKA_YEAR_IN_DAYS + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
@@ -344,6 +343,7 @@ export default function Home() {
     const day = Math.max(1, Math.min(SEBAKA_YEAR_IN_DAYS, targetDay));
     const newElapsedHours = (year * SEBAKA_YEAR_IN_DAYS + (day - 1)) * HOURS_IN_SEBAKA_DAY;
     setGoToTime(newElapsedHours);
+    setIsJumpingTime(true); // Disable controls on manual jump
   }
 
   const handleTimeUpdate = (hours: number) => {
@@ -399,10 +399,11 @@ export default function Home() {
   };
   
   const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'last') => {
-    if (!selectedEvent || isSearchingEvent || isJumpingTime) return;
+    if (!selectedEvent || isJumpingTime) return;
 
-    setIsSearchingEvent(true);
+    setIsJumpingTime(true);
     
+    // Give UI time to update to show loading state
     await new Promise(resolve => setTimeout(resolve, 50)); 
     
     const params: EventSearchParams = {
@@ -422,15 +423,16 @@ export default function Home() {
       setGoToTime(foundResult.foundHours);
     } else {
         console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
+        // If no event is found, re-enable buttons
+        setIsJumpingTime(false);
     }
-    
-    setIsSearchingEvent(false);
-  }, [selectedEvent, elapsedHours, isSearchingEvent, isJumpingTime]);
+    // `resetGoToTime` will set isJumpingTime to false on completion
+  }, [selectedEvent, elapsedHours, isJumpingTime]);
   
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;
     
-    const isLoading = isSearchingEvent || isJumpingTime;
+    const isLoading = isJumpingTime;
 
     const panels: Record<Exclude<ActiveSebakaPanel, null>, React.ReactNode> = {
         time: (
@@ -461,7 +463,7 @@ export default function Home() {
                             disabled={isLoading}
                         />
                         <Button onClick={handleGoToTime} size="sm" disabled={isLoading}>
-                          Go
+                          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Go"}
                         </Button>
                     </div>
                 </div>
@@ -481,13 +483,13 @@ export default function Home() {
                     </Select>
                     <div className="flex items-center justify-between gap-1">
                          <Button onClick={() => handleGoToEvent('last')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
-                            {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Go to Last
+                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Go to Last
                         </Button>
                         <Button onClick={() => handleGoToEvent('previous')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
-                             {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Previous
+                             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Previous
                         </Button>
                          <Button onClick={() => handleGoToEvent('next')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
-                            Next {isSearchingEvent ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+                            Next {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
                         </Button>
                     </div>
                 </div>
