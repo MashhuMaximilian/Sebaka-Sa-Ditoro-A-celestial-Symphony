@@ -82,3 +82,27 @@ export interface MaterialProperties {
     lavaBrightness?: number;
   };
 }
+
+
+export type EventAlignmentType = 
+    | 'conjunction' // All bodies within a tight arc but not overlapping
+    | 'occultation' // Two or more bodies overlap
+    | 'cluster'     // Bodies within a wider arc
+    | 'dominance'   // One body is prominent, others are far away
+    | 'triangle';   // Three bodies form a triangle
+
+export interface CelestialEvent {
+    name: string;
+    description: string;
+    type: EventAlignmentType;
+    primaryBodies: string[];
+    secondaryBodies?: string[];
+    longitudeTolerance: number; // Max longitude deviation from mean in degrees
+    minSeparation?: number; // Min separation for dominance events or non-overlapping conjunctions
+    overlapThreshold?: number; // Min overlap fraction for occultations (0–1)
+    sunSeparationMultiplier?: number; // New field
+    allowSunOverlap?: boolean; // New field for special eclipse events
+    viewingLongitude?: number; // Optimal longitude on Sebaka (degrees)
+    visibilityCondition?: 'night' | 'twilight' | 'day';
+    approximatePeriodDays: number; // Guide for detection window
+}

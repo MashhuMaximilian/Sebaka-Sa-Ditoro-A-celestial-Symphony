@@ -321,7 +321,7 @@ export default function Home() {
     setOrbitMode('iridescent');
   }
 
-  const enterSebakaView = () => {
+  const enterSebakaView = useCallback(() => {
       if (!viewFromSebaka) {
           setIsInitialized(false);
           setViewFromSebaka(true);
@@ -333,7 +333,7 @@ export default function Home() {
           setSpeedInput('2');
           setOrbitMode('hidden');
       }
-  }
+  }, [viewFromSebaka]);
   
   const handleSebakaPanelToggle = (panel: ActiveSebakaPanel | null) => {
     setActiveSebakaPanel(current => current === panel ? null : panel);
@@ -594,7 +594,7 @@ export default function Home() {
         <div className="loading-overlay">
           <div className="loading-content">
             <Loader2 className="h-16 w-16 animate-spin text-foreground" />
-            <p className="text-lg font-medium text-foreground mt-4">Searching for event...</p>
+            <p className="text-lg font-medium text-foreground mt-4">Searching for event... This may take a moment.</p>
           </div>
         </div>
       )}
