@@ -141,9 +141,9 @@ const initialPlanets: PlanetData[] = [
   {
       name: "Aetheris", color: "#5082C8", 
       size: 95.565, // 15.0 R⊕
-      orbitRadius: 6.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true, eccentricity: 0.5, initialPhase: 0,
+      orbitRadius: 7.0 * AU_TO_UNITS, orbitPeriodDays: 4241, eccentric: true, eccentricity: 0.5, initialPhase: 0,
       type: 'Planet', classification: 'Gas Giant',
-      orbitalRole: 'Fifth planet orbiting Alpha-Twilight binary', orbitalPeriod: '13.09 Sebakan years (4,241 days)', orbitalDistance: '6.0 AU (periapsis 3.0 AU, apoapsis 9.0 AU)',
+      orbitalRole: 'Fifth planet orbiting Alpha-Twilight binary', orbitalPeriod: '13.09 Sebakan years (4,241 days)', orbitalDistance: '7.0 AU (periapsis 3.5 AU, apoapsis 10.5 AU)',
       rotation: '10 hours', axialTilt: '25°', moons: 'Multiple (5–10 visible)',
       radius: '15.0 R⊕ (~1.36 RJ)', mass: '~300 M⊕ (~0.94 MJ)',
       surface: 'Banded atmosphere with blue, purple, green hues, internal heat glow.',

@@ -23,22 +23,25 @@ export const createOrbitMesh = (body: ProcessedBodyData, usePlainOrbits: boolean
             const semiMajorAxis = body.orbitRadius;
             const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
             
+            // The distance from the center of the ellipse to one of the foci.
             const focusOffset = Math.sqrt(semiMajorAxis**2 - semiMinorAxis**2);
 
+            // To place the sun at the origin (which is a focus), the center of the
+            // ellipse must be offset by -focusOffset along the x-axis.
             const curve = new THREE.EllipseCurve(
-                -focusOffset, 0,
-                semiMajorAxis, semiMinorAxis,
-                0, 2 * Math.PI,
-                false,
-                0
+                -focusOffset, 0,      // Center of the ellipse (aX, aY)
+                semiMajorAxis, semiMinorAxis, // xRadius, yRadius
+                0, 2 * Math.PI,      // aStartAngle, aEndAngle
+                false,               // aClockwise
+                0                    // aRotation
             );
 
             const points2D = curve.getPoints(tubularSegments);
+            // The points are in the XY plane by default. We map Y to Z to place the orbit on our desired plane.
             const points3D = points2D.map(p => new THREE.Vector3(p.x, 0, p.y));
             orbitGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points3D), tubularSegments, tubeRadius, radialSegments, true);
         } else {
             orbitGeometry = new THREE.TorusGeometry(body.orbitRadius, tubeRadius, radialSegments, tubularSegments);
-            orbitGeometry.rotateX(Math.PI / 2);
         }
 
         let orbitMaterial: THREE.Material;
@@ -64,10 +67,12 @@ export const createOrbitMesh = (body: ProcessedBodyData, usePlainOrbits: boolean
         
         const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
         
+        // For circular (Torus) orbits, they are created in the XY plane by default, so we rotate them to the XZ plane.
+        // For elliptical (Tube) orbits, we have already mapped the points to the XZ plane, so no rotation is needed.
         if (!(body.eccentric && body.eccentricity && body.eccentricity > 0)) {
-            // Already rotated for Torus
+            orbit.rotation.x = Math.PI / 2;
         } else {
-            // TubeGeometry from EllipseCurve needs rotation
+            // Elliptical orbits also need to be rotated to the XZ plane.
             orbit.rotation.x = Math.PI / 2;
         }
 
