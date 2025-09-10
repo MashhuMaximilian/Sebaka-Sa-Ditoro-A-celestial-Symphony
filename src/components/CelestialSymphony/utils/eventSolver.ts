@@ -243,13 +243,12 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     const sebakaData = processedBodyData.find(b => b.name === 'Sebaka');
     if (!sebakaData) return null;
     const sebakaTilt = sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
-    
+
     const timeMultiplier = direction === 'previous' ? -1 : 1;
-    let searchStartHours = direction === 'first' ? 0 : startHours;
+    let currentHours = direction === 'first' ? 0 : startHours;
 
     const positionCache: { [hours: number]: { [name: string]: THREE.Vector3 } } = {};
     const getCachedPositions = (hours: number) => {
-        // Cache positions daily to improve performance
         const roundedHours = Math.round(hours / HOURS_IN_SEBAKA_DAY) * HOURS_IN_SEBAKA_DAY;
         if (!positionCache[roundedHours]) {
             positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
@@ -257,76 +256,70 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         return positionCache[roundedHours];
     };
 
-    if (direction !== 'first') {
-        let isStillInEvent = true;
-        let escapeHours = startHours;
-        const initialCheck = checkEventConditions(event, getCachedPositions(escapeHours), processedBodyData, sebakaTilt);
-
-        if (initialCheck.met) {
-            while (isStillInEvent) {
-                escapeHours += HOURS_IN_SEBAKA_DAY * timeMultiplier;
-                const currentCheck = checkEventConditions(event, getCachedPositions(escapeHours), processedBodyData, sebakaTilt);
-                if (!currentCheck.met) {
-                    isStillInEvent = false;
-                    searchStartHours = escapeHours;
-                }
-                if (Math.abs(escapeHours - startHours) > (30 * HOURS_IN_SEBAKA_DAY)) {
-                     console.warn("Event duration escape exceeded 30 days, breaking.");
-                     break;
-                }
+    // To prevent getting stuck in the same event, move out of it first
+    if (direction !== 'first' && checkEventConditions(event, getCachedPositions(startHours), processedBodyData, sebakaTilt).met) {
+        while (checkEventConditions(event, getCachedPositions(currentHours), processedBodyData, sebakaTilt).met) {
+            currentHours += HOURS_IN_SEBAKA_DAY * 10 * timeMultiplier; // Jump 10 days at a time to escape
+            if (Math.abs(currentHours - startHours) > 365 * 24 * 5) { // Safety break after 5 years
+                console.warn("Could not escape current event occurrence.");
+                break;
             }
         }
     }
-    
-    let currentHours = searchStartHours + (HOURS_IN_SEBAKA_DAY * timeMultiplier);
 
-    const coarseStepDays = Math.min(365, Math.max(1, Math.floor(event.approximatePeriodDays / 100)));
-    let coarseStepHours = coarseStepDays * HOURS_IN_SEBAKA_DAY * timeMultiplier;
-    
-    const maxSearchYears = 10000000;
-    const maxSearchIterations = Math.ceil(maxSearchYears * SEBAKA_YEAR_IN_DAYS / coarseStepDays);
+    // Search window: 10,000 Sebakan years
+    const maxSearchHours = 10000 * SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY;
+    const stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier; // 1-day step for precision
 
-    for (let i = 0; i < maxSearchIterations; i++) {
+    const limitHours = startHours + (maxSearchHours * timeMultiplier);
+
+    let foundHours = null;
+    let viewingLatitude = 0;
+    let viewingLongitude = event.viewingLongitude ?? 180;
+
+    while ((timeMultiplier > 0 && currentHours < limitHours) || (timeMultiplier < 0 && currentHours > limitHours)) {
         const bodyPositions = getCachedPositions(currentHours);
-        const { met } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
+        const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
-        if (met) {
-            let fineHoursStart = currentHours - coarseStepHours;
-            const fineStepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
-            
-            for (let j = 0; j < coarseStepDays * 2; j++) {
-                const fineCheckHours = fineHoursStart + j * fineStepHours;
-                if (timeMultiplier > 0 && fineCheckHours < searchStartHours) continue;
-                if (timeMultiplier < 0 && fineCheckHours > searchStartHours) continue;
-
-                const finePositions = getCachedPositions(fineCheckHours);
-                const fineResult = checkEventConditions(event, finePositions, processedBodyData, sebakaTilt);
-
-                if (fineResult.met) {
-                    // Duration validation
-                    let durationDays = 0;
-                    let durationCheckHours = fineCheckHours;
-                    while(checkEventConditions(event, getCachedPositions(durationCheckHours), processedBodyData, sebakaTilt).met) {
-                        durationDays++;
-                        durationCheckHours += HOURS_IN_SEBAKA_DAY * timeMultiplier;
-                        if(durationDays > 5) break; // Check for max 5 days to confirm stability
-                    }
-
-                    if (durationDays >= 3) {
-                         return {
-                            foundHours: fineCheckHours,
-                            viewingLongitude: fineResult.viewingLongitude,
-                            viewingLatitude: fineResult.viewingLatitude,
-                        };
-                    }
+        if (result.met) {
+            // Validate duration (at least 3 days)
+            let durationDays = 0;
+            let durationCheckHours = currentHours;
+            let isStable = true;
+            while (durationDays < 3) {
+                const durationPositions = getCachedPositions(durationCheckHours);
+                if (!checkEventConditions(event, durationPositions, processedBodyData, sebakaTilt).met) {
+                    isStable = false;
+                    break;
                 }
+                durationDays += 1;
+                durationCheckHours += stepHours;
+            }
+
+            if (isStable) {
+                foundHours = currentHours;
+                viewingLatitude = result.viewingLatitude;
+                viewingLongitude = result.viewingLongitude;
+                break;
+            } else {
+                // If it wasn't stable, jump forward by the unstable duration to avoid re-checking noisy results
+                currentHours = durationCheckHours;
+                continue;
             }
         }
 
-        currentHours += coarseStepHours;
+        currentHours += stepHours;
         if (timeMultiplier < 0 && currentHours < 0) break;
     }
 
-    console.warn(`Could not find event ${event.name} within ${maxSearchYears} years.`);
-    return null;
+    if (foundHours === null) {
+        console.warn(`Could not find event ${event.name} within 10,000 Sebakan years.`);
+        return null;
+    }
+
+    return {
+        foundHours,
+        viewingLongitude,
+        viewingLatitude,
+    };
 }
