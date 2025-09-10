@@ -4,13 +4,14 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { createBodyMesh, createGridTexture } from "../utils/createBodyMesh";
 import { createOrbitMesh } from "../utils/createOrbitMesh";
-import type { BodyData } from "./useBodyData";
+import type { ProcessedBodyData } from "./useBodyData";
 import { createStarfield } from "../utils/createStarfield";
 import { MaterialProperties } from "@/types";
 import { SphericalCharacterController } from "../utils/SphericalCharacterController";
+import { calculateBodyPositions } from "../utils/calculateBodyPositions";
 
 interface InitializeSceneProps {
-    bodyData: BodyData[];
+    bodyData: ProcessedBodyData[];
     setIsInitialized: (isInitialized: boolean) => void;
     viewFromSebaka: boolean;
     usePlainOrbits: boolean;
@@ -30,6 +31,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
     const allBodiesRef = useRef<THREE.Object3D[]>([]);
     const allMeshesRef = useRef<THREE.Mesh[]>([]);
     const orbitMeshesRef = useRef<THREE.Mesh[]>([]);
+    const beaconOrbitMeshesRef = useRef<THREE.Mesh[]>([]);
     const beaconPositionRef = useRef(new THREE.Vector3());
     const sebakaRadiusRef = useRef(0);
     const originalCameraPosRef = useRef(new THREE.Vector3(0, 400, 800));
@@ -63,7 +65,6 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         rendererRef.current = renderer;
         
-        // Clean up previous renderer if it exists
         while (currentMount.firstChild) {
             currentMount.removeChild(currentMount.firstChild);
         }
@@ -74,13 +75,13 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         controls.dampingFactor = 0.05;
         controls.screenSpacePanning = true; 
         controls.minDistance = 1;
-        // USER-EDITABLE: This is the maximum zoom out distance for the main orbital camera.
         controls.maxDistance = 200000;
         controlsRef.current = controls;
         
         allBodiesRef.current = [];
         allMeshesRef.current = [];
         orbitMeshesRef.current = [];
+        beaconOrbitMeshesRef.current = [];
         characterMeshRef.current = null;
         characterHitboxRef.current = null;
         
@@ -99,7 +100,12 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 const orbit = createOrbitMesh(body, usePlainOrbits);
                 if (orbit) {
                     scene.add(orbit);
-                    orbitMeshesRef.current.push(orbit);
+                     // Orbits around Beacon need to be updated dynamically
+                    if (body.name === 'Gelidis' || body.name === 'Liminis') {
+                        beaconOrbitMeshesRef.current.push(orbit);
+                    } else {
+                        orbitMeshesRef.current.push(orbit);
+                    }
                 }
             }
         });
@@ -111,17 +117,16 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
             characterHitboxRef.current = characterController.characterHitbox;
         }
 
-        const initialBeaconData = bodyData.find(d => d.name === 'Beacon');
-        if (initialBeaconData?.orbitRadius) {
-            beaconPositionRef.current.set(initialBeaconData.orbitRadius, 0, 0);
-        }
+        const initialPositions = calculateBodyPositions(0, bodyData);
         
-        allBodiesRef.current.forEach(bodyObject => {
-            const data = bodyData.find(d => d.name === bodyObject.name);
-            if (data?.orbitRadius) {
-                bodyObject.position.set(data.orbitRadius, 0, 0);
-            }
+        Object.entries(initialPositions).forEach(([name, position]) => {
+             const bodyObject = allBodiesRef.current.find(b => b.name === name);
+             if (bodyObject) {
+                 bodyObject.position.copy(position);
+             }
         });
+        
+        beaconPositionRef.current.copy(initialPositions['Beacon']);
 
         camera.position.copy(originalCameraPosRef.current);
         controls.target.set(0, 0, 0);
@@ -150,7 +155,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
                 mountRef.current.removeChild(rendererRef.current.domElement);
             }
         };
-    }, [bodyData, viewFromSebaka, usePlainOrbits, showOrbits, sebakaGridTexture]);
+    }, [bodyData, viewFromSebaka, usePlainOrbits, showOrbits, sebakaGridTexture, setIsInitialized, materialProperties]);
 
     return {
         mountRef,
@@ -161,6 +166,7 @@ export const useInitializeScene = ({ bodyData, setIsInitialized, viewFromSebaka,
         allBodiesRef,
         allMeshesRef: allMeshesRef,
         orbitMeshesRef,
+        beaconOrbitMeshesRef,
         beaconPositionRef,
         sebakaRadiusRef,
         originalCameraPosRef,

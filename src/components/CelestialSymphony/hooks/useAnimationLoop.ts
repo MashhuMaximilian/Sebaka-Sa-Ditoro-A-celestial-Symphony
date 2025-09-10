@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { updateAllBodyPositions } from "../utils/updateAllBodyPositions";
-import type { BodyData } from "./useBodyData";
+import type { ProcessedBodyData } from "./useBodyData";
 import { SphericalCharacterController } from '../utils/SphericalCharacterController';
 import { CloseUpCharacterCamera } from '../utils/CloseUpCharacterCamera';
 import { MaterialProperties } from "@/types";
@@ -16,7 +16,7 @@ interface AnimationLoopParams {
     onTimeUpdate: (elapsedHours: number) => void;
     goToTime: number | null;
     onGoToTimeComplete: () => void;
-    bodyData: BodyData[];
+    bodyData: ProcessedBodyData[];
     scene: THREE.Scene | undefined;
     camera: THREE.PerspectiveCamera | undefined;
     renderer: THREE.WebGLRenderer | undefined;
@@ -24,6 +24,7 @@ interface AnimationLoopParams {
     allBodiesRef: React.MutableRefObject<THREE.Object3D[]>;
     planetMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     orbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
+    beaconOrbitMeshesRef: React.MutableRefObject<THREE.Mesh[]>;
     beaconPositionRef: React.MutableRefObject<THREE.Vector3>;
     isInitialized: boolean;
     cameraTarget: string | null;
@@ -49,6 +50,7 @@ export const useAnimationLoop = ({
   allBodiesRef,
   planetMeshesRef,
   orbitMeshesRef,
+  beaconOrbitMeshesRef,
   beaconPositionRef,
   isInitialized,
   characterMeshRef,
@@ -86,7 +88,7 @@ export const useAnimationLoop = ({
 
     if (viewFromSebaka && sebakaMesh && sebakaContainer) {
       characterControllerRef.current = new SphericalCharacterController(sebakaMesh);
-      characterMeshRef.current = characterControllerRef.current.characterMesh; // Store character mesh
+      characterMeshRef.current = characterControllerRef.current.characterMesh;
       thirdPersonCameraRef.current = new CloseUpCharacterCamera(
         camera, 
         characterControllerRef.current.characterMesh, 
@@ -124,7 +126,6 @@ export const useAnimationLoop = ({
       }
       onTimeUpdate(goToTime);
       onGoToTimeComplete();
-      // Set the clock to the new time to avoid a jump on the next frame
       clockRef.current = new THREE.Clock(true);
     }
   }, [goToTime, bodyData, allBodiesRef, beaconPositionRef, onTimeUpdate, isInitialized, onGoToTimeComplete]);
@@ -195,6 +196,9 @@ export const useAnimationLoop = ({
           orbitMeshesRef.current.forEach(orbitMesh => {
               updateSpiderStrandMaterial(orbitMesh.material);
           });
+           beaconOrbitMeshesRef.current.forEach(orbitMesh => {
+              updateSpiderStrandMaterial(orbitMesh.material);
+          });
           
           const spectrisMesh = planetMeshesRef.current.find(p => p.name === 'Spectris');
           if (spectrisMesh) {
@@ -206,10 +210,10 @@ export const useAnimationLoop = ({
           }
       }
       
-      const gelidisOrbit = orbitMeshesRef.current.find(o => o.name === 'Gelidis_orbit');
-      const liminisOrbit = orbitMeshesRef.current.find(o => o.name === 'Liminis_orbit');
-      if(gelidisOrbit) gelidisOrbit.position.copy(beaconPositionRef.current);
-      if(liminisOrbit) liminisOrbit.position.copy(beaconPositionRef.current);
+      // Dynamically update the position of Beacon's planet orbits
+      beaconOrbitMeshesRef.current.forEach(orbitMesh => {
+          orbitMesh.position.copy(beaconPositionRef.current);
+      });
 
       const spectrisMesh = planetMeshesRef.current.find(p => p.name === 'Spectris');
       if (spectrisMesh) {
@@ -262,7 +266,8 @@ export const useAnimationLoop = ({
     bodyData, 
     allBodiesRef, 
     planetMeshesRef, 
-    orbitMeshesRef, 
+    orbitMeshesRef,
+    beaconOrbitMeshesRef,
     beaconPositionRef, 
     onTimeUpdate,
     isInitialized,

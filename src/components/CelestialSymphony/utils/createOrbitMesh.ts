@@ -1,9 +1,9 @@
 
 import * as THREE from 'three';
-import type { BodyData } from '../hooks/useBodyData';
+import type { ProcessedBodyData } from '../hooks/useBodyData';
 import { spiderStrandShader } from '../shaders/spiderStrandShader';
 
-export const createOrbitMesh = (body: BodyData, usePlainOrbits: boolean): THREE.Mesh | null => {
+export const createOrbitMesh = (body: ProcessedBodyData, usePlainOrbits: boolean): THREE.Mesh | null => {
     if ((body.type === 'Planet' || body.name === 'Beacon') && body.orbitRadius) {
         
         let tubeRadius: number;
@@ -18,25 +18,27 @@ export const createOrbitMesh = (body: BodyData, usePlainOrbits: boolean): THREE.
 
         let orbitGeometry: THREE.BufferGeometry;
 
-        if (body.eccentric && body.eccentricity) {
+        if (body.eccentric && body.eccentricity && body.eccentricity > 0) {
             const eccentricity = body.eccentricity;
             const semiMajorAxis = body.orbitRadius;
             const semiMinorAxis = semiMajorAxis * Math.sqrt(1 - eccentricity * eccentricity);
-            const focus = Math.sqrt(semiMajorAxis**2 - semiMinorAxis**2);
+            
+            const focusOffset = Math.sqrt(semiMajorAxis**2 - semiMinorAxis**2);
 
             const curve = new THREE.EllipseCurve(
-                focus, 0,            // ax, aY
-                semiMajorAxis, semiMinorAxis, // xRadius, yRadius
-                0, 2 * Math.PI,      // aStartAngle, aEndAngle
-                false,               // aClockwise
-                0                    // aRotation
+                -focusOffset, 0,
+                semiMajorAxis, semiMinorAxis,
+                0, 2 * Math.PI,
+                false,
+                0
             );
 
             const points2D = curve.getPoints(tubularSegments);
-            const points3D = points2D.map(p => new THREE.Vector3(p.x, p.y, 0));
+            const points3D = points2D.map(p => new THREE.Vector3(p.x, 0, p.y));
             orbitGeometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points3D), tubularSegments, tubeRadius, radialSegments, true);
         } else {
             orbitGeometry = new THREE.TorusGeometry(body.orbitRadius, tubeRadius, radialSegments, tubularSegments);
+            orbitGeometry.rotateX(Math.PI / 2);
         }
 
         let orbitMaterial: THREE.Material;
@@ -61,7 +63,14 @@ export const createOrbitMesh = (body: BodyData, usePlainOrbits: boolean): THREE.
         }
         
         const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
-        orbit.rotation.x = Math.PI / 2;
+        
+        if (!(body.eccentric && body.eccentricity && body.eccentricity > 0)) {
+            // Already rotated for Torus
+        } else {
+            // TubeGeometry from EllipseCurve needs rotation
+            orbit.rotation.x = Math.PI / 2;
+        }
+
         orbit.name = `${body.name}_orbit`;
 
         return orbit;

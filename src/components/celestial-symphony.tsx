@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
 import { useAnimationLoop } from "./CelestialSymphony/hooks/useAnimationLoop";
 import { useBodyClickHandler } from "./CelestialSymphony/hooks/useBodyClickHandler";
@@ -11,8 +11,6 @@ import { useUpdateBodyMaterials } from "./CelestialSymphony/hooks/useUpdateBodyM
 import { useBodyData } from "./CelestialSymphony/hooks/useBodyData";
 import InfoPanel from "./info-panel";
 import { Sheet, SheetContent } from "./ui/sheet";
-import * as THREE from 'three';
-
 
 export interface CelestialSymphonyProps {
   stars: StarData[];
@@ -55,6 +53,7 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     allBodiesRef,
     allMeshesRef,
     orbitMeshesRef,
+    beaconOrbitMeshesRef,
     beaconPositionRef,
     originalCameraPosRef,
     characterMeshRef,
@@ -116,13 +115,13 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
     allBodiesRef,
     planetMeshesRef: allMeshesRef,
     orbitMeshesRef,
+    beaconOrbitMeshesRef,
     beaconPositionRef,
     isInitialized: props.isInitialized,
     characterMeshRef,
   });
 
   const handleCharacterPropChange = (prop: keyof MaterialProperties['Character'], value: number) => {
-    // Update state for InfoPanel and material system
     setMaterialProperties(prev => ({
         ...prev,
         Character: {
@@ -154,5 +153,3 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
 };
 
 export default CelestialSymphony;
-
-    
