@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight } from "lucide-react";
 
 import type { PlanetData, StarData, MaterialProperties } from "@/types";
@@ -264,6 +264,21 @@ export default function Home() {
   
   const [selectedEvent, setSelectedEvent] = useState<CelestialEvent | null>(null);
 
+  useEffect(() => {
+    if (goToTime !== null) {
+      const newTargetYear = Math.floor(goToTime / (SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY));
+      const remainingHours = goToTime % (SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY);
+      const newTargetDay = Math.floor(remainingHours / HOURS_IN_SEBAKA_DAY) + 1;
+      
+      setTargetYear(newTargetYear);
+      setTargetDay(newTargetDay);
+
+      if (selectedEvent?.viewingLongitude) {
+        setCharacterLongitude(selectedEvent.viewingLongitude);
+      }
+    }
+  }, [goToTime, selectedEvent]);
+
   const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSpeedInput(e.target.value);
     const value = parseFloat(e.target.value);
@@ -327,8 +342,6 @@ export default function Home() {
     const day = Math.max(1, Math.min(SEBAKA_YEAR_IN_DAYS, targetDay));
     const newElapsedHours = (year * SEBAKA_YEAR_IN_DAYS + (day - 1)) * HOURS_IN_SEBAKA_DAY;
     setGoToTime(newElapsedHours);
-    setCurrentYear(year);
-    setCurrentDay(day);
   }
 
   const handleTimeUpdate = (hours: number) => {
@@ -383,48 +396,38 @@ export default function Home() {
   };
   
   const handleGoToEvent = (direction: 'next' | 'previous' | 'last') => {
-    if (!selectedEvent) return;
+    if (!selectedEvent || !selectedEvent.periodDays) return;
 
-    const currentTotalDays = currentYear * SEBAKA_YEAR_IN_DAYS + (currentDay - 1);
-    let occurrences = selectedEvent.occurrences?.map(occ => occ[0] * SEBAKA_YEAR_IN_DAYS + (occ[1] - 1)) ?? [];
-    
-    // For periodic events, generate more occurrences if needed
-    if (selectedEvent.type === 'periodic' && selectedEvent.periodDays) {
-        const lastKnownOccurrence = occurrences.length > 0 ? occurrences[occurrences.length - 1] : 0;
-        for (let next = lastKnownOccurrence + selectedEvent.periodDays; next < currentTotalDays + selectedEvent.periodDays * 5; next += selectedEvent.periodDays) {
-            if (!occurrences.includes(next)) {
-                occurrences.push(next);
-            }
-        }
-    }
-    occurrences.sort((a, b) => a - b);
+    const currentTotalDays = Math.floor(elapsedHours / HOURS_IN_SEBAKA_DAY);
+    const periodInDays = selectedEvent.periodDays;
   
-    let targetTotalDays: number | null = null;
+    let targetTotalDays: number;
   
     if (direction === 'next') {
-        targetTotalDays = occurrences.find(day => day > currentTotalDays) ?? null;
+        const remainder = currentTotalDays % periodInDays;
+        if (remainder === 0 && currentTotalDays > 0) {
+            targetTotalDays = currentTotalDays + periodInDays;
+        } else {
+            targetTotalDays = currentTotalDays - remainder + periodInDays;
+        }
     } else if (direction === 'previous') {
-        const prevOccurrences = occurrences.filter(day => day < currentTotalDays);
-        targetTotalDays = prevOccurrences.length > 0 ? prevOccurrences[prevOccurrences.length - 1] : null;
+        const remainder = currentTotalDays % periodInDays;
+        if (remainder === 0 && currentTotalDays > 0) {
+            targetTotalDays = Math.max(0, currentTotalDays - periodInDays);
+        } else {
+            targetTotalDays = Math.max(0, currentTotalDays - remainder);
+        }
     } else { // 'last'
-        const lastOccurrences = occurrences.filter(day => day <= currentTotalDays);
-        targetTotalDays = lastOccurrences.length > 0 ? lastOccurrences[lastOccurrences.length - 1] : null;
+        targetTotalDays = currentTotalDays - (currentTotalDays % periodInDays);
     }
-  
-    if (targetTotalDays === null) {
-      // Handle case where no event is found (e.g., asking for 'next' on the last known event)
-      // You could add a toast notification here later.
-      return; 
+    
+    // Override for Great Conjunction's first event at Year 0, Day 1
+    if (selectedEvent.name === "Great Conjunction" && (direction === 'previous' || direction === 'last') && currentTotalDays < periodInDays) {
+        targetTotalDays = 0;
     }
 
-    const newTargetYear = Math.floor(targetTotalDays / SEBAKA_YEAR_IN_DAYS);
-    const newTargetDay = Math.floor(targetTotalDays % SEBAKA_YEAR_IN_DAYS) + 1;
-    
-    setTargetYear(newTargetYear);
-    setTargetDay(newTargetDay);
-    if(selectedEvent.viewingLongitude) {
-        setCharacterLongitude(selectedEvent.viewingLongitude);
-    }
+    const newGoToTime = targetTotalDays * HOURS_IN_SEBAKA_DAY;
+    setGoToTime(newGoToTime);
   };
   
   const renderSebakaPanelContent = () => {
