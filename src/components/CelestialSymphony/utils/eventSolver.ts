@@ -53,9 +53,9 @@ function getAngularSeparation(v1: THREE.Vector3, v2: THREE.Vector3): number {
     return THREE.MathUtils.radToDeg(v1.angleTo(v2));
 }
 
-// Calculate apparent radius of a body
-function getApparentRadius(bodySize: number, bodyPos: THREE.Vector3, viewpoint: THREE.Vector3): number {
-    const distance = bodyPos.distanceTo(viewpoint);
+// Calculate apparent radius of a body in degrees
+function getApparentRadius(bodySize: number, bodyPos: THREE.Vector3, viewpointPos: THREE.Vector3): number {
+    const distance = bodyPos.distanceTo(viewpointPos);
     return THREE.MathUtils.radToDeg(Math.atan(bodySize / distance));
 }
 
@@ -65,104 +65,126 @@ function checkEventConditions(
     bodyPositions: { [key: string]: THREE.Vector3 },
     processedBodyData: ProcessedBodyData[],
     sebakaTilt: number
-): { met: boolean; viewingLatitude: number } {
+): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
     const sebakaData = processedBodyData.find(d => d.name === 'Sebaka');
-    if (!sebakaData) return { met: false, viewingLatitude: 0 };
+    if (!sebakaData) return { met: false, viewingLatitude: 0, viewingLongitude: event.viewingLongitude ?? 180 };
     const sebakaPos = bodyPositions['Sebaka'];
     const longitude = event.viewingLongitude ?? 180;
+    
+    const viewpointPos = (lat: number) => {
+        const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(
+            sebakaData.size,
+            Math.PI / 2 - THREE.MathUtils.degToRad(lat),
+            THREE.MathUtils.degToRad(longitude)
+        );
+        const tiltRad = THREE.MathUtils.degToRad(sebakaTilt);
+        viewpointOffset.applyAxisAngle(new THREE.Vector3(0, 0, 1), tiltRad);
+        return new THREE.Vector3().addVectors(sebakaPos, viewpointOffset);
+    };
+
 
     const primaryBodyVectors = event.primaryBodies.map(name => {
         const bodyData = processedBodyData.find(d => d.name === name);
         const bodyPos = bodyPositions[name];
         if (!bodyData || !bodyPos) return null;
         
-        // Temporarily use 0 latitude to find the celestial plane
-        const vec = getBodyVector(bodyPos, sebakaPos, sebakaData.size, sebakaTilt, longitude, 0);
-        return { name, vec, pos: bodyPos };
-    }).filter(Boolean) as { name: string; vec: THREE.Vector3; pos: THREE.Vector3 }[];
+        // Use a temporary latitude of 0 to establish the celestial plane
+        const tempViewpoint = viewpointPos(0);
+        const vec = new THREE.Vector3().subVectors(bodyPos, tempViewpoint).normalize();
+        return { name, vec, pos: bodyPos, data: bodyData };
+    }).filter(Boolean) as { name: string; vec: THREE.Vector3; pos: THREE.Vector3; data: ProcessedBodyData }[];
     
-    if (primaryBodyVectors.length !== event.primaryBodies.length) return { met: false, viewingLatitude: 0 };
+    if (primaryBodyVectors.length !== event.primaryBodies.length) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
 
-    // Calculate average declination (latitude in the sky) of the primary bodies
+    // Calculate optimal viewing latitude by averaging the declination of primary bodies
     let totalDeclination = 0;
     primaryBodyVectors.forEach(body => {
-        // Project vector onto the YZ plane to get declination angle
-        const declinationRad = Math.atan2(body.vec.y, Math.sqrt(body.vec.x**2 + body.vec.z**2));
+        const declinationRad = Math.asin(body.vec.y); // Simplified declination
         totalDeclination += THREE.MathUtils.radToDeg(declinationRad);
     });
-    const viewingLatitude = totalDeclination / primaryBodyVectors.length;
+    const optimalLatitude = totalDeclination / primaryBodyVectors.length;
 
     // Recalculate vectors with the optimal latitude
+    const finalViewpoint = viewpointPos(optimalLatitude);
     const finalBodyVectors = primaryBodyVectors.map(body => {
-        const vec = getBodyVector(body.pos, sebakaPos, sebakaData.size, sebakaTilt, longitude, viewingLatitude);
-        return { name: body.name, vec, pos: body.pos };
+        const vec = new THREE.Vector3().subVectors(body.pos, finalViewpoint).normalize();
+        return { ...body, vec };
     });
 
     switch (event.type) {
         case 'conjunction':
         case 'cluster': {
-             // For arcs, we check if all planets fall within a certain angular span.
-            let maxAzimuth = -Infinity, minAzimuth = Infinity;
-            finalBodyVectors.forEach(({ vec }) => {
-                const azimuth = Math.atan2(vec.z, vec.x); // Angle in the XZ plane
-                maxAzimuth = Math.max(maxAzimuth, azimuth);
+             let minAzimuth = Infinity, maxAzimuth = -Infinity;
+             finalBodyVectors.forEach(({ vec }) => {
+                // Azimuth is the angle on the XZ plane (like a compass)
+                const azimuth = Math.atan2(vec.z, vec.x);
                 minAzimuth = Math.min(minAzimuth, azimuth);
-            });
-            let separation = THREE.MathUtils.radToDeg(maxAzimuth - minAzimuth);
-            // Handle wrap-around at 360 degrees
-            if (separation > 180) separation = 360 - separation;
-            return { met: separation <= event.maxSeparation, viewingLatitude };
+                maxAzimuth = Math.max(maxAzimuth, azimuth);
+             });
+             let separation = THREE.MathUtils.radToDeg(maxAzimuth - minAzimuth);
+             if (separation > 180) separation = 360 - separation; // Handle wrap-around
+             return { met: separation <= event.maxSeparation, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
         
         case 'occultation': {
-            const viewpoint = sebakaPos.clone(); // Simplified viewpoint
+            if (finalBodyVectors.length < 2) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
+            // Check all pairs for overlap
             for (let i = 0; i < finalBodyVectors.length; i++) {
                 for (let j = i + 1; j < finalBodyVectors.length; j++) {
                     const body1 = finalBodyVectors[i];
                     const body2 = finalBodyVectors[j];
-                    const separation = getAngularSeparation(body1.vec, body2.vec);
-
-                    const body1Data = processedBodyData.find(d => d.name === body1.name)!;
-                    const body2Data = processedBodyData.find(d => d.name === body2.name)!;
-
-                    const r1 = getApparentRadius(body1Data.size, body1.pos, viewpoint);
-                    const r2 = getApparentRadius(body2Data.size, body2.pos, viewpoint);
                     
-                    if (separation > r1 + r2) return { met: false, viewingLatitude }; // Not even touching
+                    const separation = getAngularSeparation(body1.vec, body2.vec);
+                    
+                    const r1 = getApparentRadius(body1.data.size, body1.pos, finalViewpoint);
+                    const r2 = getApparentRadius(body2.data.size, body2.pos, finalViewpoint);
+                    
+                    // Check if they are close enough to potentially overlap
+                    if (separation > r1 + r2) {
+                        return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude }; // Too far apart
+                    }
 
-                    const overlap = (r1 + r2 - separation) / (2 * Math.min(r1, r2));
-                    if (overlap < (event.minOverlap ?? 0.1)) return { met: false, viewingLatitude };
+                    // Check for minimum overlap if specified
+                    if (event.minOverlap) {
+                        const overlapAmount = (r1 + r2 - separation) / (2 * Math.min(r1, r2));
+                        if (overlapAmount < event.minOverlap) {
+                            return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude }; // Not enough overlap
+                        }
+                    }
                 }
             }
-            return { met: true, viewingLatitude };
+            return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
         
         case 'dominance': {
-            if (!event.secondaryBodies || !event.minSeparation) return { met: false, viewingLatitude: 0 };
+            if (!event.secondaryBodies || !event.minSeparation || finalBodyVectors.length === 0) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
+            
             const dominantVec = finalBodyVectors[0].vec;
             
-            const secondaryPositions = event.secondaryBodies.map(name => bodyPositions[name]).filter(Boolean);
-            for (const secondaryPos of secondaryPositions) {
-                const secondaryVec = getBodyVector(secondaryPos, sebakaPos, sebakaData.size, sebakaTilt, longitude, viewingLatitude);
-                const separation = getAngularSeparation(dominantVec, secondaryVec);
-                if (separation < event.minSeparation) {
-                    return { met: false, viewingLatitude };
-                }
+            for (const secondaryName of event.secondaryBodies) {
+                 const secondaryPos = bodyPositions[secondaryName];
+                 if (!secondaryPos) continue;
+                 const secondaryVec = new THREE.Vector3().subVectors(secondaryPos, finalViewpoint).normalize();
+                 const separation = getAngularSeparation(dominantVec, secondaryVec);
+                 if (separation < event.minSeparation) {
+                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                 }
             }
-            return { met: true, viewingLatitude };
+            return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
 
         case 'triangle': {
-            if (finalBodyVectors.length !== 3) return { met: false, viewingLatitude: 0 };
+            if (finalBodyVectors.length !== 3) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
             const [v1, v2, v3] = finalBodyVectors.map(b => b.vec);
             const sep12 = getAngularSeparation(v1, v2);
             const sep13 = getAngularSeparation(v1, v3);
             const sep23 = getAngularSeparation(v2, v3);
-            return { met: sep12 < event.maxSeparation && sep13 < event.maxSeparation && sep23 < event.maxSeparation, viewingLatitude };
+            // Check if all sides of the triangle are smaller than the max separation
+            return { met: sep12 < event.maxSeparation && sep13 < event.maxSeparation && sep23 < event.maxSeparation, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
 
         default:
-            return { met: false, viewingLatitude: 0 };
+            return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
     }
 }
 
@@ -170,6 +192,7 @@ function checkEventConditions(
 export function findNextEvent(params: EventSearchParams): EventSearchResult | null {
     const { startHours, event, allBodiesData, direction, HOURS_IN_SEBAKA_DAY } = params;
     
+    // The Great Conjunction at year 0 is a fixed anchor point of the lore.
     if (event.name === "Great Conjunction" && startHours === 0 && direction !== 'next') {
         return { foundHours: 0, viewingLongitude: event.viewingLongitude ?? 180, viewingLatitude: 0 };
     }
@@ -182,14 +205,20 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     const stepDays = Math.max(1, Math.floor(event.approximatePeriodDays / 360));
     const stepHours = stepDays * HOURS_IN_SEBAKA_DAY;
     
-    const maxSearchYears = 1000;
+    const maxSearchYears = 10000; // Increased search range
     const maxIterations = (maxSearchYears * params.SEBAKA_YEAR_IN_DAYS) / stepDays;
     
     let currentHours = Math.floor(startHours / stepHours) * stepHours;
     const timeStep = direction === 'next' ? stepHours : -stepHours;
     
-    if (direction === 'next') currentHours += timeStep;
-    else if (direction === 'previous') currentHours -= timeStep;
+    // Adjust start time for next/previous searches to avoid finding the current moment
+    if (direction === 'next') {
+        currentHours += timeStep;
+    } else if (direction === 'previous' || direction === 'last') {
+        currentHours -= timeStep;
+        if (currentHours < 0) currentHours = startHours - HOURS_IN_SEBAKA_DAY; // Handle start of sim
+    }
+
 
     for (let i = 0; i < maxIterations; i++) {
         currentHours += timeStep;
@@ -198,28 +227,29 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         };
         
         const bodyPositions = calculateBodyPositions(currentHours, processedBodyData);
-        const { met, viewingLatitude } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
+        const { met, viewingLatitude, viewingLongitude } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (met) {
-            // Found a coarse match, now refine it
-            let fineTuneHours = currentHours - stepHours;
+            // Found a coarse match, now refine it to the exact day
+            let fineTuneHours = currentHours - (timeStep > 0 ? stepHours : 0);
             for (let j = 0; j < stepDays; j++) {
-                fineTuneHours += HOURS_IN_SEBAKA_DAY;
+                fineTuneHours += HOURS_IN_SEBAKA_DAY * Math.sign(timeStep);
+                 if (fineTuneHours < 0) continue;
                 const finePositions = calculateBodyPositions(fineTuneHours, processedBodyData);
                 const fineResult = checkEventConditions(event, finePositions, processedBodyData, sebakaTilt);
                 if (fineResult.met) {
                      return {
                         foundHours: fineTuneHours,
-                        viewingLongitude: event.viewingLongitude ?? 180,
-                        viewingLatitude: fineResult.viewingLatitude
+                        viewingLongitude: fineResult.viewingLongitude,
+                        viewingLatitude: fineResult.viewingLatitude,
                     };
                 }
             }
-            // If fine-tuning fails, return coarse result
+            // If fine-tuning fails (unlikely), return the coarse result
             return {
                 foundHours: currentHours,
-                viewingLongitude: event.viewingLongitude ?? 180,
-                viewingLatitude: viewingLatitude
+                viewingLongitude: viewingLongitude,
+                viewingLatitude: viewingLatitude,
             };
         }
     }

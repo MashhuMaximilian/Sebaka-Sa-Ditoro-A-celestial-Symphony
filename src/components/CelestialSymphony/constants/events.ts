@@ -29,8 +29,10 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare near-alignment of Rutilus, Sebaka, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        maxSeparation: 20, // Adjusted for 10–20° arc
+        maxSeparation: 20, // Looser for a wide arc
+        alignmentTolerance: 5, // Allow some deviation for the arc
         viewingLongitude: 180,
+        visibilityCondition: 'night',
         approximatePeriodDays: 795060, // ~2454 Sebakan years
     },
     {
@@ -41,6 +43,7 @@ export const celestialEvents: CelestialEvent[] = [
         secondaryBodies: ["Beacon"],
         maxSeparation: 15,
         viewingLongitude: 270,
+        visibilityCondition: 'night',
         approximatePeriodDays: 324, // 1 Sebakan year
     },
     {
@@ -49,7 +52,9 @@ export const celestialEvents: CelestialEvent[] = [
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris"],
         maxSeparation: 5,
+        alignmentTolerance: 2,
         viewingLongitude: 240,
+        visibilityCondition: 'twilight',
         approximatePeriodDays: 972, // ~3 Sebakan years
     },
     {
@@ -58,7 +63,9 @@ export const celestialEvents: CelestialEvent[] = [
         type: 'triangle',
         primaryBodies: ["Rutilis", "Spectris", "Viridis"],
         maxSeparation: 10,
+        alignmentTolerance: 3,
         viewingLongitude: 210,
+        visibilityCondition: 'night',
         approximatePeriodDays: 1620, // ~5 Sebakan years
     },
     {
@@ -68,7 +75,9 @@ export const celestialEvents: CelestialEvent[] = [
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
         secondaryBodies: ["Beacon"],
         maxSeparation: 15,
+        alignmentTolerance: 5,
         viewingLongitude: 270,
+        visibilityCondition: 'night',
         approximatePeriodDays: 3240, // ~10 Sebakan years
     },
     {
@@ -80,6 +89,7 @@ export const celestialEvents: CelestialEvent[] = [
         maxSeparation: 180, // Not relevant, set high
         minSeparation: 20,
         viewingLongitude: 180,
+        visibilityCondition: 'night',
         approximatePeriodDays: 8748, // ~27 Sebakan years
     },
     {
@@ -88,7 +98,9 @@ export const celestialEvents: CelestialEvent[] = [
         type: 'cluster',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
         maxSeparation: 20,
+        alignmentTolerance: 5,
         viewingLongitude: 90,
+        visibilityCondition: 'twilight',
         approximatePeriodDays: 32400, // ~100 Sebakan years
     },
     {
@@ -99,6 +111,7 @@ export const celestialEvents: CelestialEvent[] = [
         maxSeparation: 0.35, // 0.2° + 0.15°
         minOverlap: 0.1,
         viewingLongitude: 170,
+        visibilityCondition: 'night',
         approximatePeriodDays: 489870, // ~1515 Sebakan years
     },
     {
@@ -109,6 +122,7 @@ export const celestialEvents: CelestialEvent[] = [
         maxSeparation: 0.7, // 0.5° + 0.2°
         minOverlap: 0.1,
         viewingLongitude: 185,
+        visibilityCondition: 'night',
         approximatePeriodDays: 1589220, // ~4905 Sebakan years
     },
     {
@@ -119,6 +133,7 @@ export const celestialEvents: CelestialEvent[] = [
         maxSeparation: 0.65, // 0.5° + 0.15°
         minOverlap: 0.1,
         viewingLongitude: 190,
+        visibilityCondition: 'night',
         approximatePeriodDays: 1166400, // ~3600 Sebakan years
     },
     {
@@ -129,6 +144,7 @@ export const celestialEvents: CelestialEvent[] = [
         maxSeparation: 1, // 0.5–1° tolerance
         minOverlap: 0.1,
         viewingLongitude: 188,
+        visibilityCondition: 'night',
         approximatePeriodDays: 15877620, // ~49005 Sebakan years
     },
     {
@@ -139,6 +155,7 @@ export const celestialEvents: CelestialEvent[] = [
         maxSeparation: 1.0, // Tight eclipse
         minOverlap: 0.05,
         viewingLongitude: 180,
+        visibilityCondition: 'night',
         approximatePeriodDays: 25000000, // Extremely rare
     },
 ];
