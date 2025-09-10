@@ -267,8 +267,13 @@ export default function Home() {
   const [isSearchingEvent, setIsSearchingEvent] = useState(false);
 
   useEffect(() => {
+    // This effect ensures that when an event is found and the target date is set,
+    // the longitude (and latitude) are updated in the same render cycle.
     if (goToTime !== null && selectedEvent?.viewingLongitude) {
         setCharacterLongitude(selectedEvent.viewingLongitude);
+        if (selectedEvent.viewingLatitude) {
+          setCharacterLatitude(selectedEvent.viewingLatitude);
+        }
     }
   }, [goToTime, selectedEvent]);
 
@@ -404,24 +409,19 @@ export default function Home() {
       HOURS_IN_SEBAKA_DAY
     };
     
-    const foundTime = findNextEvent(params);
+    const foundResult = findNextEvent(params);
     
-    if (foundTime !== null) {
-      const totalDays = Math.floor(foundTime / HOURS_IN_SEBAKA_DAY);
+    if (foundResult) {
+      const { foundHours, viewingLatitude, viewingLongitude } = foundResult;
+      const totalDays = Math.floor(foundHours / HOURS_IN_SEBAKA_DAY);
       const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
       const newTargetDay = (totalDays % SEBAKA_YEAR_IN_DAYS + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
       
-      // Update the input fields to show the found date
       setTargetYear(newTargetYear);
       setTargetDay(newTargetDay);
-      
-      // Update the longitude for the best viewing angle
-      if (selectedEvent.viewingLongitude) {
-          setCharacterLongitude(selectedEvent.viewingLongitude);
-      }
-
-      // Directly trigger the time jump
-      setGoToTime(foundTime);
+      setCharacterLongitude(viewingLongitude);
+      setCharacterLatitude(viewingLatitude);
+      setGoToTime(foundHours);
     } else {
         console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
     }
