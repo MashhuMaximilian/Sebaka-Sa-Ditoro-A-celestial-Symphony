@@ -266,18 +266,19 @@ export default function Home() {
   const [selectedEvent, setSelectedEvent] = useState<CelestialEvent | null>(null);
   const [isSearchingEvent, setIsSearchingEvent] = useState(false);
 
+  // This effect synchronizes the UI state (sliders, date) after an event is found and the time jump is complete.
   useEffect(() => {
-    // This effect ensures that when an event is found and the target date is set,
-    // the longitude (and latitude) are updated in the same render cycle.
-    if (goToTime !== null) {
-      if (selectedEvent?.viewingLongitude !== undefined) {
-        setCharacterLongitude(selectedEvent.viewingLongitude);
-      }
-      if (selectedEvent?.viewingLatitude !== undefined) {
-        setCharacterLatitude(selectedEvent.viewingLatitude);
-      }
-    }
-  }, [goToTime, selectedEvent]);
+    if (goToTime === null) return; // Only run when a jump is initiated
+    
+    // Deconstruct the new time into year and day for UI display
+    const totalDays = Math.floor(goToTime / HOURS_IN_SEBAKA_DAY);
+    const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
+    const newTargetDay = (totalDays % SEBAKA_YEAR_IN_DAYS + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
+    
+    setTargetYear(newTargetYear);
+    setTargetDay(newTargetDay);
+
+  }, [goToTime]);
 
   const handleSpeedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSpeedInput(e.target.value);
@@ -415,12 +416,6 @@ export default function Home() {
     
     if (foundResult) {
       const { foundHours, viewingLatitude, viewingLongitude } = foundResult;
-      const totalDays = Math.floor(foundHours / HOURS_IN_SEBAKA_DAY);
-      const newTargetYear = Math.floor(totalDays / SEBAKA_YEAR_IN_DAYS);
-      const newTargetDay = (totalDays % SEBAKA_YEAR_IN_DAYS + SEBAKA_YEAR_IN_DAYS) % SEBAKA_YEAR_IN_DAYS + 1;
-      
-      setTargetYear(newTargetYear);
-      setTargetDay(newTargetDay);
       setCharacterLongitude(viewingLongitude);
       setCharacterLatitude(viewingLatitude);
       setGoToTime(foundHours);

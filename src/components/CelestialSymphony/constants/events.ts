@@ -12,7 +12,7 @@ export interface CelestialEvent {
     type: EventAlignmentType;
     primaryBodies: string[];
     secondaryBodies?: string[];
-    longitudeTolerance: number; // Max angular deviation from mean in degrees
+    longitudeTolerance: number; // Max longitude deviation from mean in degrees
     minSeparation?: number; // Min separation for dominance events or non-overlapping conjunctions
     overlapThreshold?: number; // Min overlap fraction for occultations (0–1)
     viewingLongitude?: number; // Optimal longitude on Sebaka (degrees)
@@ -27,7 +27,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare alignment of Rutilus, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic night event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 20, // A wide 20-degree arc
+        longitudeTolerance: 20, // Wide 20-degree arc
         minSeparation: 1.0,    // But no two planets can be closer than 1.0 degree
         viewingLongitude: 180,
         visibilityCondition: 'night',

@@ -45,6 +45,7 @@ function getBodyVector(
         lonRad
     );
     
+    // Apply Sebaka's axial tilt
     const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
     viewpointOffset.applyQuaternion(tiltQuat);
     
@@ -76,24 +77,27 @@ function checkEventConditions(
     const sebakaPos = bodyPositions['Sebaka'];
     const longitude = event.viewingLongitude ?? 180;
     
-    // Get primary body vectors from an initial latitude guess
-    const initialVectorsForLat = (event.primaryBodies.map(name => {
+    // Get all primary and secondary body vectors from an initial latitude guess (0)
+    const allRelevantBodyNames = [...event.primaryBodies, ...(event.secondaryBodies || [])];
+    const initialVectorsForLat = (allRelevantBodyNames.map(name => {
         const bodyData = processedBodyData.find(d => d.name === name);
         const bodyPos = bodyPositions[name];
         if (!bodyData || !bodyPos) return null;
         const vec = getBodyVector(bodyPos, sebakaPos, sebakaData.size, sebakaTilt, longitude, 0);
         return { name, vec, pos: bodyPos, data: bodyData };
     }).filter(Boolean) as BodyVectorInfo[]);
-    if (initialVectorsForLat.length !== event.primaryBodies.length) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
 
-    // Auto-calculate optimal latitude by aligning declination
+    if (initialVectorsForLat.length !== allRelevantBodyNames.length) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
+
+    // Auto-calculate optimal latitude by aligning declination of primary bodies
     let totalDeclination = 0;
-    initialVectorsForLat.forEach(body => {
+    const primaryBodyInfo = initialVectorsForLat.filter(info => event.primaryBodies.includes(info.name));
+    primaryBodyInfo.forEach(body => {
         const bodyDir = body.vec.clone().normalize();
-        const declinationRad = Math.asin(bodyDir.y);
+        const declinationRad = Math.asin(bodyDir.y / body.vec.length());
         totalDeclination += THREE.MathUtils.radToDeg(declinationRad);
     });
-    const optimalLatitude = totalDeclination / initialVectorsForLat.length;
+    const optimalLatitude = primaryBodyInfo.length > 0 ? totalDeclination / primaryBodyInfo.length : 0;
     
     // Get final vectors using the optimal latitude
     const finalBodyVectors = (event.primaryBodies.map(name => {
@@ -103,11 +107,12 @@ function checkEventConditions(
         const vec = getBodyVector(bodyPos, sebakaPos, sebakaData.size, sebakaTilt, longitude, optimalLatitude).normalize();
         return { name, vec, pos: bodyPos, data: bodyData };
     }).filter(Boolean) as BodyVectorInfo[]);
+
     if (finalBodyVectors.length !== event.primaryBodies.length) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
     
     const viewpoint = new THREE.Vector3().addVectors(sebakaPos, getBodyVector(new THREE.Vector3(), sebakaPos, sebakaData.size, sebakaTilt, longitude, optimalLatitude));
     
-    // Check secondary bodies are just present
+    // Check if secondary bodies are just present
     if (event.secondaryBodies) {
       for (const name of event.secondaryBodies) {
         if (!bodyPositions[name]) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -118,7 +123,7 @@ function checkEventConditions(
         case 'conjunction': {
             if (finalBodyVectors.length < 2) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
             
-            // Check for wide arc
+            // Check max angular distance between any two planets in the set (the arc)
             let maxAngle = 0;
             for (let i = 0; i < finalBodyVectors.length; i++) {
                 for (let j = i + 1; j < finalBodyVectors.length; j++) {
@@ -163,7 +168,7 @@ function checkEventConditions(
         case 'occultation': {
             if (finalBodyVectors.length < 2) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
 
-            // For multi-body occultations, ensure they are all in a very tight group
+            // For multi-body occultations, ensure they are all in a very tight group (cone)
             const avgVector = new THREE.Vector3();
             finalBodyVectors.forEach(({ vec }) => avgVector.add(vec));
             avgVector.normalize();
@@ -173,8 +178,8 @@ function checkEventConditions(
                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                 }
             }
-
-            // Also check for pairwise overlap if a threshold is set
+            
+            // For pairwise occultations, check for overlap threshold
             if (event.overlapThreshold && finalBodyVectors.length === 2) {
                 const body1 = finalBodyVectors[0];
                 const body2 = finalBodyVectors[1];
@@ -182,7 +187,6 @@ function checkEventConditions(
                 const r1 = getApparentRadius(body1.data.size, body1.pos.distanceTo(viewpoint));
                 const r2 = getApparentRadius(body2.data.size, body2.pos.distanceTo(viewpoint));
                 
-                // Check if they overlap by at least the threshold
                 const overlap = (r1 + r2) - separation;
                 const minOverlapSize = Math.min(r1, r2) * 2 * event.overlapThreshold;
                 if (overlap < minOverlapSize) {
@@ -223,17 +227,17 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
     const sebakaData = processedBodyData.find(b => b.name === 'Sebaka');
     const sebakaTilt = sebakaData && sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
     
-    // Use a coarser step for very rare events to speed up search
     let stepDays = 1;
-    if (event.approximatePeriodDays > 10000) {
-        stepDays = Math.max(1, Math.floor(event.approximatePeriodDays / 365 / 10)); // ~10 steps per orbital period of Earth equivalent
+    if (event.approximatePeriodDays > 100000) { // Increased threshold for very rare events
+        stepDays = Math.max(1, Math.floor(event.approximatePeriodDays / 365 / 50)); // Coarser step
     } else if (event.approximatePeriodDays > 1000) {
-        stepDays = Math.max(1, Math.floor(event.approximatePeriodDays / 100));
+        stepDays = Math.max(1, Math.floor(event.approximatePeriodDays / 365));
     }
     const stepHours = stepDays * HOURS_IN_SEBAKA_DAY;
     
+    // Increase max iterations to allow for finding rarer events
     const maxSearchYears = (event.approximatePeriodDays / params.SEBAKA_YEAR_IN_DAYS) * 1.5;
-    const maxIterations = Math.max(5000, (maxSearchYears * params.SEBAKA_YEAR_IN_DAYS) / stepDays);
+    const maxIterations = Math.max(10000, (maxSearchYears * params.SEBAKA_YEAR_IN_DAYS) / stepDays);
     
     let currentHours = startHours;
     const timeStep = (direction === 'next' ? 1 : -1) * stepHours;
@@ -264,7 +268,7 @@ export function findNextEvent(params: EventSearchParams): EventSearchResult | nu
         const { met, viewingLatitude, viewingLongitude } = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (met) {
-            // Found a coarse match, now fine-tune to the exact day
+            // Fine-tune to the exact day
             let fineTuneHours = currentHours - (timeStep > 0 ? stepHours : 0);
             for (let j = 0; j < stepDays + 1; j++) {
                 const fineHours = fineTuneHours + (j * HOURS_IN_SEBAKA_DAY * Math.sign(timeStep));
