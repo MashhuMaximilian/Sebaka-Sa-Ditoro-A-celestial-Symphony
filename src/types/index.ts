@@ -1,4 +1,5 @@
 
+
 interface CelestialBody {
     name: string;
     color: string;
@@ -39,6 +40,7 @@ export interface PlanetData extends CelestialBody {
   axialTilt: string;
   moons: string;
   rotationPeriodHours: number;
+  position?: THREE.Vector3; // For event solver
 }
 
 export interface StarData extends CelestialBody {

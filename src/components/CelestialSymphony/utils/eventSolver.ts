@@ -1,7 +1,6 @@
-
 import * as THREE from 'three';
 import { type CelestialEvent } from '../constants/events';
-import { type AnyBodyData } from '@/types';
+import { type AnyBodyData, type PlanetData } from '@/types';
 import { getBodyData, type ProcessedBodyData } from '../hooks/useBodyData';
 import { calculateBodyPositions } from './calculateBodyPositions';
 
@@ -33,6 +32,148 @@ function getApparentRadius(bodySize: number, distance: number): number {
     return THREE.MathUtils.radToDeg(Math.atan(bodySize / distance));
 }
 
+function checkEventConditions(
+    event: CelestialEvent,
+    bodyPositions: { [key: string]: THREE.Vector3 },
+    processedBodyData: ProcessedBodyData[],
+    sebakaTilt: number
+): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
+    const sebakaData = processedBodyData.find(d => d.name === 'Sebaka') as PlanetData | undefined;
+    if (!sebakaData) return { met: false, viewingLatitude: 0, viewingLongitude: event.viewingLongitude ?? 180 };
+    
+    const sebakaPos = bodyPositions['Sebaka'];
+    const longitude = event.viewingLongitude ?? 180;
+    
+    const allRelevantBodyNames = [...event.primaryBodies, ...(event.secondaryBodies || [])];
+
+    const primaryBodyInfoForLat = (event.primaryBodies.map(name => {
+        const bodyData = processedBodyData.find(d => d.name === name);
+        const bodyPos = bodyPositions[name];
+        if (!bodyData || !bodyPos) return null;
+        
+        const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(sebakaData.size, Math.PI / 2, THREE.MathUtils.degToRad(longitude));
+        const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
+        viewpointOffset.applyQuaternion(tiltQuat);
+        const viewpoint = new THREE.Vector3().addVectors(sebakaPos, viewpointOffset);
+        
+        const vec = new THREE.Vector3().subVectors(bodyPos, viewpoint);
+        return { vec };
+    }).filter(Boolean) as { vec: THREE.Vector3 }[]);
+
+    if (primaryBodyInfoForLat.length !== event.primaryBodies.length) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
+    
+    let totalY = 0;
+    primaryBodyInfoForLat.forEach(body => {
+        const bodyDir = body.vec.clone().normalize();
+        totalY += bodyDir.y;
+    });
+    const avgY = totalY / primaryBodyInfoForLat.length;
+    const optimalLatitude = -THREE.MathUtils.radToDeg(Math.asin(avgY));
+
+    const allBodyInfo = (allRelevantBodyNames.map(name => {
+        const bodyData = processedBodyData.find(d => d.name === name);
+        const bodyPos = bodyPositions[name];
+        if (!bodyData || !bodyPos) return null;
+
+        const lonRad = THREE.MathUtils.degToRad(longitude);
+        const latRad = THREE.MathUtils.degToRad(optimalLatitude);
+        const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(sebakaData.size, Math.PI / 2 - latRad, lonRad);
+        const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
+        viewpointOffset.applyQuaternion(tiltQuat);
+        const observerPos = new THREE.Vector3().addVectors(sebakaPos, viewpointOffset);
+
+        const vec = bodyPos.clone().sub(observerPos);
+        const distance = vec.length();
+        const apparentRadius = getApparentRadius(bodyData.size, distance);
+        
+        return { name, vec: vec.normalize(), pos: bodyPos, data: bodyData, apparentRadius, distance };
+    }).filter(Boolean) as BodyVectorInfo[]);
+
+    const primaryBodyInfo = allBodyInfo.filter(info => event.primaryBodies.includes(info.name));
+
+    if (primaryBodyInfo.length !== event.primaryBodies.length) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+    
+    return checkSpecificEventConditions(event, primaryBodyInfo, allBodyInfo, processedBodyData, bodyPositions, sebakaData, sebakaTilt, optimalLatitude, longitude);
+}
+
+function checkSunPlanetSeparation(
+    primaryBodyInfo: BodyVectorInfo[],
+    processedBodyData: ProcessedBodyData[],
+    bodyPositions: { [key: string]: THREE.Vector3 },
+    sebakaData: PlanetData,
+    sebakaTilt: number,
+    optimalLatitude: number,
+    longitude: number,
+    event: CelestialEvent
+): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
+    
+    const suns = processedBodyData.filter(d => d.type === 'Star');
+    const sunSeparationMultiplier = event.sunSeparationMultiplier ?? 1.0;
+    
+    for (const sun of suns) {
+        const sunPos = bodyPositions[sun.name];
+        if (!sunPos) continue;
+
+        const lonRad = THREE.MathUtils.degToRad(longitude);
+        const latRad = THREE.MathUtils.degToRad(optimalLatitude);
+        const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(sebakaData.size, Math.PI / 2 - latRad, lonRad);
+        const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
+        viewpointOffset.applyQuaternion(tiltQuat);
+        const observerPos = new THREE.Vector3().addVectors(bodyPositions['Sebaka'], viewpointOffset);
+
+        const sunVec = sunPos.clone().sub(observerPos);
+        const sunDistance = sunVec.length();
+        const sunApparentRadius = getApparentRadius(sun.size, sunDistance);
+        sunVec.normalize();
+        
+        for (const planet of primaryBodyInfo) {
+            const separationAngle = THREE.MathUtils.radToDeg(planet.vec.angleTo(sunVec));
+            const minAllowedSeparation = (planet.apparentRadius + sunApparentRadius) * sunSeparationMultiplier;
+            
+            if (separationAngle < minAllowedSeparation) {
+                return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+            }
+        }
+    }
+    
+    return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+}
+
+
+function checkSpecificEventConditions(
+    event: CelestialEvent,
+    primaryBodyInfo: BodyVectorInfo[],
+    allBodyInfo: BodyVectorInfo[],
+    processedBodyData: ProcessedBodyData[],
+    bodyPositions: { [key: string]: THREE.Vector3 },
+    sebakaData: PlanetData,
+    sebakaTilt: number,
+    optimalLatitude: number,
+    longitude: number
+): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
+    
+    if (event.allowSunOverlap !== true) {
+        const sunOverlapResult = checkSunPlanetSeparation(
+            primaryBodyInfo, processedBodyData, bodyPositions, sebakaData, 
+            sebakaTilt, optimalLatitude, longitude, event
+        );
+        if (!sunOverlapResult.met) {
+            return sunOverlapResult;
+        }
+    }
+    
+    switch (event.name) {
+        case "Great Conjunction":
+            return checkGreatConjunction(event, primaryBodyInfo, optimalLatitude, longitude);
+        case "Triple Cascade":
+            return checkTripleCascade(event, primaryBodyInfo, optimalLatitude, longitude);
+        case "Quadruple Cascade (Inner Conjunction)":
+            return checkQuadrupleCascade(event, primaryBodyInfo, optimalLatitude, longitude);
+        default:
+            return checkGenericEvent(event, primaryBodyInfo, allBodyInfo, optimalLatitude, longitude);
+    }
+}
+
 function checkGreatConjunction(
     event: CelestialEvent,
     primaryBodyInfo: BodyVectorInfo[],
@@ -40,22 +181,18 @@ function checkGreatConjunction(
     longitude: number
 ): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
     
-    // Use a more lenient tolerance for initial alignment check
-    const searchTolerance = Math.max(event.longitudeTolerance, 15); // Use at least 15 degrees for search
+    const searchTolerance = Math.max(event.longitudeTolerance, 15);
     
-    // Calculate average direction
     const avgVector = new THREE.Vector3();
     primaryBodyInfo.forEach(({ vec }) => avgVector.add(vec));
     avgVector.normalize();
 
-    // Check if all bodies are within search tolerance
     for (const { vec } of primaryBodyInfo) {
         if (vec.angleTo(avgVector) > THREE.MathUtils.degToRad(searchTolerance)) {
             return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
     }
 
-    // Check minimum separation (prevent overlap) with actual tolerance
     const minSeparationDeg = event.minSeparation || 0.5;
     for (let i = 0; i < primaryBodyInfo.length; i++) {
         for (let j = i + 1; j < primaryBodyInfo.length; j++) {
@@ -78,29 +215,26 @@ function checkTripleCascade(
     
     if (primaryBodyInfo.length < 3) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
     
-    // Sort by distance for proper cascade order
     const sortedBodies = [...primaryBodyInfo].sort((a, b) => a.distance - b.distance);
     
-    // Check that all bodies are roughly aligned (use generous tolerance)
     const avgVector = new THREE.Vector3();
     sortedBodies.forEach(({ vec }) => avgVector.add(vec));
     avgVector.normalize();
     
-    const alignmentTolerance = 1.0; // 1 degree for cascade alignment
+    const alignmentTolerance = 1.0;
     for (const { vec } of sortedBodies) {
         if (vec.angleTo(avgVector) > THREE.MathUtils.degToRad(alignmentTolerance)) {
             return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
         }
     }
     
-    // Check cascade overlap conditions (more forgiving)
-    const overlapThreshold = 0.1; // Very lenient overlap requirement
+    const overlapThreshold = event.overlapThreshold ?? 0.1;
     for (let i = 0; i < sortedBodies.length - 1; i++) {
         const foreground = sortedBodies[i];
         const background = sortedBodies[i + 1];
         
         const separationAngleDeg = THREE.MathUtils.radToDeg(foreground.vec.angleTo(background.vec));
-        const maxAllowedSeparation = (foreground.apparentRadius + background.apparentRadius) * (1 + overlapThreshold);
+        const maxAllowedSeparation = (foreground.apparentRadius + background.apparentRadius) * (1 - overlapThreshold);
         
         if (separationAngleDeg > maxAllowedSeparation) {
             return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -119,11 +253,8 @@ function checkQuadrupleCascade(
     
     if (primaryBodyInfo.length < 4) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
     
-    // Sort by distance for proper cascade order
     const sortedBodies = [...primaryBodyInfo].sort((a, b) => a.distance - b.distance);
-    
-    // Very generous alignment tolerance for quadruple events
-    const alignmentTolerance = 2.0; // 2 degrees
+    const alignmentTolerance = 2.0;
     const avgVector = new THREE.Vector3();
     sortedBodies.forEach(({ vec }) => avgVector.add(vec));
     avgVector.normalize();
@@ -134,14 +265,13 @@ function checkQuadrupleCascade(
         }
     }
     
-    // Very lenient overlap requirement - just needs to be a "cascade-like" grouping
-    const overlapThreshold = 0.2; // Even more lenient
+    const overlapThreshold = event.overlapThreshold ?? 0.2;
     for (let i = 0; i < sortedBodies.length - 1; i++) {
         const foreground = sortedBodies[i];
         const background = sortedBodies[i + 1];
         
         const separationAngleDeg = THREE.MathUtils.radToDeg(foreground.vec.angleTo(background.vec));
-        const maxAllowedSeparation = (foreground.apparentRadius + background.apparentRadius) * (2 + overlapThreshold); // Very generous
+        const maxAllowedSeparation = (foreground.apparentRadius + background.apparentRadius) * (1 - overlapThreshold);
         
         if (separationAngleDeg > maxAllowedSeparation) {
             return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -155,10 +285,6 @@ function checkGenericEvent(
     event: CelestialEvent,
     primaryBodyInfo: BodyVectorInfo[],
     allBodyInfo: BodyVectorInfo[],
-    processedBodyData: ProcessedBodyData[],
-    bodyPositions: { [key: string]: THREE.Vector3 },
-    sebakaData: ProcessedBodyData,
-    sebakaTilt: number,
     optimalLatitude: number,
     longitude: number
 ): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
@@ -220,7 +346,7 @@ function checkGenericEvent(
                 
                 const separationAngleDeg = THREE.MathUtils.radToDeg(foreground.vec.angleTo(background.vec));
                 const overlapThreshold = event.overlapThreshold ?? 0.1;
-                const maxSeparation = foreground.apparentRadius + background.apparentRadius * overlapThreshold;
+                const maxSeparation = foreground.apparentRadius + background.apparentRadius * (1 - overlapThreshold);
 
                 if (separationAngleDeg > maxSeparation) {
                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -258,103 +384,11 @@ function checkGenericEvent(
     }
 }
 
-
-function checkSpecificEventConditions(
-    event: CelestialEvent,
-    primaryBodyInfo: BodyVectorInfo[],
-    allBodyInfo: BodyVectorInfo[],
-    processedBodyData: ProcessedBodyData[],
-    bodyPositions: { [key: string]: THREE.Vector3 },
-    sebakaData: ProcessedBodyData,
-    sebakaTilt: number,
-    optimalLatitude: number,
-    longitude: number
-): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
-    
-    switch (event.name) {
-        case "Great Conjunction":
-            return checkGreatConjunction(event, primaryBodyInfo, optimalLatitude, longitude);
-            
-        case "Triple Cascade":
-            return checkTripleCascade(event, primaryBodyInfo, optimalLatitude, longitude);
-            
-        case "Quadruple Cascade (Inner Conjunction)":
-            return checkQuadrupleCascade(event, primaryBodyInfo, optimalLatitude, longitude);
-            
-        default:
-            return checkGenericEvent(event, primaryBodyInfo, allBodyInfo, processedBodyData, bodyPositions, sebakaData, sebakaTilt, optimalLatitude, longitude);
-    }
-}
-
-function checkEventConditions(
-    event: CelestialEvent,
-    bodyPositions: { [key: string]: THREE.Vector3 },
-    processedBodyData: ProcessedBodyData[],
-    sebakaTilt: number
-): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
-    const sebakaData = processedBodyData.find(d => d.name === 'Sebaka');
-    if (!sebakaData) return { met: false, viewingLatitude: 0, viewingLongitude: event.viewingLongitude ?? 180 };
-    
-    const sebakaPos = bodyPositions['Sebaka'];
-    const longitude = event.viewingLongitude ?? 180;
-    
-    const allRelevantBodyNames = [...event.primaryBodies, ...(event.secondaryBodies || [])];
-
-    const primaryBodyInfoForLat = (event.primaryBodies.map(name => {
-        const bodyData = processedBodyData.find(d => d.name === name);
-        const bodyPos = bodyPositions[name];
-        if (!bodyData || !bodyPos) return null;
-        
-        const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(sebakaData.size, Math.PI / 2, THREE.MathUtils.degToRad(longitude));
-        const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
-        viewpointOffset.applyQuaternion(tiltQuat);
-        const viewpoint = new THREE.Vector3().addVectors(sebakaPos, viewpointOffset);
-        
-        const vec = new THREE.Vector3().subVectors(bodyPos, viewpoint);
-        return { vec };
-    }).filter(Boolean) as { vec: THREE.Vector3 }[]);
-
-    if (primaryBodyInfoForLat.length !== event.primaryBodies.length) return { met: false, viewingLatitude: 0, viewingLongitude: longitude };
-    
-    let totalY = 0;
-    primaryBodyInfoForLat.forEach(body => {
-        const bodyDir = body.vec.clone().normalize();
-        totalY += bodyDir.y;
-    });
-    const avgY = totalY / primaryBodyInfoForLat.length;
-    const optimalLatitude = -THREE.MathUtils.radToDeg(Math.asin(avgY));
-
-    const allBodyInfo = (allRelevantBodyNames.map(name => {
-        const bodyData = processedBodyData.find(d => d.name === name);
-        const bodyPos = bodyPositions[name];
-        if (!bodyData || !bodyPos) return null;
-
-        const lonRad = THREE.MathUtils.degToRad(longitude);
-        const latRad = THREE.MathUtils.degToRad(optimalLatitude);
-        const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(sebakaData.size, Math.PI / 2 - latRad, lonRad);
-        const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
-        viewpointOffset.applyQuaternion(tiltQuat);
-        const observerPos = new THREE.Vector3().addVectors(sebakaPos, viewpointOffset);
-
-        const vec = bodyPos.clone().sub(observerPos);
-        const distance = vec.length();
-        const apparentRadius = getApparentRadius(bodyData.size, distance);
-        
-        return { name, vec: vec.normalize(), pos: bodyPos, data: bodyData, apparentRadius, distance };
-    }).filter(Boolean) as BodyVectorInfo[]);
-
-    const primaryBodyInfo = allBodyInfo.filter(info => event.primaryBodies.includes(info.name));
-
-    if (primaryBodyInfo.length !== event.primaryBodies.length) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
-    
-    return checkSpecificEventConditions(event, primaryBodyInfo, allBodyInfo, processedBodyData, bodyPositions, sebakaData, sebakaTilt, optimalLatitude, longitude);
-}
-
 export function findFrequentEvent(params: EventSearchParams): EventSearchResult | null {
     const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY } = params;
 
     const processedBodyData = getBodyData(allBodiesData);
-    const sebakaData = processedBodyData.find(b => b.name === 'Sebaka');
+    const sebakaData = processedBodyData.find(b => b.name === 'Sebaka') as PlanetData | undefined;
     if (!sebakaData) return null;
     const sebakaTilt = sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
 
@@ -375,7 +409,7 @@ export function findFrequentEvent(params: EventSearchParams): EventSearchResult 
         let escapeCount = 0;
         const maxEscapeDays = 365 * 2;
         while (checkEventConditions(event, getCachedPositions(currentHours), processedBodyData, sebakaTilt).met && escapeCount < maxEscapeDays) {
-            currentHours += HOURS_IN_SEBAKA_DAY * timeMultiplier;
+            currentHours += HOURS_IN_SEBAKA_DAY * 10 * timeMultiplier;
             escapeCount += 10;
         }
     }
@@ -400,8 +434,9 @@ export function findFrequentEvent(params: EventSearchParams): EventSearchResult 
             let durationDays = 0;
             let durationCheckHours = currentHours;
             let isStable = true;
-            // A 2-day stability check for frequent events
-            while (durationDays < 2 && isStable) {
+            const stabilityDays = (event.type === 'occultation' || (event.longitudeTolerance < 1.0)) ? 1 : 2;
+
+            while (durationDays < stabilityDays && isStable) {
                 const durationPositions = getCachedPositions(durationCheckHours);
                 if (!checkEventConditions(event, durationPositions, processedBodyData, sebakaTilt).met) {
                     isStable = false;
@@ -437,7 +472,7 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
     const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY } = params;
 
     const processedBodyData = getBodyData(allBodiesData);
-    const sebakaData = processedBodyData.find(b => b.name === 'Sebaka');
+    const sebakaData = processedBodyData.find(b => b.name === 'Sebaka') as PlanetData | undefined;
     if (!sebakaData) return null;
     const sebakaTilt = sebakaData.axialTilt ? parseFloat(sebakaData.axialTilt) : 0;
 
@@ -450,7 +485,7 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
         if (!positionCache[roundedHours]) {
             positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
             const cacheKeys = Object.keys(positionCache).map(Number).sort((a, b) => a - b);
-            if (cacheKeys.length > 50) { // Reduced cache size
+            if (cacheKeys.length > 50) {
                 const cutoff = cacheKeys[0];
                 delete positionCache[cutoff];
             }
@@ -468,16 +503,16 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
         }
     }
 
-    const maxSearchYears = 50000;
+    const maxSearchYears = 80000; // Increased to catch Quadruple Cascade
     const maxSearchHours = maxSearchYears * SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY;
-    let stepHours = HOURS_IN_SEBAKA_DAY * 3 * timeMultiplier; // Start with 3-day steps
-    const fineStepHours = HOURS_IN_SEBAKA_DAY / 12 * timeMultiplier; // 2-hour fine step
+    let stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier; // Start with 1-day step
+    const fineStepHours = HOURS_IN_SEBAKA_DAY / 12 * timeMultiplier; 
 
     let foundHours = null;
     let viewingLatitude = 0;
     let viewingLongitude = event.viewingLongitude ?? 180;
     let iterationCount = 0;
-    const maxIterations = 5e5;
+    const maxIterations = 5e6; // Increased for larger search
 
     while (iterationCount < maxIterations && 
            ((timeMultiplier > 0 && currentHours < startHours + maxSearchHours) || 
@@ -489,8 +524,9 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
             let durationDays = 0;
             let durationCheckHours = currentHours;
             let isStable = true;
-            // For rare events, a 1-day stability check is enough
-            while (durationDays < 1 && isStable) { 
+            const stabilityDays = (event.type === 'occultation' || (event.longitudeTolerance < 1.0)) ? 1 : 2;
+
+            while (durationDays < stabilityDays && isStable) {
                 const durationPositions = getCachedPositions(durationCheckHours);
                 if (!checkEventConditions(event, durationPositions, processedBodyData, sebakaTilt).met) {
                     isStable = false;
@@ -514,10 +550,6 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
 
         currentHours += stepHours;
         iterationCount += 1;
-
-        if (iterationCount % 1000 === 0 && stepHours > HOURS_IN_SEBAKA_DAY) {
-            stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
-        }
     }
 
     if (foundHours === null) {
@@ -532,11 +564,10 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
 export function findNextEvent(params: EventSearchParams): EventSearchResult | null {
     const { event, SEBAKA_YEAR_IN_DAYS } = params;
     
-    if (event.approximatePeriodDays > 100 * SEBAKA_YEAR_IN_DAYS) {
+    // Use rare event finder for events with very long approximate periods or high precision
+    if (event.approximatePeriodDays > 100 * SEBAKA_YEAR_IN_DAYS || event.type === 'occultation') {
         return findRareEvent(params);
     } else {
         return findFrequentEvent(params);
     }
 }
-
-    

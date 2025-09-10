@@ -15,6 +15,8 @@ export interface CelestialEvent {
     longitudeTolerance: number; // Max longitude deviation from mean in degrees
     minSeparation?: number; // Min separation for dominance events or non-overlapping conjunctions
     overlapThreshold?: number; // Min overlap fraction for occultations (0–1)
+    sunSeparationMultiplier?: number; // New field
+    allowSunOverlap?: boolean; // New field for special eclipse events
     viewingLongitude?: number; // Optimal longitude on Sebaka (degrees)
     visibilityCondition?: 'night' | 'twilight' | 'day';
     approximatePeriodDays: number; // Guide for detection window
@@ -27,8 +29,9 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare alignment of Rutilus, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic night event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 15, // A wide 20-degree arc
-        minSeparation: 5,    // But no two planets can be closer than 0.5 degrees
+        longitudeTolerance: 7,
+        minSeparation: 5,
+        sunSeparationMultiplier: 0.8, // Allow closer approach to suns
         viewingLongitude: 180,
         visibilityCondition: 'night',
         approximatePeriodDays: 795060, // ~2,454 Sebakan years
@@ -93,6 +96,7 @@ export const celestialEvents: CelestialEvent[] = [
         type: 'cluster',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
         longitudeTolerance: 20,
+        sunSeparationMultiplier: 0.9,
         viewingLongitude: 90,
         visibilityCondition: 'twilight',
         approximatePeriodDays: 32400, // ~100 Sebakan years
@@ -135,8 +139,9 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Extremely rare occultation of all three, a 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"],
-        longitudeTolerance: 0.5,
-        overlapThreshold: 0.3,
+        longitudeTolerance: 0.2,
+        overlapThreshold: 0.2,
+        sunSeparationMultiplier: 0.5, // Very close approach allowed
         viewingLongitude: 188,
         visibilityCondition: 'night',
         approximatePeriodDays: 15877620, // ~49,005 Sebakan years
@@ -148,6 +153,7 @@ export const celestialEvents: CelestialEvent[] = [
         primaryBodies: ["Rutilus", "Spectris", "Viridis", "Aetheris"],
         longitudeTolerance: 0.5,
         overlapThreshold: 0.5,
+        sunSeparationMultiplier: 0.5,
         viewingLongitude: 180,
         visibilityCondition: 'night',
         approximatePeriodDays: 25000000, // ~77,160 Sebakan years
