@@ -399,15 +399,14 @@ export default function Home() {
     setSelectedEvent(event);
   };
   
-  const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'first') => {
+  const handleGoToEvent = useCallback((direction: 'next' | 'previous' | 'first') => {
     if (!selectedEvent || isJumpingTime) return;
-  
+
     setIsJumpingTime(true);
-    
-    // Give the UI a moment to update to the loading state
-    await new Promise(resolve => setTimeout(resolve, 50)); 
-    
-    try {
+
+    // Use a short timeout to allow the UI to update with the loader
+    // before the potentially blocking synchronous search begins.
+    setTimeout(() => {
       const params: EventSearchParams = {
         startHours: direction === 'first' ? 0 : elapsedHours,
         event: selectedEvent,
@@ -416,26 +415,26 @@ export default function Home() {
         SEBAKA_YEAR_IN_DAYS,
         HOURS_IN_SEBAKA_DAY
       };
-      
+
       const foundResult = findNextEvent(params);
       
       if (foundResult) {
         if (!viewFromSebaka) {
           enterSebakaView();
-          // Give view a moment to switch before setting coords and time
-          await new Promise(resolve => setTimeout(resolve, 100));
         }
-        setCharacterLongitude(foundResult.viewingLongitude);
-        setCharacterLatitude(foundResult.viewingLatitude);
-        setGoToTime(foundResult.foundHours);
+        
+        // Use another timeout to ensure view switch completes before setting coords
+        setTimeout(() => {
+          setCharacterLongitude(foundResult.viewingLongitude);
+          setCharacterLatitude(foundResult.viewingLatitude);
+          setGoToTime(foundResult.foundHours);
+        }, 100);
+
       } else {
         console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
-        setIsJumpingTime(false);
+        setIsJumpingTime(false); // Reset loading state if not found
       }
-    } catch (error) {
-      console.error("Error during event search:", error);
-      setIsJumpingTime(false);
-    }
+    }, 50); // 50ms delay
   }, [selectedEvent, elapsedHours, isJumpingTime, viewFromSebaka, enterSebakaView]);
   
   const renderSebakaPanelContent = () => {
@@ -591,6 +590,15 @@ export default function Home() {
 
   return (
     <main className="relative min-h-svh w-screen overflow-hidden">
+      {isJumpingTime && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <Loader2 className="h-16 w-16 animate-spin text-foreground" />
+            <p className="text-lg font-medium text-foreground mt-4">Searching for event...</p>
+          </div>
+        </div>
+      )}
+
       <CelestialSymphony
         stars={initialStars} 
         planets={planets} 

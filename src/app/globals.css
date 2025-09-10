@@ -89,4 +89,11 @@ body {
   }
 }
 
-    
+@layer components {
+  .loading-overlay {
+    @apply fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm;
+  }
+  .loading-content {
+    @apply flex flex-col items-center justify-center;
+  }
+}
