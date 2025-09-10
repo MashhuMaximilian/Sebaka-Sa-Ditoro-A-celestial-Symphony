@@ -384,9 +384,7 @@ const InfoPanel = ({
   return (
     <ScrollArea className="h-full w-full p-6">
     <div className="space-y-6 text-sm">
-        <SheetTitle>
-            <h2 className="text-2xl font-bold">{data.name}</h2>
-        </SheetTitle>
+        <SheetTitle className="text-2xl font-bold">{data.name}</SheetTitle>
         
         { 'type' in data && (
             <>
