@@ -402,35 +402,36 @@ export default function Home() {
   const handleGoToEvent = useCallback((direction: 'next' | 'previous' | 'first') => {
     if (!selectedEvent || isJumpingTime) return;
 
+    // Set loading state and use setTimeout to allow the UI to update
     setIsJumpingTime(true);
+    
+    setTimeout(async () => {
+        const params: EventSearchParams = {
+          startHours: direction === 'first' ? 0 : elapsedHours,
+          event: selectedEvent,
+          allBodiesData: [...initialStars, ...initialPlanets],
+          direction,
+          SEBAKA_YEAR_IN_DAYS,
+          HOURS_IN_SEBAKA_DAY
+        };
 
-    setTimeout(() => {
-      const params: EventSearchParams = {
-        startHours: direction === 'first' ? 0 : elapsedHours,
-        event: selectedEvent,
-        allBodiesData: [...initialStars, ...initialPlanets],
-        direction,
-        SEBAKA_YEAR_IN_DAYS,
-        HOURS_IN_SEBAKA_DAY
-      };
-
-      const foundResult = findNextEvent(params);
-      
-      if (foundResult) {
-        if (!viewFromSebaka) {
-          enterSebakaView();
-        }
+        const foundResult = await findNextEvent(params);
         
-        setTimeout(() => {
+        if (foundResult) {
+          if (!viewFromSebaka) {
+            enterSebakaView();
+            // Give time for the view transition before jumping time
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+          
           setCharacterLongitude(foundResult.viewingLongitude);
           setCharacterLatitude(foundResult.viewingLatitude);
           setGoToTime(foundResult.foundHours);
-        }, 100);
-
-      } else {
-        console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
-        setIsJumpingTime(false);
-      }
+        } else {
+          console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
+          setIsJumpingTime(false); // Reset loading state if not found
+        }
+        // The onGoToTimeComplete callback will set isJumpingTime to false
     }, 50);
   }, [selectedEvent, elapsedHours, isJumpingTime, viewFromSebaka, enterSebakaView]);
   
@@ -591,7 +592,7 @@ export default function Home() {
         <div className="loading-overlay">
           <div className="loading-content">
             <Loader2 className="h-16 w-16 animate-spin text-foreground" />
-            <p className="text-lg font-medium text-foreground mt-4">Searching for event... This may take a moment.</p>
+            <p className="text-lg font-medium text-foreground mt-4">Searching for event... This may take up to 30 seconds.</p>
           </div>
         </div>
       )}

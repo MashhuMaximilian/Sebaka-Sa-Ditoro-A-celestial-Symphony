@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 import { type CelestialEvent } from '../constants/events';
 import { type AnyBodyData, type PlanetData } from '@/types';
@@ -28,6 +29,9 @@ interface BodyVectorInfo {
     distance: number;
 }
 
+// Helper to yield control to the main thread
+const yieldToMain = () => new Promise(resolve => setTimeout(resolve, 0));
+
 function getApparentRadius(bodySize: number, distance: number): number {
     return THREE.MathUtils.radToDeg(Math.atan(bodySize / distance));
 }
@@ -42,6 +46,8 @@ function checkEventConditions(
     if (!sebakaData) return { met: false, viewingLatitude: 0, viewingLongitude: event.viewingLongitude ?? 180 };
     
     const sebakaPos = bodyPositions['Sebaka'];
+    if (!sebakaPos) return { met: false, viewingLatitude: 0, viewingLongitude: event.viewingLongitude ?? 180 };
+
     const longitude = event.viewingLongitude ?? 180;
     
     const allRelevantBodyNames = [...event.primaryBodies, ...(event.secondaryBodies || [])];
@@ -110,6 +116,9 @@ function checkSunPlanetSeparation(
     const suns = processedBodyData.filter(d => d.type === 'Star');
     const sunSeparationMultiplier = event.sunSeparationMultiplier ?? 1.0;
     
+    const sebakaPos = bodyPositions['Sebaka'];
+    if (!sebakaPos) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+
     for (const sun of suns) {
         const sunPos = bodyPositions[sun.name];
         if (!sunPos) continue;
@@ -119,7 +128,7 @@ function checkSunPlanetSeparation(
         const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(sebakaData.size, Math.PI / 2 - latRad, lonRad);
         const tiltQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(sebakaTilt));
         viewpointOffset.applyQuaternion(tiltQuat);
-        const observerPos = new THREE.Vector3().addVectors(bodyPositions['Sebaka'], viewpointOffset);
+        const observerPos = new THREE.Vector3().addVectors(sebakaPos, viewpointOffset);
 
         const sunVec = sunPos.clone().sub(observerPos);
         const sunDistance = sunVec.length();
@@ -384,7 +393,7 @@ function checkGenericEvent(
     }
 }
 
-export function findFrequentEvent(params: EventSearchParams): EventSearchResult | null {
+async function findFrequentEvent(params: EventSearchParams): Promise<EventSearchResult | null> {
     const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY } = params;
 
     const processedBodyData = getBodyData(allBodiesData);
@@ -427,6 +436,11 @@ export function findFrequentEvent(params: EventSearchParams): EventSearchResult 
     while (iterationCount < maxIterations && 
            ((timeMultiplier > 0 && currentHours < startHours + maxSearchHours) || 
             (timeMultiplier < 0 && currentHours > startHours - maxSearchHours))) {
+        
+        if (iterationCount % 500 === 0) {
+            await yieldToMain();
+        }
+
         const bodyPositions = getCachedPositions(currentHours);
         const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
@@ -434,7 +448,7 @@ export function findFrequentEvent(params: EventSearchParams): EventSearchResult 
             let durationDays = 0;
             let durationCheckHours = currentHours;
             let isStable = true;
-            const stabilityDays = (event.type === 'occultation' || (event.longitudeTolerance < 1.0)) ? 1 : 2;
+            const stabilityDays = 2;
 
             while (durationDays < stabilityDays && isStable) {
                 const durationPositions = getCachedPositions(durationCheckHours);
@@ -468,7 +482,7 @@ export function findFrequentEvent(params: EventSearchParams): EventSearchResult 
     return { foundHours, viewingLongitude, viewingLatitude };
 }
 
-export function findRareEvent(params: EventSearchParams): EventSearchResult | null {
+async function findRareEvent(params: EventSearchParams): Promise<EventSearchResult | null> {
     const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY } = params;
 
     const processedBodyData = getBodyData(allBodiesData);
@@ -503,20 +517,24 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
         }
     }
 
-    const maxSearchYears = 80000; // Increased to catch Quadruple Cascade
+    const maxSearchYears = 80000; 
     const maxSearchHours = maxSearchYears * SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY;
-    let stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier; // Start with 1-day step
-    const fineStepHours = HOURS_IN_SEBAKA_DAY / 12 * timeMultiplier; 
+    const stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier; 
 
     let foundHours = null;
     let viewingLatitude = 0;
     let viewingLongitude = event.viewingLongitude ?? 180;
     let iterationCount = 0;
-    const maxIterations = 5e6; // Increased for larger search
+    const maxIterations = 5e6; 
 
     while (iterationCount < maxIterations && 
            ((timeMultiplier > 0 && currentHours < startHours + maxSearchHours) || 
             (timeMultiplier < 0 && currentHours > startHours - maxSearchHours))) {
+
+        if (iterationCount % 500 === 0) {
+            await yieldToMain();
+        }
+
         const bodyPositions = getCachedPositions(currentHours);
         const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
@@ -524,7 +542,7 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
             let durationDays = 0;
             let durationCheckHours = currentHours;
             let isStable = true;
-            const stabilityDays = (event.type === 'occultation' || (event.longitudeTolerance < 1.0)) ? 1 : 2;
+            const stabilityDays = (event.type === 'occultation' || event.longitudeTolerance < 1.0) ? 1 : 2;
 
             while (durationDays < stabilityDays && isStable) {
                 const durationPositions = getCachedPositions(durationCheckHours);
@@ -533,7 +551,7 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
                     break;
                 }
                 durationDays += 1;
-                durationCheckHours += fineStepHours;
+                durationCheckHours += stepHours;
                 iterationCount += 1;
                 if (iterationCount >= maxIterations) break;
             }
@@ -561,10 +579,9 @@ export function findRareEvent(params: EventSearchParams): EventSearchResult | nu
 }
 
 
-export function findNextEvent(params: EventSearchParams): EventSearchResult | null {
+export async function findNextEvent(params: EventSearchParams): Promise<EventSearchResult | null> {
     const { event, SEBAKA_YEAR_IN_DAYS } = params;
     
-    // Use rare event finder for events with very long approximate periods or high precision
     if (event.approximatePeriodDays > 100 * SEBAKA_YEAR_IN_DAYS || event.type === 'occultation') {
         return findRareEvent(params);
     } else {
