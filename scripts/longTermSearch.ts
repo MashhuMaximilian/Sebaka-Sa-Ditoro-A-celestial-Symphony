@@ -19,7 +19,12 @@ const outputFilePath = path.join(__dirname, '../src/lib/precomputed-events.json'
 async function searchLongTerm() {
     let existingResults: PrecomputedEvent[] = [];
     if (fs.existsSync(outputFilePath)) {
-        existingResults = JSON.parse(fs.readFileSync(outputFilePath, 'utf-8'));
+        try {
+            existingResults = JSON.parse(fs.readFileSync(outputFilePath, 'utf-8'));
+        } catch (e) {
+            console.error("Could not parse existing precomputed-events.json. Starting fresh.", e);
+            existingResults = [];
+        }
     }
     
     const results: PrecomputedEvent[] = [...existingResults];
@@ -60,14 +65,16 @@ async function searchLongTerm() {
                     longitude: result.viewingLongitude,
                 };
 
-                // Avoid duplicates
+                // Avoid duplicates and save immediately
                 if (!results.some(e => e.name === newEvent.name && e.hours === newEvent.hours)) {
                     results.push(newEvent);
-                    console.log(`✨ Found ${eventName} at year ${newEvent.year}, day ${newEvent.day}`);
+                    results.sort((a, b) => a.hours - b.hours); // Keep sorted
+                    fs.writeFileSync(outputFilePath, JSON.stringify(results, null, 2));
+                    console.log(`✨ Found and saved ${eventName} at year ${newEvent.year}, day ${newEvent.day}`);
                 }
                 
                 // Advance currentHour past the found event to continue searching
-                currentHour = result.foundHours + (HOURS_IN_SEBAKA_DAY * 3); // Add a 3-day buffer
+                currentHour = result.foundHours + (HOURS_IN_SEBAKA_DAY * 3); // Add a 3-day buffer to avoid re-finding same event
             } else {
                 // If no more events found, break from this event's while loop
                 console.log(`No more occurrences of "${eventName}" found after hour ${currentHour}.`);
@@ -76,10 +83,7 @@ async function searchLongTerm() {
         }
     }
     
-    // Sort results and write to file
-    results.sort((a, b) => a.hours - b.hours);
-    fs.writeFileSync(outputFilePath, JSON.stringify(results, null, 2));
-    console.log(`\n🎉 Complete! Found a total of ${results.length} events. Results saved to ${outputFilePath}`);
+    console.log(`\n🎉 Complete! A total of ${results.length} events are now in ${outputFilePath}`);
 }
 
 searchLongTerm().catch(console.error);
