@@ -16,8 +16,8 @@ export interface EventSearchParams {
 
 interface EventSearchResult {
     foundHours: number;
-    viewingLatitude: number;
     viewingLongitude: number;
+    viewingLatitude: number;
 }
 
 interface BodyVectorInfo {
@@ -285,13 +285,13 @@ function checkEventConditions(
     processedBodyData: ProcessedBodyData[],
     sebakaTilt: number
 ): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
-    const sebakaData = processedBodyData.find(d => d.name === 'Sebaka') as PlanetData | undefined;
-    if (!sebakaData) return { met: false, viewingLatitude: 0, viewingLongitude: event.viewingLongitude ?? 180 };
-    
     if (!bodyPositions) {
         console.error("[EventSolver] checkEventConditions received undefined bodyPositions.");
         return { met: false, viewingLatitude: 0, viewingLongitude: event.viewingLongitude ?? 180 };
     }
+    
+    const sebakaData = processedBodyData.find(d => d.name === 'Sebaka') as PlanetData | undefined;
+    if (!sebakaData) return { met: false, viewingLatitude: 0, viewingLongitude: event.viewingLongitude ?? 180 };
     
     const sebakaPos = bodyPositions['Sebaka'];
     if (!sebakaPos) {
@@ -470,13 +470,23 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
     let iterationCount = 0;
     const maxIterations = event.type === 'occultation' ? 5e6 : 1e5;
 
+    // Redefine getCachedPositions for the broad search with the bug fix
+    const getCachedPositionsBroad = (hours: number): { [name: string]: THREE.Vector3 } => {
+        const roundedHours = Math.round(hours / HOURS_IN_SEBAKA_DAY) * HOURS_IN_SEBAKA_DAY;
+        if (!positionCache[roundedHours]) {
+            positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
+        }
+        // Always return from cache, which is now guaranteed to have the value
+        return positionCache[roundedHours];
+    };
+
     while (iterationCount < maxIterations && 
            ((timeMultiplier > 0 && currentHours < currentSearchStart + maxSearchHours) || 
             (timeMultiplier < 0 && currentHours > currentSearchStart - maxSearchHours))) {
         
         if (iterationCount % 500 === 0) await yieldToMain();
 
-        const bodyPositions = getCachedPositions(currentHours);
+        const bodyPositions = getCachedPositionsBroad(currentHours);
         const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (result.met) {
@@ -487,7 +497,7 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
                                 event.type === 'occultation' ? 1 : 2;
 
             while (durationDays < stabilityDays && isStable) {
-                const durationPositions = getCachedPositions(durationCheckHours);
+                const durationPositions = getCachedPositionsBroad(durationCheckHours);
                 if (!checkEventConditions(event, durationPositions, processedBodyData, sebakaTilt).met) {
                     isStable = false;
                     break;
