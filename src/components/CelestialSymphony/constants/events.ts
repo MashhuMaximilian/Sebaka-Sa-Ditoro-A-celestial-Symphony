@@ -8,7 +8,7 @@ export const celestialEvents: CelestialEvent[] = [
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
         longitudeTolerance: 0.5, // 30 arcmin - matches real great conjunctions
-        minSeparation: 7, // 10 arcmin minimum separation
+        minSeparation: 10, // 10 arcmin minimum separation
         sunSeparationMultiplier: 5, // Reduced from 10, more realistic
         viewingLongitude: 180,
         visibilityCondition: 'night',
@@ -49,7 +49,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Precise triangular formation within 15 arcminutes - the 'Triad Lantern.'",
         type: 'triangle',
         primaryBodies: ["Rutilis", "Spectris", "Viridis"],
-        longitudeTolerance: 0.25, // 15 arcmin - tight triangle
+        longitudeTolerance: 1, // 15 arcmin - tight triangle
         minSeparation: 0.17, // 10 arcmin between vertices
         viewingLongitude: 210,
         visibilityCondition: 'night',

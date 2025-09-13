@@ -5,9 +5,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight, Loader2, Globe, X } from "lucide-react";
 
-import type { PlanetData, StarData, MaterialProperties, AnyBodyData, PrecomputedEvent, CelestialEvent } from "@/types";
+import type { PlanetData, StarData, MaterialProperties, AnyBodyData, PrecomputedEvent } from "@/types";
+import { celestialEvents, type CelestialEvent } from "@/components/CelestialSymphony/constants/events";
 import CelestialSymphony from "@/components/celestial-symphony";
-import { celestialEvents } from "@/components/CelestialSymphony/constants/events";
 import { findNextEvent, type EventSearchParams } from "@/components/CelestialSymphony/utils/eventSolver";
 import precomputedEvents from '@/lib/precomputed-events.json';
 import { initialStars, initialPlanets } from '@/lib/celestial-data';
@@ -262,22 +262,21 @@ const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'fir
 
   try {
       const cachedEvents = (precomputedEvents as PrecomputedEvent[]).filter(e => e.name === selectedEvent.name);
-      let foundResult: { foundHours: number; viewingLongitude: number; viewingLatitude: number; } | null = null;
       let startSearchHour = direction === 'first' ? 0 : elapsedHours;
 
+      // Use the cached events to find a better starting point for the search.
       if (direction !== 'first' && cachedEvents.length > 0) {
           let potentialCachedEvent: PrecomputedEvent | undefined;
           if (direction === 'next') {
-              potentialCachedEvent = cachedEvents
-                  .filter(e => e.hours > elapsedHours)
-                  .sort((a, b) => a.hours - b.hours)[0];
-          } else { // previous
-              potentialCachedEvent = cachedEvents
-                  .filter(e => e.hours < elapsedHours)
-                  .sort((a, b) => b.hours - a.hours)[0];
+              // Find the first cached event that is after the current time.
+              potentialCachedEvent = cachedEvents.find(e => e.hours > elapsedHours);
+          } else { // 'previous'
+              // Find the last cached event that is before the current time.
+              potentialCachedEvent = [...cachedEvents].reverse().find(e => e.hours < elapsedHours);
           }
           
           if (potentialCachedEvent) {
+              // Start the search from the timestamp of the cached event.
               startSearchHour = potentialCachedEvent.hours;
           }
       }
@@ -292,7 +291,9 @@ const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'fir
           signal: controller.signal
       };
 
-      foundResult = await findNextEvent(params);
+      // Always run the solver. It will be fast if the cached start time is accurate.
+      // This ensures the event always respects the latest parameters in events.ts.
+      const foundResult = await findNextEvent(params);
 
       if (controller.signal.aborted) {
           console.log("Event search cancelled.");
@@ -717,3 +718,4 @@ const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'fir
 }
 
     
+
