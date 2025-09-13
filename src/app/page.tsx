@@ -1,13 +1,14 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight, Loader2, Globe } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight, Loader2, Globe, X } from "lucide-react";
 
-import type { PlanetData, StarData, MaterialProperties, AnyBodyData } from "@/types";
+import type { PlanetData, StarData, MaterialProperties, AnyBodyData, PrecomputedEvent } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
 import { celestialEvents, type CelestialEvent } from "@/components/CelestialSymphony/constants/events";
 import { findNextEvent, type EventSearchParams } from "@/components/CelestialSymphony/utils/eventSolver";
+import precomputedEvents from '@/lib/precomputed-events.json';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -268,6 +269,8 @@ export default function Home() {
   
   const [selectedEvent, setSelectedEvent] = useState<CelestialEvent | null>(null);
   const [isJumpingTime, setIsJumpingTime] = useState(false);
+  const searchAbortController = useRef<AbortController | null>(null);
+  const [eventButtonLoading, setEventButtonLoading] = useState<'first' | 'previous' | 'next' | null>(null);
 
   useEffect(() => {
     if (goToTime === null) return;
@@ -398,43 +401,96 @@ export default function Home() {
     const event = celestialEvents.find(e => e.name === eventName) ?? null;
     setSelectedEvent(event);
   };
+
+  const handleCancelSearch = () => {
+    if (searchAbortController.current) {
+        searchAbortController.current.abort();
+    }
+    setIsJumpingTime(false);
+    setEventButtonLoading(null);
+};
   
-  const handleGoToEvent = useCallback((direction: 'next' | 'previous' | 'first') => {
-    if (!selectedEvent || isJumpingTime) return;
+const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'first') => {
+  if (!selectedEvent || isJumpingTime) return;
 
-    // Set loading state and use setTimeout to allow the UI to update
-    setIsJumpingTime(true);
-    
-    setTimeout(async () => {
-        const params: EventSearchParams = {
-          startHours: direction === 'first' ? 0 : elapsedHours,
-          event: selectedEvent,
-          allBodiesData: [...initialStars, ...initialPlanets],
-          direction,
-          SEBAKA_YEAR_IN_DAYS,
-          HOURS_IN_SEBAKA_DAY
-        };
+  setIsJumpingTime(true);
+  setEventButtonLoading(direction);
+  
+  const controller = new AbortController();
+  searchAbortController.current = controller;
 
-        const foundResult = await findNextEvent(params);
-        
-        if (foundResult) {
+  try {
+      const cachedEvents = (precomputedEvents as PrecomputedEvent[]).filter(e => e.name === selectedEvent.name);
+      let foundResult: { foundHours: number; viewingLongitude: number; viewingLatitude: number; } | null = null;
+      
+      if (direction !== 'first') {
+          if (direction === 'next') {
+              const nextCached = cachedEvents
+                  .filter(e => e.hours > elapsedHours)
+                  .sort((a, b) => a.hours - b.hours)[0];
+              if (nextCached) {
+                  foundResult = { foundHours: nextCached.hours, viewingLongitude: nextCached.longitude, viewingLatitude: nextCached.latitude };
+              }
+          } else { // previous
+              const prevCached = cachedEvents
+                  .filter(e => e.hours < elapsedHours)
+                  .sort((a, b) => b.hours - a.hours)[0];
+              if (prevCached) {
+                  foundResult = { foundHours: prevCached.hours, viewingLongitude: prevCached.longitude, viewingLatitude: prevCached.latitude };
+              }
+          }
+      }
+      
+      if (!foundResult) {
+          const params: EventSearchParams = {
+              startHours: direction === 'first' ? 0 : elapsedHours,
+              event: selectedEvent,
+              allBodiesData: [...initialStars, ...initialPlanets],
+              direction,
+              SEBAKA_YEAR_IN_DAYS,
+              HOURS_IN_SEBAKA_DAY,
+              signal: controller.signal
+          };
+          foundResult = await findNextEvent(params);
+      }
+
+      if (controller.signal.aborted) {
+          console.log("Event search cancelled.");
+          setIsJumpingTime(false);
+          setEventButtonLoading(null);
+          return;
+      }
+      
+      if (foundResult) {
           if (!viewFromSebaka) {
-            enterSebakaView();
-            // Give time for the view transition before jumping time
-            await new Promise(resolve => setTimeout(resolve, 100));
+              enterSebakaView();
+              await new Promise(resolve => setTimeout(resolve, 100));
           }
           
           setCharacterLongitude(foundResult.viewingLongitude);
           setCharacterLatitude(foundResult.viewingLatitude);
           setGoToTime(foundResult.foundHours);
-        } else {
+      } else {
           console.warn(`Could not find ${direction} occurrence of ${selectedEvent.name}`);
-          setIsJumpingTime(false); // Reset loading state if not found
-        }
-        // The onGoToTimeComplete callback will set isJumpingTime to false
-    }, 50);
-  }, [selectedEvent, elapsedHours, isJumpingTime, viewFromSebaka, enterSebakaView]);
-  
+          setIsJumpingTime(false);
+          setEventButtonLoading(null);
+      }
+  } catch (error: any) {
+      if (error.name === 'AbortError') {
+          console.log("Event search was aborted by the user.");
+      } else {
+          console.error("An error occurred during event search:", error);
+      }
+      setIsJumpingTime(false);
+      setEventButtonLoading(null);
+  } finally {
+       if (!controller.signal.aborted) {
+          // The onGoToTimeComplete callback will set isJumpingTime to false
+          setEventButtonLoading(null);
+       }
+  }
+}, [selectedEvent, elapsedHours, isJumpingTime, viewFromSebaka, enterSebakaView]);
+
   const renderSebakaPanelContent = () => {
     if (!activeSebakaPanel) return null;
     
@@ -489,15 +545,23 @@ export default function Home() {
                     </Select>
                     <div className="flex items-center justify-between gap-1">
                          <Button onClick={() => handleGoToEvent('first')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
-                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Go to First
+                            {eventButtonLoading === 'first' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Go to First
                         </Button>
                         <Button onClick={() => handleGoToEvent('previous')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
-                             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Previous
+                             {eventButtonLoading === 'previous' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />} Previous
                         </Button>
                          <Button onClick={() => handleGoToEvent('next')} size="sm" variant="outline" className="flex-1" disabled={!selectedEvent || isLoading}>
-                            Next {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+                            Next {eventButtonLoading === 'next' ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
                         </Button>
                     </div>
+                     {isJumpingTime && (
+                        <div className="flex items-center justify-center gap-2 mt-2">
+                            <p className="text-xs text-muted-foreground text-center">Searching meticulously across thousands of years... This may take a while.</p>
+                            <Button variant="ghost" size="icon" onClick={handleCancelSearch} className="h-6 w-6 text-muted-foreground hover:text-foreground">
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    )}
                 </div>
                 <div className="bg-black/50 backdrop-blur-sm p-2 rounded-lg shadow-lg flex items-center gap-2">
                     <Label htmlFor="speed-input" className="text-xs font-medium text-muted-foreground min-w-16 text-center">
@@ -588,15 +652,6 @@ export default function Home() {
 
   return (
     <main className="relative min-h-svh w-screen overflow-hidden">
-      {isJumpingTime && (
-        <div className="loading-overlay">
-          <div className="loading-content">
-            <Loader2 className="h-16 w-16 animate-spin text-foreground" />
-            <p className="text-lg font-medium text-foreground mt-4">Searching meticulously across thousands of years... This may take a while.</p>
-          </div>
-        </div>
-      )}
-
       <CelestialSymphony
         stars={initialStars} 
         planets={planets} 
@@ -821,3 +876,5 @@ export default function Home() {
     </main>
   );
 }
+
+    

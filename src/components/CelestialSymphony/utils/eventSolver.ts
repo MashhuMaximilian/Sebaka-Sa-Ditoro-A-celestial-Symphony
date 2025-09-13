@@ -1,5 +1,6 @@
+
 import * as THREE from 'three';
-import { type CelestialEvent } from '@/types';
+import { type CelestialEvent, type PrecomputedEvent } from '@/types';
 import { type AnyBodyData, type PlanetData } from '@/types';
 import { getBodyData, type ProcessedBodyData } from '../hooks/useBodyData';
 import { calculateBodyPositions } from './calculateBodyPositions';
@@ -12,6 +13,7 @@ export interface EventSearchParams {
     direction: 'next' | 'previous' | 'first';
     SEBAKA_YEAR_IN_DAYS: number;
     HOURS_IN_SEBAKA_DAY: number;
+    signal: AbortSignal;
 }
 
 interface EventSearchResult {
@@ -368,7 +370,10 @@ function checkEventConditions(
 }
 
 async function findEventWithCandidates(params: EventSearchParams): Promise<EventSearchResult | null> {
-    const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY } = params;
+    const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY, signal } = params;
+    
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+
     const processedBodyData = getBodyData(allBodiesData);
     const sebakaData = processedBodyData.find(b => b.name === 'Sebaka') as PlanetData | undefined;
     if (!sebakaData) return null;
@@ -382,11 +387,6 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
         const roundedHours = Math.round(hours / HOURS_IN_SEBAKA_DAY) * HOURS_IN_SEBAKA_DAY;
         if (!positionCache[roundedHours]) {
             positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
-            const cacheKeys = Object.keys(positionCache).map(Number).sort((a, b) => a - b);
-            if (cacheKeys.length > 50) {
-                const cutoff = cacheKeys[0];
-                delete positionCache[cutoff];
-            }
         }
         return positionCache[roundedHours];
     };
@@ -418,6 +418,7 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
                ((timeMultiplier > 0 && currentHours < windowEnd) || 
                 (timeMultiplier < 0 && currentHours > windowEnd))) {
             
+            if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
             if (iterationCount % 500 === 0) await yieldToMain();
 
             const bodyPositions = getCachedPositions(currentHours);
@@ -444,12 +445,21 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
                 }
 
                 if (isStable) {
-                    console.log(`[EventSolver] Found "${event.name}" at hour ${currentHours} (stable for ${stabilityDays} days).`);
-                    return { 
+                    const finalResult = { 
                         foundHours: currentHours, 
                         viewingLongitude: result.viewingLongitude, 
                         viewingLatitude: result.viewingLatitude 
                     };
+                    const loggableEvent = {
+                        name: event.name,
+                        hours: finalResult.foundHours,
+                        year: Math.floor(finalResult.foundHours / (SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY)),
+                        day: Math.floor((finalResult.foundHours / HOURS_IN_SEBAKA_DAY) % SEBAKA_YEAR_IN_DAYS) + 1,
+                        latitude: finalResult.viewingLatitude,
+                        longitude: finalResult.viewingLongitude,
+                    };
+                    console.log("[EventFound]", JSON.stringify(loggableEvent, null, 2));
+                    return finalResult;
                 } else {
                     currentHours = durationCheckHours;
                     continue;
@@ -470,23 +480,14 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
     let iterationCount = 0;
     const maxIterations = event.type === 'occultation' ? 5e6 : 1e5;
 
-    // Redefine getCachedPositions for the broad search with the bug fix
-    const getCachedPositionsBroad = (hours: number): { [name: string]: THREE.Vector3 } => {
-        const roundedHours = Math.round(hours / HOURS_IN_SEBAKA_DAY) * HOURS_IN_SEBAKA_DAY;
-        if (!positionCache[roundedHours]) {
-            positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
-        }
-        // Always return from cache, which is now guaranteed to have the value
-        return positionCache[roundedHours];
-    };
-
     while (iterationCount < maxIterations && 
            ((timeMultiplier > 0 && currentHours < currentSearchStart + maxSearchHours) || 
             (timeMultiplier < 0 && currentHours > currentSearchStart - maxSearchHours))) {
         
+        if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
         if (iterationCount % 500 === 0) await yieldToMain();
 
-        const bodyPositions = getCachedPositionsBroad(currentHours);
+        const bodyPositions = getCachedPositions(currentHours);
         const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (result.met) {
@@ -497,7 +498,7 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
                                 event.type === 'occultation' ? 1 : 2;
 
             while (durationDays < stabilityDays && isStable) {
-                const durationPositions = getCachedPositionsBroad(durationCheckHours);
+                const durationPositions = getCachedPositions(durationCheckHours);
                 if (!checkEventConditions(event, durationPositions, processedBodyData, sebakaTilt).met) {
                     isStable = false;
                     break;
@@ -509,12 +510,21 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
             }
 
             if (isStable) {
-                console.log(`[EventSolver] Found "${event.name}" via broad search at hour ${currentHours}.`);
-                return { 
+                 const finalResult = { 
                     foundHours: currentHours, 
                     viewingLongitude: result.viewingLongitude, 
                     viewingLatitude: result.viewingLatitude 
                 };
+                const loggableEvent = {
+                    name: event.name,
+                    hours: finalResult.foundHours,
+                    year: Math.floor(finalResult.foundHours / (SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY)),
+                    day: Math.floor((finalResult.foundHours / HOURS_IN_SEBAKA_DAY) % SEBAKA_YEAR_IN_DAYS) + 1,
+                    latitude: finalResult.viewingLatitude,
+                    longitude: finalResult.viewingLongitude,
+                };
+                console.log("[EventFound]", JSON.stringify(loggableEvent, null, 2));
+                return finalResult;
             } else {
                 currentHours = durationCheckHours;
                 continue;
@@ -532,3 +542,5 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
 export async function findNextEvent(params: EventSearchParams): Promise<EventSearchResult | null> {
     return findEventWithCandidates(params);
 }
+
+    

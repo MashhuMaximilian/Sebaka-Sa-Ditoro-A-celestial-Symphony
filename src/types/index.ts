@@ -105,3 +105,14 @@ export interface CelestialEvent {
     viewingLongitude?: number; // Optimal longitude on Sebaka (degrees)
     visibilityCondition?: 'night' | 'twilight' | 'day';
 }
+
+export interface PrecomputedEvent {
+  name: string;
+  hours: number;
+  year: number;
+  day: number;
+  latitude: number;
+  longitude: number;
+}
+
+    
