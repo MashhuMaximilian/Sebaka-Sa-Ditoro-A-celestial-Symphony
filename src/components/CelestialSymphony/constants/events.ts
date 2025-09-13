@@ -6,7 +6,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Rare alignment of Rutilus, Spectris, Viridis, and Aetheris in a 'Celestial Crescent,' a prophetic night event.",
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 0.1,
+        longitudeTolerance: 5,
         minSeparation: 6,
         sunSeparationMultiplier: 10, // Allow closer approach to suns
         viewingLongitude: 180,

@@ -3,6 +3,7 @@ import { type CelestialEvent } from '@/types';
 import { type AnyBodyData, type PlanetData } from '@/types';
 import { getBodyData, type ProcessedBodyData } from '../hooks/useBodyData';
 import { calculateBodyPositions } from './calculateBodyPositions';
+import { HOURS_IN_SEBAKA_DAY, SEBAKA_YEAR_IN_DAYS } from '../constants/config';
 
 export interface EventSearchParams {
     startHours: number;
@@ -201,7 +202,7 @@ function checkSpecificEventConditions(
     switch (event.name) {
         case "Great Conjunction":
             return checkGreatConjunction(event, primaryBodyInfo, optimalLatitude, longitude);
-        case "The Great Eclipse": // Your Triple Cascade variant
+        case "The Great Eclipse":
             return checkTripleCascade(event, primaryBodyInfo, optimalLatitude, longitude);
         default:
             return checkGenericEvent(event, primaryBodyInfo, allBodyInfo, optimalLatitude, longitude);
@@ -458,13 +459,12 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
     const timeMultiplier = direction === 'previous' ? -1 : 1;
     let currentSearchStart = startHours;
 
-    // RESTORED: Position caching
+    // FIXED: Position caching with correct key calculation
     const positionCache: { [hours: number]: { [name: string]: THREE.Vector3 } } = {};
     const getCachedPositions = (hours: number) => {
-        const roundedHours = Math.round(hours / (HOURS_IN_SEBAKA_DAY));
+        const roundedHours = Math.round(hours / HOURS_IN_SEBAKA_DAY) * HOURS_IN_SEBAKA_DAY; // ✅ FIXED
         if (!positionCache[roundedHours]) {
             positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
-            // RESTORED: Cache limit management
             const cacheKeys = Object.keys(positionCache).map(Number).sort((a, b) => a - b);
             if (cacheKeys.length > 50) {
                 const cutoff = cacheKeys[0];
@@ -498,7 +498,7 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
         const stepHours = HOURS_IN_SEBAKA_DAY * timeMultiplier;
 
         let iterationCount = 0;
-        const maxIterations = 10000; // Reasonable limit per window
+        const maxIterations = 10000;
 
         while (iterationCount < maxIterations && 
                ((timeMultiplier > 0 && currentHours < windowEnd) || 
@@ -515,7 +515,6 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
                 let durationCheckHours = currentHours;
                 let isStable = true;
                 
-                // Tighter tolerances get shorter stability requirements
                 const stabilityDays = event.longitudeTolerance < 1.0 ? 1 : 
                                     event.type === 'occultation' ? 1 : 2;
 
@@ -612,8 +611,6 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
  * RESTORED: Your original main entry point
  */
 export async function findNextEvent(params: EventSearchParams): Promise<EventSearchResult | null> {
-    const { event, SEBAKA_YEAR_IN_DAYS } = params;
-    
     // Use enhanced search for all events
     return findEventWithCandidates(params);
 }
