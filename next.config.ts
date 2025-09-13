@@ -22,9 +22,11 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',
-      // Increase timeout for long-running operations like event searching
-      executionTimeout: 120, 
     },
+  },
+  serverActions: {
+    // Increase timeout for long-running operations like event searching
+    executionTimeout: 120,
   },
   // This is required to allow the Next.js dev server to accept requests from the
   // Firebase Studio UI.

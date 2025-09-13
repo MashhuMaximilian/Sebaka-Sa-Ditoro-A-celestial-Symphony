@@ -4,9 +4,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { History, Eye, PersonStanding, Orbit, RotateCw, Focus, ChevronsUpDown, Settings, Layers, Camera, ArrowLeft, ArrowRight, Loader2, Globe, X } from "lucide-react";
 
-import type { PlanetData, StarData, MaterialProperties, AnyBodyData, PrecomputedEvent } from "@/types";
+import type { PlanetData, StarData, MaterialProperties, AnyBodyData, PrecomputedEvent, CelestialEvent } from "@/types";
 import CelestialSymphony from "@/components/celestial-symphony";
-import { celestialEvents, type CelestialEvent } from "@/components/CelestialSymphony/constants/events";
+import { celestialEvents } from "@/components/CelestialSymphony/constants/events";
 import { findNextEvent, type EventSearchParams } from "@/components/CelestialSymphony/utils/eventSolver";
 import precomputedEvents from '@/lib/precomputed-events.json';
 
