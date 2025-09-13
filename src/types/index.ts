@@ -104,5 +104,4 @@ export interface CelestialEvent {
     allowSunOverlap?: boolean; // New field for special eclipse events
     viewingLongitude?: number; // Optimal longitude on Sebaka (degrees)
     visibilityCondition?: 'night' | 'twilight' | 'day';
-    approximatePeriodDays: number; // Guide for detection window
 }

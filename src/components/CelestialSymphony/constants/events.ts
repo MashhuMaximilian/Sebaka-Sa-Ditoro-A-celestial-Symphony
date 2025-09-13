@@ -11,7 +11,6 @@ export const celestialEvents: CelestialEvent[] = [
         sunSeparationMultiplier: 10, // Allow closer approach to suns
         viewingLongitude: 180,
         visibilityCondition: 'night',
-        approximatePeriodDays: 795060, // ~2,454 Sebakan years
     },
     {
         name: "Celestial Origin Alignment",
@@ -23,7 +22,6 @@ export const celestialEvents: CelestialEvent[] = [
         sunSeparationMultiplier: 1.0,
         viewingLongitude: 180,
         visibilityCondition: 'night',
-        approximatePeriodDays: 987210, // A very long, estimated period for this grand alignment
     },
     {
         name: "Gathering of Witnesses",
@@ -34,7 +32,6 @@ export const celestialEvents: CelestialEvent[] = [
         longitudeTolerance: 30,
         viewingLongitude: 270,
         visibilityCondition: 'night',
-        approximatePeriodDays: 324, // 1 Sebakan year
     },
     {
         name: "Twin Conjunction",
@@ -44,7 +41,6 @@ export const celestialEvents: CelestialEvent[] = [
         longitudeTolerance: 30,
         viewingLongitude: 240,
         visibilityCondition: 'twilight',
-        approximatePeriodDays: 972, // ~3 Sebakan years
     },
     {
         name: "Triad Alignment",
@@ -54,7 +50,6 @@ export const celestialEvents: CelestialEvent[] = [
         longitudeTolerance: 1,
         viewingLongitude: 210,
         visibilityCondition: 'night',
-        approximatePeriodDays: 1620, // ~5 Sebakan years
     },
     {
         name: "Quadrant Convergence",
@@ -65,7 +60,6 @@ export const celestialEvents: CelestialEvent[] = [
         longitudeTolerance: 30,
         viewingLongitude: 270,
         visibilityCondition: 'night',
-        approximatePeriodDays: 3240, // ~10 Sebakan years
     },
     {
         name: "Aetheris Dominance",
@@ -77,7 +71,6 @@ export const celestialEvents: CelestialEvent[] = [
         minSeparation: 20,
         viewingLongitude: 180,
         visibilityCondition: 'night',
-        approximatePeriodDays: 8748, // ~27 Sebakan years
     },
     {
         name: "Pre-Conjunction Prelude",
@@ -88,7 +81,6 @@ export const celestialEvents: CelestialEvent[] = [
         sunSeparationMultiplier: 0.9,
         viewingLongitude: 90,
         visibilityCondition: 'twilight',
-        approximatePeriodDays: 32400, // ~100 Sebakan years
     },
     {
         name: "Spectris-Viridis Occultation",
@@ -99,7 +91,6 @@ export const celestialEvents: CelestialEvent[] = [
         overlapThreshold: 0.9,
         viewingLongitude: 170,
         visibilityCondition: 'night',
-        approximatePeriodDays: 489870, // ~1,515 Sebakan years
     },
     {
         name: "Spectris-Aetheris Occultation",
@@ -110,7 +101,6 @@ export const celestialEvents: CelestialEvent[] = [
         overlapThreshold: 0.9,
         viewingLongitude: 185,
         visibilityCondition: 'night',
-        approximatePeriodDays: 1589220, // ~4,905 Sebakan years
     },
     {
         name: "Viridis-Aetheris Occultation",
@@ -121,7 +111,6 @@ export const celestialEvents: CelestialEvent[] = [
         overlapThreshold: 0.5,
         viewingLongitude: 190,
         visibilityCondition: 'night',
-        approximatePeriodDays: 1166400, // ~3,600 Sebakan years
     },
     {
         name: "The Great Eclipse",
@@ -133,6 +122,5 @@ export const celestialEvents: CelestialEvent[] = [
         sunSeparationMultiplier: 0.5, // Very close approach allowed
         viewingLongitude: 188,
         visibilityCondition: 'night',
-        approximatePeriodDays: 15877620, // ~49,005 Sebakan years
     },
 ];
