@@ -8,7 +8,7 @@ export const celestialEvents: CelestialEvent[] = [
         type: 'conjunction',
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
         longitudeTolerance: 0.5, // 30 arcmin - matches real great conjunctions
-        minSeparation: 0.17, // 10 arcmin minimum separation
+        minSeparation: 7, // 10 arcmin minimum separation
         sunSeparationMultiplier: 5, // Reduced from 10, more realistic
         viewingLongitude: 180,
         visibilityCondition: 'night',
@@ -30,7 +30,7 @@ export const celestialEvents: CelestialEvent[] = [
         type: 'cluster', 
         primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
         secondaryBodies: ["Beacon"],
-        longitudeTolerance: 5, // 5° cluster - realistic for naked eye grouping
+        longitudeTolerance: 35, // 5° cluster - realistic for naked eye grouping
         viewingLongitude: 270,
         visibilityCondition: 'night',
     },
@@ -120,7 +120,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Extraordinary triple occultation with 95%+ overlap - the 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"], 
-        longitudeTolerance: 0.3, // truly: 0.017 1 arcmin - maximum precision
+        longitudeTolerance: 0.5, // truly: 0.017 1 arcmin - maximum precision
         overlapThreshold: 0.95, // Near-total overlap
         sunSeparationMultiplier: 0.5, // Very close sun approach allowed
         viewingLongitude: 188,

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -262,37 +263,36 @@ const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'fir
   try {
       const cachedEvents = (precomputedEvents as PrecomputedEvent[]).filter(e => e.name === selectedEvent.name);
       let foundResult: { foundHours: number; viewingLongitude: number; viewingLatitude: number; } | null = null;
-      
-      if (direction !== 'first') {
+      let startSearchHour = direction === 'first' ? 0 : elapsedHours;
+
+      if (direction !== 'first' && cachedEvents.length > 0) {
+          let potentialCachedEvent: PrecomputedEvent | undefined;
           if (direction === 'next') {
-              const nextCached = cachedEvents
+              potentialCachedEvent = cachedEvents
                   .filter(e => e.hours > elapsedHours)
                   .sort((a, b) => a.hours - b.hours)[0];
-              if (nextCached) {
-                  foundResult = { foundHours: nextCached.hours, viewingLongitude: nextCached.longitude, viewingLatitude: nextCached.latitude };
-              }
           } else { // previous
-              const prevCached = cachedEvents
+              potentialCachedEvent = cachedEvents
                   .filter(e => e.hours < elapsedHours)
                   .sort((a, b) => b.hours - a.hours)[0];
-              if (prevCached) {
-                  foundResult = { foundHours: prevCached.hours, viewingLongitude: prevCached.longitude, viewingLatitude: prevCached.latitude };
-              }
+          }
+          
+          if (potentialCachedEvent) {
+              startSearchHour = potentialCachedEvent.hours;
           }
       }
       
-      if (!foundResult) {
-          const params: EventSearchParams = {
-              startHours: direction === 'first' ? 0 : elapsedHours,
-              event: selectedEvent,
-              allBodiesData: [...initialStars, ...initialPlanets],
-              direction,
-              SEBAKA_YEAR_IN_DAYS,
-              HOURS_IN_SEBAKA_DAY,
-              signal: controller.signal
-          };
-          foundResult = await findNextEvent(params);
-      }
+      const params: EventSearchParams = {
+          startHours: startSearchHour,
+          event: selectedEvent,
+          allBodiesData: [...initialStars, ...initialPlanets],
+          direction,
+          SEBAKA_YEAR_IN_DAYS,
+          HOURS_IN_SEBAKA_DAY,
+          signal: controller.signal
+      };
+
+      foundResult = await findNextEvent(params);
 
       if (controller.signal.aborted) {
           console.log("Event search cancelled.");
@@ -325,7 +325,6 @@ const handleGoToEvent = useCallback(async (direction: 'next' | 'previous' | 'fir
       setEventButtonLoading(null);
   } finally {
        if (!controller.signal.aborted) {
-          // The onGoToTimeComplete callback will set isJumpingTime to false
           setEventButtonLoading(null);
        }
   }
