@@ -1,6 +1,4 @@
 
-#!/usr/bin/env -S npx tsx
-
 import { findNextEvent, type EventSearchParams } from '../src/components/CelestialSymphony/utils/eventSolver';
 import { celestialEvents } from '../src/components/CelestialSymphony/constants/events';
 import { SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY } from '../src/components/CelestialSymphony/constants/config';
