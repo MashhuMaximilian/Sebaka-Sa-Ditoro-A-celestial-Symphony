@@ -39,7 +39,7 @@ async function searchLongTerm() {
             continue;
         }
 
-        let currentHour = 0;
+        let currentHour = 0; // Reset search time for each event type
         const maxHours = maxYears * SEBAKA_YEAR_IN_DAYS * HOURS_IN_SEBAKA_DAY;
         
         console.log(`\nSearching for "${eventName}"...`);

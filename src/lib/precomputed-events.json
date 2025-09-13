@@ -1,4 +1,2954 @@
-
-[]
-
-    
+[
+  {
+    "name": "Great Conjunction",
+    "hours": 18047046.465888366,
+    "year": 2320,
+    "day": 281,
+    "latitude": 7.869404513836468e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 19603656,
+    "year": 2521,
+    "day": 16,
+    "latitude": -0.027757718961252963,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 19773988.47829265,
+    "year": 2542,
+    "day": 309,
+    "latitude": 8.757048998466055e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 21110880.61692817,
+    "year": 2714,
+    "day": 285,
+    "latitude": 1.806089585960182e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 26296800,
+    "year": 3381,
+    "day": 257,
+    "latitude": -0.03205222330928761,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 27070654.401678406,
+    "year": 3481,
+    "day": 100,
+    "latitude": 1.765261134253642e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 35146916.07260149,
+    "year": 4519,
+    "day": 299,
+    "latitude": 7.720759146086328e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 36873642.08500553,
+    "year": 4741,
+    "day": 318,
+    "latitude": 1.1158023635136324e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 39937188.23604533,
+    "year": 5135,
+    "day": 310,
+    "latitude": 7.706537821449074e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 40550065.46625321,
+    "year": 5214,
+    "day": 251,
+    "latitude": 9.920438536582198e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 41663914.248449504,
+    "year": 5358,
+    "day": 5,
+    "latitude": 1.1215389025222104e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 42277127.47865745,
+    "year": 5436,
+    "day": 283,
+    "latitude": 7.567943781686595e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 45340313.629697286,
+    "year": 5830,
+    "day": 260,
+    "latitude": 9.731220099925741e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 47067375.642101474,
+    "year": 6052,
+    "day": 293,
+    "latitude": 7.492394212187705e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 50130561.79314128,
+    "year": 6446,
+    "day": 270,
+    "latitude": 9.581771898630998e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 51857647.80554548,
+    "year": 6668,
+    "day": 304,
+    "latitude": 7.465750523741327e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 51858000,
+    "year": 6668,
+    "day": 319,
+    "latitude": -0.0275223897954835,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 54920785.95658528,
+    "year": 7062,
+    "day": 279,
+    "latitude": 9.498552412872063e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 56647871.96898948,
+    "year": 7284,
+    "day": 312,
+    "latitude": 7.489770312329098e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 57650055.072966106,
+    "year": 7413,
+    "day": 274,
+    "latitude": 8.416620816976609e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 62440327.23641022,
+    "year": 8029,
+    "day": 285,
+    "latitude": 8.290524288781354e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 64167269.24881436,
+    "year": 8251,
+    "day": 313,
+    "latitude": 7.675239353982326e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 65893779.261218585,
+    "year": 8473,
+    "day": 323,
+    "latitude": 1.9778635094289223e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 67230599.3998541,
+    "year": 8645,
+    "day": 295,
+    "latitude": 8.228946320972248e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 68957493.41225812,
+    "year": 8867,
+    "day": 321,
+    "latitude": 7.68955965043037e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 70684051.42466235,
+    "year": 9090,
+    "day": 9,
+    "latitude": 1.9957207446008647e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 72020871.56329793,
+    "year": 9261,
+    "day": 306,
+    "latitude": 8.223845073477339e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 73747717.57570213,
+    "year": 9484,
+    "day": 6,
+    "latitude": 7.751111915683991e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 75474323.58810635,
+    "year": 9706,
+    "day": 20,
+    "latitude": 2.0322506005299026e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 76644041.2094125,
+    "year": 9856,
+    "day": 158,
+    "latitude": 2.1585488029002805e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 76811143.72674204,
+    "year": 9877,
+    "day": 317,
+    "latitude": 8.264783782245211e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 77419152,
+    "year": 9956,
+    "day": 55,
+    "latitude": -0.03035867617006464,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 77813758.83071862,
+    "year": 10006,
+    "day": 296,
+    "latitude": 1.573818772274671e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 78538205.73914622,
+    "year": 10100,
+    "day": 26,
+    "latitude": 7.802394718383068e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 79540484.84312285,
+    "year": 10228,
+    "day": 315,
+    "latitude": 7.689337311112082e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 80264595.75155045,
+    "year": 10322,
+    "day": 31,
+    "latitude": 2.0614966415241944e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 82604030.99416247,
+    "year": 10622,
+    "day": 307,
+    "latitude": 1.6065448736857344e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 84112344,
+    "year": 10816,
+    "day": 298,
+    "latitude": -0.02788333231360632,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 84330757.00656678,
+    "year": 10845,
+    "day": 2,
+    "latitude": 7.671354207524277e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 84887765.39766502,
+    "year": 10916,
+    "day": 207,
+    "latitude": 1.0519957563597066e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 86057483.01897106,
+    "year": 11067,
+    "day": 21,
+    "latitude": 8.538575339148216e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 87394303.15760657,
+    "year": 11238,
+    "day": 318,
+    "latitude": 1.6250265051007053e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 87612096,
+    "year": 11266,
+    "day": 321,
+    "latitude": -0.03328106135468542,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 89121029.17001078,
+    "year": 11461,
+    "day": 13,
+    "latitude": 7.692140848659909e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 90847755.182415,
+    "year": 11683,
+    "day": 32,
+    "latitude": 8.626190079811603e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 92184575.32105058,
+    "year": 11855,
+    "day": 4,
+    "latitude": 1.6813554998462714e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 93911301.33345476,
+    "year": 12077,
+    "day": 23,
+    "latitude": 7.771513787880215e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 95638027.34585899,
+    "year": 12299,
+    "day": 42,
+    "latitude": 8.766924257787738e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 96640642.44983573,
+    "year": 12428,
+    "day": 22,
+    "latitude": 7.601635311380916e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 103157640.62568338,
+    "year": 13266,
+    "day": 52,
+    "latitude": 1.0286480453448861e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 107947912.78912756,
+    "year": 13882,
+    "day": 62,
+    "latitude": 1.0442989327277515e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 112738184.95257156,
+    "year": 14498,
+    "day": 73,
+    "latitude": 1.0694586115893889e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 130012632,
+    "year": 16719,
+    "day": 238,
+    "latitude": -0.035537694546370666,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 135238848,
+    "year": 17391,
+    "day": 269,
+    "latitude": -0.043031770692200794,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 140372040,
+    "year": 18051,
+    "day": 312,
+    "latitude": -0.039855731736439894,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 145427712,
+    "year": 18702,
+    "day": 41,
+    "latitude": -0.029791063120547998,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 147885990.43086103,
+    "year": 19018,
+    "day": 85,
+    "latitude": 1.1098792431887744e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 154235574.0893828,
+    "year": 19834,
+    "day": 267,
+    "latitude": 8.404779499425765e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 155573976,
+    "year": 20006,
+    "day": 306,
+    "latitude": -0.027897938722627986,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 155962468.1017875,
+    "year": 20056,
+    "day": 293,
+    "latitude": 7.8305000893085e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 157689074.11419174,
+    "year": 20278,
+    "day": 307,
+    "latitude": 1.8485510347131847e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 159025798.25282732,
+    "year": 20450,
+    "day": 275,
+    "latitude": 8.288657481367321e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 160752716.2652315,
+    "year": 20672,
+    "day": 302,
+    "latitude": 7.793316788441992e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 162479154.27763572,
+    "year": 20894,
+    "day": 309,
+    "latitude": 1.978616498823195e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 164985572.03757727,
+    "year": 21217,
+    "day": 91,
+    "latitude": 9.310101355281195e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 165542916.42867562,
+    "year": 21288,
+    "day": 310,
+    "latitude": 7.82388046704766e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 167269882.44107974,
+    "year": 21511,
+    "day": 15,
+    "latitude": 1.586745032429698e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 169608741.68369186,
+    "year": 21811,
+    "day": 267,
+    "latitude": 1.444598179317404e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 173062193.7085002,
+    "year": 22255,
+    "day": 305,
+    "latitude": 8.787949759020207e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 174399013.84713596,
+    "year": 22427,
+    "day": 278,
+    "latitude": 1.4536352351589359e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 176125739.85954013,
+    "year": 22649,
+    "day": 297,
+    "latitude": 7.646073415134686e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 177852465.87194437,
+    "year": 22871,
+    "day": 316,
+    "latitude": 8.767923243090808e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 179189286.01057994,
+    "year": 23043,
+    "day": 289,
+    "latitude": 1.453239019316178e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 179362296,
+    "year": 23066,
+    "day": 46,
+    "latitude": -0.05186141646764286,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 180359003.63188607,
+    "year": 23194,
+    "day": 103,
+    "latitude": 1.614825189410331e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 180916012.02298427,
+    "year": 23265,
+    "day": 308,
+    "latitude": 7.63734853030341e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 181135080,
+    "year": 23294,
+    "day": 40,
+    "latitude": -0.028879995161237338,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 182642738.03538838,
+    "year": 23488,
+    "day": 3,
+    "latitude": 8.799952559027834e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 183256023.26559645,
+    "year": 23566,
+    "day": 284,
+    "latitude": 7.891030471163488e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 183980014.17402402,
+    "year": 23659,
+    "day": 318,
+    "latitude": 1.955022169986647e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 186876001.8077341,
+    "year": 24032,
+    "day": 133,
+    "latitude": 9.187704053200679e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 187828296,
+    "year": 24154,
+    "day": 284,
+    "latitude": -0.028625610552595267,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 188046295.42904037,
+    "year": 24182,
+    "day": 295,
+    "latitude": 7.814968241573244e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 188602991.82013857,
+    "year": 24254,
+    "day": 162,
+    "latitude": 1.0851929243668225e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 192836519.59248406,
+    "year": 24798,
+    "day": 303,
+    "latitude": 7.791743939608108e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 193054632,
+    "year": 24826,
+    "day": 320,
+    "latitude": -0.030906794139959587,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 194952623.47865722,
+    "year": 25071,
+    "day": 22,
+    "latitude": 1.0576095555989662e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 197626863.75592822,
+    "year": 25414,
+    "day": 317,
+    "latitude": 7.831870140375844e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 198629070.85990506,
+    "year": 25543,
+    "day": 280,
+    "latitude": 1.0155125723796518e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 199742895.64210132,
+    "year": 25687,
+    "day": 33,
+    "latitude": 1.0680508788575211e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 201644664,
+    "year": 25931,
+    "day": 218,
+    "latitude": -0.033853697062358815,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 202249817.4020428,
+    "year": 26009,
+    "day": 160,
+    "latitude": 1.3472469195950736e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 203419151.02334905,
+    "year": 26159,
+    "day": 282,
+    "latitude": 9.777875218915049e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 203976159.41444725,
+    "year": 26231,
+    "day": 163,
+    "latitude": 9.01472706636748e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 204533167.8055454,
+    "year": 26303,
+    "day": 44,
+    "latitude": 1.0915649427566492e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 205146141.0357533,
+    "year": 26381,
+    "day": 312,
+    "latitude": 7.540460847212944e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 205702885.42685148,
+    "year": 26453,
+    "day": 182,
+    "latitude": 1.4120133328963472e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 208209423.18679288,
+    "year": 26775,
+    "day": 293,
+    "latitude": 9.728128833380087e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 209936365.1991972,
+    "year": 26997,
+    "day": 321,
+    "latitude": 7.551885699584729e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 211663475.21160144,
+    "year": 27220,
+    "day": 32,
+    "latitude": 1.0034201133375081e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 212999695.350237,
+    "year": 27391,
+    "day": 304,
+    "latitude": 9.726973337284832e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 214726637.36264122,
+    "year": 27614,
+    "day": 8,
+    "latitude": 7.609845221877686e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 216453699.37504545,
+    "year": 27836,
+    "day": 41,
+    "latitude": 1.0277621497332142e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 220519308.63006163,
+    "year": 28358,
+    "day": 313,
+    "latitude": 8.461074502024169e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 221076317.02116013,
+    "year": 28430,
+    "day": 194,
+    "latitude": 9.198493888703763e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 223972760.6548702,
+    "year": 28803,
+    "day": 27,
+    "latitude": 1.883488092709033e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 225309580.79350588,
+    "year": 28974,
+    "day": 324,
+    "latitude": 8.433291798318758e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 227036306.80591008,
+    "year": 29197,
+    "day": 19,
+    "latitude": 7.82102124762796e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 227593699.19700834,
+    "year": 29268,
+    "day": 239,
+    "latitude": 1.5466965108442596e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 228763032.81831437,
+    "year": 29419,
+    "day": 38,
+    "latitude": 1.8934662781153934e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 230099852.9569499,
+    "year": 29591,
+    "day": 10,
+    "latitude": 8.483874955330577e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 231826578.9693541,
+    "year": 29813,
+    "day": 29,
+    "latitude": 7.907351481653206e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 233553304.98175833,
+    "year": 30035,
+    "day": 48,
+    "latitude": 1.912283037845047e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 233728296,
+    "year": 30057,
+    "day": 212,
+    "latitude": -0.04219439384988753,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 234890125.1203939,
+    "year": 30207,
+    "day": 21,
+    "latitude": 8.602483964709459e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 238176474.6278727,
+    "year": 30629,
+    "day": 224,
+    "latitude": 9.786180725186969e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 238343577.14520246,
+    "year": 30651,
+    "day": 59,
+    "latitude": 1.966498462956045e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 240683012.38781443,
+    "year": 30952,
+    "day": 11,
+    "latitude": 1.9093217407801495e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 242361312,
+    "year": 31167,
+    "day": 281,
+    "latitude": -0.03225237932379057,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 244136464.41262278,
+    "year": 31396,
+    "day": 49,
+    "latitude": 8.632038098986052e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 245473284.55125853,
+    "year": 31568,
+    "day": 22,
+    "latitude": 1.9772770041211909e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 245690448,
+    "year": 31595,
+    "day": 323,
+    "latitude": -0.03944460640572191,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 250870176,
+    "year": 32262,
+    "day": 37,
+    "latitude": -0.028849421515340968,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 261187008,
+    "year": 33588,
+    "day": 281,
+    "latitude": -0.036589565029017466,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 284074350.05436414,
+    "year": 36532,
+    "day": 64,
+    "latitude": 1.4700973441530724e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 284851032,
+    "year": 36632,
+    "day": 26,
+    "latitude": -0.028013494006174207,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 290424125.7128813,
+    "year": 37348,
+    "day": 254,
+    "latitude": 9.900742065934766e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 291544224,
+    "year": 37492,
+    "day": 269,
+    "latitude": -0.029947428366675508,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 292150971.72528356,
+    "year": 37570,
+    "day": 278,
+    "latitude": 7.571365104100506e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 293877865.73768777,
+    "year": 37792,
+    "day": 304,
+    "latitude": 1.051680237089476e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 295214349.87632316,
+    "year": 37964,
+    "day": 262,
+    "latitude": 9.699059154532487e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 296770536,
+    "year": 38164,
+    "day": 304,
+    "latitude": -0.03285432305946965,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 296941219.88872755,
+    "year": 38186,
+    "day": 287,
+    "latitude": 7.49284188606231e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 298668113.90113175,
+    "year": 38408,
+    "day": 313,
+    "latitude": 1.0462697649155233e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 300004550.03976715,
+    "year": 38580,
+    "day": 270,
+    "latitude": 9.516817060407801e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 301174123.66107315,
+    "year": 38731,
+    "day": 78,
+    "latitude": 1.1080872547860258e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 301731420.05217105,
+    "year": 38802,
+    "day": 295,
+    "latitude": 7.469174433625352e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 303458362.0645758,
+    "year": 39024,
+    "day": 323,
+    "latitude": 1.0568209380367097e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 306521644.2156161,
+    "year": 39418,
+    "day": 304,
+    "latitude": 7.491325428822044e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 306959232,
+    "year": 39475,
+    "day": 69,
+    "latitude": -0.030701448410449212,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 307691745.8369214,
+    "year": 39569,
+    "day": 134,
+    "latitude": 9.154119530752976e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 308248586.22801924,
+    "year": 39641,
+    "day": 8,
+    "latitude": 1.0749714172141313e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 308685816,
+    "year": 39697,
+    "day": 82,
+    "latitude": -0.03246138142817555,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 309250745.3319961,
+    "year": 39769,
+    "day": 292,
+    "latitude": 7.839844644303754e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 312314291.48303676,
+    "year": 40163,
+    "day": 284,
+    "latitude": 8.191325361997584e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 314041017.4954404,
+    "year": 40385,
+    "day": 303,
+    "latitude": 7.780103004922026e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 315767743.5078446,
+    "year": 40607,
+    "day": 322,
+    "latitude": 1.9537145969447855e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 317104563.64648,
+    "year": 40779,
+    "day": 295,
+    "latitude": 8.143287623380345e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 317105400,
+    "year": 40780,
+    "day": 6,
+    "latitude": -0.027597522142679746,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 318831289.6588844,
+    "year": 41001,
+    "day": 314,
+    "latitude": 7.768325198764224e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 320558015.67128867,
+    "year": 41224,
+    "day": 8,
+    "latitude": 1.9600648868918737e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 321894835.809924,
+    "year": 41395,
+    "day": 305,
+    "latitude": 8.145736660635945e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 322897762.91390055,
+    "year": 41524,
+    "day": 298,
+    "latitude": 1.885612672626915e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 323064793.4312296,
+    "year": 41546,
+    "day": 130,
+    "latitude": 1.0174005875579552e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 323621561.8223279,
+    "year": 41617,
+    "day": 324,
+    "latitude": 7.811455984188869e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 324791711.4436343,
+    "year": 41768,
+    "day": 156,
+    "latitude": 9.434435617841315e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 325348287.8347321,
+    "year": 41840,
+    "day": 19,
+    "latitude": 1.9732163557521987e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 327687723.0773451,
+    "year": 42140,
+    "day": 296,
+    "latitude": 1.616598810540996e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 329414449.08974904,
+    "year": 42362,
+    "day": 315,
+    "latitude": 7.681393644760043e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 331141175.1021533,
+    "year": 42585,
+    "day": 9,
+    "latitude": 8.560235132250594e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 331308781.61948204,
+    "year": 42606,
+    "day": 189,
+    "latitude": 2.0726384211221118e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 332477995.2407886,
+    "year": 42756,
+    "day": 306,
+    "latitude": 1.6552195057883297e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 333815439.3794242,
+    "year": 42928,
+    "day": 305,
+    "latitude": 8.755753563811539e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 335931447.26559746,
+    "year": 43201,
+    "day": 20,
+    "latitude": 8.597676811330364e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 337268267.4042327,
+    "year": 43372,
+    "day": 317,
+    "latitude": 1.6776429442370982e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 340164711.03794366,
+    "year": 43745,
+    "day": 150,
+    "latitude": 9.271297666237102e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 340721719.4290408,
+    "year": 43817,
+    "day": 31,
+    "latitude": 8.709476030108413e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 341891605.05034715,
+    "year": 43967,
+    "day": 176,
+    "latitude": 1.0516413571685623e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 342058611.5676761,
+    "year": 43989,
+    "day": 7,
+    "latitude": 1.8304907954344422e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 344350632,
+    "year": 44283,
+    "day": 252,
+    "latitude": -0.0309650628283672,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 345511991.592486,
+    "year": 44433,
+    "day": 41,
+    "latitude": 8.868535099473736e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 346125012.82269275,
+    "year": 44511,
+    "day": 312,
+    "latitude": 7.934971097558084e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 349188630.9737336,
+    "year": 44905,
+    "day": 307,
+    "latitude": 1.5612934574796463e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 350915284.9861373,
+    "year": 45127,
+    "day": 323,
+    "latitude": 7.944673698476601e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 353031604.87231034,
+    "year": 45400,
+    "day": 51,
+    "latitude": 1.0404734115513251e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 354586080,
+    "year": 45600,
+    "day": 21,
+    "latitude": -0.028783249097168135,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 357264868.64465714,
+    "year": 45944,
+    "day": 181,
+    "latitude": 8.88657892801847e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 361498132.417003,
+    "year": 46488,
+    "day": 311,
+    "latitude": 1.0257168865812502e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 366288404.5804472,
+    "year": 47104,
+    "day": 321,
+    "latitude": 1.0280055115362425e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 368015130.59285015,
+    "year": 47327,
+    "day": 16,
+    "latitude": 7.751325571302777e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 369570504,
+    "year": 47527,
+    "day": 24,
+    "latitude": -0.04943184658753155,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 369742192.60525435,
+    "year": 47549,
+    "day": 49,
+    "latitude": 1.052595646561847e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 371078676.74388975,
+    "year": 47721,
+    "day": 8,
+    "latitude": 1.0403157083405699e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 372805690.75629413,
+    "year": 47943,
+    "day": 39,
+    "latitude": 7.832333934645942e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 380882024.42721987,
+    "year": 48981,
+    "day": 241,
+    "latitude": 1.6434927058520064e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 388567008,
+    "year": 49970,
+    "day": 13,
+    "latitude": -0.0276315763850386,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 395260104,
+    "year": 50830,
+    "day": 252,
+    "latitude": -0.03213826460928027,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 400486416,
+    "year": 51502,
+    "day": 287,
+    "latitude": -0.03594810531177558,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 403892928,
+    "year": 51940,
+    "day": 313,
+    "latitude": -0.03708870478365863,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 405836528.34842384,
+    "year": 52190,
+    "day": 296,
+    "latitude": 8.300190397413648e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 407222064,
+    "year": 52369,
+    "day": 31,
+    "latitude": -0.033028897213403005,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 412401648,
+    "year": 53035,
+    "day": 63,
+    "latitude": -0.03023983242358903,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 419482969.93032336,
+    "year": 53945,
+    "day": 278,
+    "latitude": 1.7450317293588376e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 420821376,
+    "year": 54117,
+    "day": 317,
+    "latitude": -0.027501534834056908,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 424273218.09376353,
+    "year": 54561,
+    "day": 287,
+    "latitude": 1.750048077837748e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 426612773.33637464,
+    "year": 54862,
+    "day": 245,
+    "latitude": 1.3967966391419242e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 426780744,
+    "year": 54884,
+    "day": 116,
+    "latitude": -0.043287716720330854,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 427726502.1185704,
+    "year": 55005,
+    "day": 318,
+    "latitude": 9.231762026551114e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 428339475.3487781,
+    "year": 55084,
+    "day": 263,
+    "latitude": 7.837041803155356e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 429063802.2572058,
+    "year": 55177,
+    "day": 311,
+    "latitude": 1.9641830217626396e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 429112920,
+    "year": 55184,
+    "day": 90,
+    "latitude": -0.0343464764006563,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 431402997.4998186,
+    "year": 55478,
+    "day": 253,
+    "latitude": 1.3571614238089607e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 433129723.51222265,
+    "year": 55700,
+    "day": 272,
+    "latitude": 7.713649460401083e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 436193173.66326296,
+    "year": 56094,
+    "day": 260,
+    "latitude": 1.3018239656310675e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 437919947.67566663,
+    "year": 56316,
+    "day": 281,
+    "latitude": 7.641967567990007e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 440983373.82670695,
+    "year": 56710,
+    "day": 268,
+    "latitude": 1.256940593160616e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 442710171.8391106,
+    "year": 56932,
+    "day": 290,
+    "latitude": 7.616148334544404e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 442885680,
+    "year": 56955,
+    "day": 151,
+    "latitude": -0.0599397693212542,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 444613344,
+    "year": 57177,
+    "day": 209,
+    "latitude": -0.038010133617114424,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 445773981.990151,
+    "year": 57326,
+    "day": 292,
+    "latitude": 1.48362739330267e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 447500420.0025546,
+    "year": 57548,
+    "day": 299,
+    "latitude": 7.638329737534384e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 448502843.10653096,
+    "year": 57677,
+    "day": 271,
+    "latitude": 9.616046201696164e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 450229569.1189355,
+    "year": 57899,
+    "day": 290,
+    "latitude": 7.510097426506375e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 451956631.1313397,
+    "year": 58121,
+    "day": 323,
+    "latitude": 1.0498745480018308e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 453293115.26997507,
+    "year": 58293,
+    "day": 282,
+    "latitude": 9.530614417732664e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 455019841.2823795,
+    "year": 58515,
+    "day": 301,
+    "latitude": 7.460098977581931e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 456746855.2947837,
+    "year": 58738,
+    "day": 7,
+    "latitude": 1.0608076386598287e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 458083387.4334191,
+    "year": 58909,
+    "day": 292,
+    "latitude": 9.508133347457513e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 458302008,
+    "year": 58938,
+    "day": 6,
+    "latitude": -0.029279620512362648,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 459253657.0547251,
+    "year": 59060,
+    "day": 130,
+    "latitude": 1.3231687873001154e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 459810113.445823,
+    "year": 59131,
+    "day": 311,
+    "latitude": 7.460013638844238e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 461537079.45822775,
+    "year": 59354,
+    "day": 16,
+    "latitude": 1.0791617859412186e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 462873659.5968631,
+    "year": 59525,
+    "day": 303,
+    "latitude": 9.50785579169152e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 464600385.60926753,
+    "year": 59747,
+    "day": 322,
+    "latitude": 7.511383343324508e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 466327327.62167174,
+    "year": 59970,
+    "day": 26,
+    "latitude": 1.1047209101096705e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 467329726.72564805,
+    "year": 60098,
+    "day": 320,
+    "latitude": 7.725677237998152e-17,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 468490824,
+    "year": 60248,
+    "day": 100,
+    "latitude": -0.03489272833362452,
+    "longitude": 188
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 470217552,
+    "year": 60470,
+    "day": 119,
+    "latitude": -0.04102963730347781,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 470393272.8766887,
+    "year": 60492,
+    "day": 312,
+    "latitude": 8.301616406343032e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 472119998.8890924,
+    "year": 60715,
+    "day": 7,
+    "latitude": 7.718535640474185e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 473846724.9014966,
+    "year": 60937,
+    "day": 26,
+    "latitude": 1.7832315510749424e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 475183545.040132,
+    "year": 61108,
+    "day": 323,
+    "latitude": 8.285645237997823e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 476353358.66143805,
+    "year": 61259,
+    "day": 141,
+    "latitude": 1.0497626195927866e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 476910271.0525359,
+    "year": 61331,
+    "day": 18,
+    "latitude": 7.766310247929125e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 478636997.06494063,
+    "year": 61553,
+    "day": 37,
+    "latitude": 1.816792655875619e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 479973817.20357597,
+    "year": 61725,
+    "day": 10,
+    "latitude": 8.344715322154403e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 481700543.2159804,
+    "year": 61947,
+    "day": 28,
+    "latitude": 7.85941041218919e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 483427269.2283846,
+    "year": 62169,
+    "day": 47,
+    "latitude": 1.8350306237880066e-16,
+    "longitude": 180
+  },
+  {
+    "name": "The Great Eclipse",
+    "hours": 483991224,
+    "year": 62241,
+    "day": 218,
+    "latitude": -0.034135651148482014,
+    "longitude": 188
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 484596986.84969044,
+    "year": 62319,
+    "day": 186,
+    "latitude": 2.1822818921968525e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 485766704.47099656,
+    "year": 62469,
+    "day": 324,
+    "latitude": 1.8848364645694986e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 486490935.379424,
+    "year": 62563,
+    "day": 44,
+    "latitude": 8.000901852145945e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 487103980.60963184,
+    "year": 62641,
+    "day": 316,
+    "latitude": 9.036638714483167e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 488217565.39182836,
+    "year": 62785,
+    "day": 59,
+    "latitude": 1.838098629226871e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 489220156.49580497,
+    "year": 62914,
+    "day": 38,
+    "latitude": 8.565344963850033e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 490556976.63444066,
+    "year": 63086,
+    "day": 11,
+    "latitude": 1.946868960251971e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 491894396.7730762,
+    "year": 63258,
+    "day": 8,
+    "latitude": 9.144827024872145e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 494010428.6592494,
+    "year": 63530,
+    "day": 48,
+    "latitude": 8.658004717931045e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 495347248.79788464,
+    "year": 63702,
+    "day": 21,
+    "latitude": 2.0149224507952964e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 498800700.822694,
+    "year": 64146,
+    "day": 59,
+    "latitude": 8.802634997748639e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 500137520.9613286,
+    "year": 64318,
+    "day": 32,
+    "latitude": 2.0613311350847699e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 503590972.98613805,
+    "year": 64762,
+    "day": 70,
+    "latitude": 9.003794268243526e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 508994074.37979084,
+    "year": 65457,
+    "day": 19,
+    "latitude": 8.256551954517665e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 543751901.9843199,
+    "year": 69926,
+    "day": 306,
+    "latitude": 1.0622586859443601e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 546815280.1353501,
+    "year": 70320,
+    "day": 291,
+    "latitude": 7.694009261179912e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 553332446.3111961,
+    "year": 71159,
+    "day": 3,
+    "latitude": 1.0557082103662563e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 562188255.729655,
+    "year": 72297,
+    "day": 283,
+    "latitude": 8.321869819922501e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 563914981.7420638,
+    "year": 72519,
+    "day": 302,
+    "latitude": 8.000286530394095e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 565641779.7544681,
+    "year": 72741,
+    "day": 324,
+    "latitude": 1.8790036142265295e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 568705253.905507,
+    "year": 73135,
+    "day": 313,
+    "latitude": 8.0063066715919e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 569318347.1357166,
+    "year": 73214,
+    "day": 262,
+    "latitude": 8.52595655139074e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 570432267.9179125,
+    "year": 73358,
+    "day": 20,
+    "latitude": 1.6612897496348576e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 572771823.1605239,
+    "year": 73658,
+    "day": 301,
+    "latitude": 1.9361503217838297e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 572938517.6778547,
+    "year": 73680,
+    "day": 119,
+    "latitude": 9.484146366528399e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 574108619.2991601,
+    "year": 73830,
+    "day": 273,
+    "latitude": 8.39493687377913e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 577561687.3239671,
+    "year": 74274,
+    "day": 295,
+    "latitude": 1.6831848072933281e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 578898843.462604,
+    "year": 74446,
+    "day": 282,
+    "latitude": 8.3138078257618e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 581015139.3487765,
+    "year": 74719,
+    "day": 9,
+    "latitude": 8.90156041999367e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 582351959.4874125,
+    "year": 74890,
+    "day": 305,
+    "latitude": 1.7254452996265812e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 583689091.6260481,
+    "year": 75062,
+    "day": 291,
+    "latitude": 8.29591388812656e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 585805411.5122205,
+    "year": 75335,
+    "day": 19,
+    "latitude": 8.955460350133886e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 586418408.7424294,
+    "year": 75413,
+    "day": 289,
+    "latitude": 7.764912422532004e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 587142375.6508569,
+    "year": 75506,
+    "day": 322,
+    "latitude": 1.9368611170403953e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 588311949.2721627,
+    "year": 75657,
+    "day": 130,
+    "latitude": 1.811596690662555e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 589481666.8934687,
+    "year": 75807,
+    "day": 269,
+    "latitude": 1.2855882253705867e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 591208440.9058727,
+    "year": 76029,
+    "day": 290,
+    "latitude": 7.679901106309876e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 591932935.8143009,
+    "year": 76123,
+    "day": 21,
+    "latitude": 2.02104835374774e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 592935598.9182774,
+    "year": 76252,
+    "day": 2,
+    "latitude": 8.339741101575606e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 594271939.0569127,
+    "year": 76423,
+    "day": 279,
+    "latitude": 1.2846839081922065e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 595998689.0693166,
+    "year": 76645,
+    "day": 299,
+    "latitude": 7.638163016191293e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 597725847.081721,
+    "year": 76868,
+    "day": 12,
+    "latitude": 8.387606270983038e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 599062211.2203567,
+    "year": 77039,
+    "day": 290,
+    "latitude": 1.2819224655706998e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 600788937.2327607,
+    "year": 77261,
+    "day": 309,
+    "latitude": 7.647872605686986e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 602516095.2451649,
+    "year": 77484,
+    "day": 22,
+    "latitude": 8.507009486969995e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 605579545.3962039,
+    "year": 77878,
+    "day": 10,
+    "latitude": 7.759035492478582e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 606581824.5001818,
+    "year": 78006,
+    "day": 299,
+    "latitude": 9.971195728843116e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 608308550.5125855,
+    "year": 78228,
+    "day": 318,
+    "latitude": 7.492577472960211e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 611372096.6636245,
+    "year": 78622,
+    "day": 310,
+    "latitude": 9.912139672474374e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 613098822.6760296,
+    "year": 78845,
+    "day": 5,
+    "latitude": 7.492013144476616e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 613655831.0671284,
+    "year": 78916,
+    "day": 209,
+    "latitude": 1.320417898542557e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 614825596.6884341,
+    "year": 79067,
+    "day": 26,
+    "latitude": 1.0958895357175996e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 616162368.8270695,
+    "year": 79238,
+    "day": 321,
+    "latitude": 9.975800298787879e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 617889094.8394735,
+    "year": 79461,
+    "day": 15,
+    "latitude": 7.538379287979547e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 619615820.8518778,
+    "year": 79683,
+    "day": 34,
+    "latitude": 1.1224103605179225e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 620952640.9905136,
+    "year": 79855,
+    "day": 7,
+    "latitude": 1.0114556467570605e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 622679367.0029175,
+    "year": 80077,
+    "day": 26,
+    "latitude": 7.633856099987251e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 624406381.0153217,
+    "year": 80299,
+    "day": 57,
+    "latitude": 1.0647490159148627e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 630198980.2827399,
+    "year": 81044,
+    "day": 35,
+    "latitude": 7.82404884619605e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 631925706.2951466,
+    "year": 81266,
+    "day": 54,
+    "latitude": 1.6538996732980675e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 634989252.4461856,
+    "year": 81660,
+    "day": 46,
+    "latitude": 7.909363007579172e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 636715978.4585906,
+    "year": 81882,
+    "day": 65,
+    "latitude": 1.6988053912478206e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 639779524.6096295,
+    "year": 82276,
+    "day": 57,
+    "latitude": 8.038745210003573e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 639995524.6096295,
+    "year": 82303,
+    "day": 309,
+    "latitude": 1.2189253548948453e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 639997804.6096295,
+    "year": 82304,
+    "day": 80,
+    "latitude": 1.2197293568045917e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 640167220.6096295,
+    "year": 82326,
+    "day": 11,
+    "latitude": 1.173080801546277e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 640215100.6096295,
+    "year": 82332,
+    "day": 62,
+    "latitude": 1.0244160140088625e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 640343020.6096295,
+    "year": 82348,
+    "day": 208,
+    "latitude": 1.2507140630548904e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 640561900.6096295,
+    "year": 82376,
+    "day": 256,
+    "latitude": 8.514030372447209e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 640602988.6096295,
+    "year": 82382,
+    "day": 24,
+    "latitude": 7.659673859401048e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 640730284.6096295,
+    "year": 82398,
+    "day": 144,
+    "latitude": 9.280774807234563e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 641287324.6096295,
+    "year": 82470,
+    "day": 26,
+    "latitude": 9.059890322679902e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 679940405.6077827,
+    "year": 87440,
+    "day": 291,
+    "latitude": 8.679708518557086e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 681277201.7464421,
+    "year": 87612,
+    "day": 263,
+    "latitude": 1.5515223271273265e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 683003783.758846,
+    "year": 87834,
+    "day": 275,
+    "latitude": 7.734483863888254e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 684730701.7712502,
+    "year": 88056,
+    "day": 302,
+    "latitude": 8.544356199821047e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 686067377.909886,
+    "year": 88228,
+    "day": 269,
+    "latitude": 1.4824660916363595e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 687794007.9222901,
+    "year": 88450,
+    "day": 284,
+    "latitude": 7.662407860761385e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 689520949.9346943,
+    "year": 88672,
+    "day": 312,
+    "latitude": 8.534861970472998e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 692026911.6946354,
+    "year": 88995,
+    "day": 75,
+    "latitude": 1.3813534187310381e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 693754045.7070402,
+    "year": 89217,
+    "day": 111,
+    "latitude": 8.963566738612188e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 694311174.098139,
+    "year": 89288,
+    "day": 321,
+    "latitude": 8.629323995995449e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 698376807.3531532,
+    "year": 89811,
+    "day": 270,
+    "latitude": 9.661692824794727e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 700103533.3655589,
+    "year": 90033,
+    "day": 289,
+    "latitude": 7.554568482486618e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 701830379.3779632,
+    "year": 90255,
+    "day": 313,
+    "latitude": 1.1295398065976605e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 703167079.5165989,
+    "year": 90427,
+    "day": 281,
+    "latitude": 9.549832282800823e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 704893805.5290029,
+    "year": 90649,
+    "day": 300,
+    "latitude": 7.511038396403144e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 706620603.5414071,
+    "year": 90871,
+    "day": 322,
+    "latitude": 1.1391450514942918e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 709127069.3013483,
+    "year": 91194,
+    "day": 106,
+    "latitude": 1.115515283547358e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 709684077.6924477,
+    "year": 91265,
+    "day": 310,
+    "latitude": 7.519243263165682e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 710297362.9226556,
+    "year": 91344,
+    "day": 268,
+    "latitude": 1.0263064239875196e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 710853795.3137537,
+    "year": 91416,
+    "day": 125,
+    "latitude": 9.063880555719182e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 711410803.7048519,
+    "year": 91488,
+    "day": 5,
+    "latitude": 1.1676319069034947e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 715087587.0860976,
+    "year": 91960,
+    "day": 277,
+    "latitude": 1.0080981932181925e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 715644403.4771978,
+    "year": 92032,
+    "day": 149,
+    "latitude": 9.096160297289186e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 717371249.4896013,
+    "year": 92254,
+    "day": 173,
+    "latitude": 1.3931455135079641e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 719877835.2495424,
+    "year": 92576,
+    "day": 286,
+    "latitude": 1.0007231008327292e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 721993963.1357156,
+    "year": 92849,
+    "day": 6,
+    "latitude": 7.865568919498631e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 723720689.14812,
+    "year": 93071,
+    "day": 25,
+    "latitude": 1.7385373641968356e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 726227226.9080611,
+    "year": 93393,
+    "day": 136,
+    "latitude": 9.876341583655485e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 726784235.2991605,
+    "year": 93465,
+    "day": 17,
+    "latitude": 7.918677953839696e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 727397328.5293684,
+    "year": 93543,
+    "day": 291,
+    "latitude": 8.586991025570282e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 728510961.3115644,
+    "year": 93687,
+    "day": 36,
+    "latitude": 1.7715810362172725e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 730850396.5541757,
+    "year": 93987,
+    "day": 312,
+    "latitude": 1.9037961581427578e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 731018099.0715066,
+    "year": 94009,
+    "day": 172,
+    "latitude": 1.0512718649845247e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 732187360.6928121,
+    "year": 94159,
+    "day": 291,
+    "latitude": 8.419276241087797e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 732744273.0839106,
+    "year": 94231,
+    "day": 168,
+    "latitude": 9.518767654206469e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 733914494.7052163,
+    "year": 94382,
+    "day": 3,
+    "latitude": 7.688421649296351e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 734471383.0963149,
+    "year": 94453,
+    "day": 203,
+    "latitude": 1.9462956201471498e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 735640668.7176206,
+    "year": 94603,
+    "day": 323,
+    "latitude": 1.9542170759661714e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 736977608.856256,
+    "year": 94775,
+    "day": 301,
+    "latitude": 8.371993632264055e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 738704766.86866,
+    "year": 94998,
+    "day": 14,
+    "latitude": 7.735113413961269e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 740430940.8810642,
+    "year": 95220,
+    "day": 10,
+    "latitude": 1.9922951856837912e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 741600658.5023707,
+    "year": 95370,
+    "day": 148,
+    "latitude": 1.9502074709498944e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 741767977.0197008,
+    "year": 95391,
+    "day": 316,
+    "latitude": 8.437859423164282e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 743495111.032104,
+    "year": 95614,
+    "day": 27,
+    "latitude": 7.807967021920199e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 745221213.0445082,
+    "year": 95836,
+    "day": 20,
+    "latitude": 2.05517443371942e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 747560648.28712,
+    "year": 96136,
+    "day": 297,
+    "latitude": 1.4087011869114803e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 748117800.6782193,
+    "year": 96208,
+    "day": 184,
+    "latitude": 9.11935855728143e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 749287374.299525,
+    "year": 96358,
+    "day": 316,
+    "latitude": 7.755976736271746e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 749844382.6906235,
+    "year": 96430,
+    "day": 196,
+    "latitude": 1.0315274168700352e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 750011557.2079532,
+    "year": 96452,
+    "day": 34,
+    "latitude": 2.1474077552193764e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 752350920.450564,
+    "year": 96752,
+    "day": 308,
+    "latitude": 1.4275754686143191e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 754077646.4629686,
+    "year": 96975,
+    "day": 2,
+    "latitude": 7.754558676516218e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 755804588.4753729,
+    "year": 97197,
+    "day": 30,
+    "latitude": 8.633063693278162e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 757141192.6140087,
+    "year": 97368,
+    "day": 318,
+    "latitude": 1.4599332898321615e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 758867918.6264126,
+    "year": 97591,
+    "day": 13,
+    "latitude": 7.810055251115691e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 760594812.6388168,
+    "year": 97813,
+    "day": 39,
+    "latitude": 8.797830572064173e-17,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 766944540.2973326,
+    "year": 98629,
+    "day": 227,
+    "latitude": 1.1824543056039038e-16,
+    "longitude": 180
+  },
+  {
+    "name": "Great Conjunction",
+    "hours": 771177804.0696799,
+    "year": 99174,
+    "day": 33,
+    "latitude": 7.667849754785687e-17,
+    "longitude": 180
+  }
+]
