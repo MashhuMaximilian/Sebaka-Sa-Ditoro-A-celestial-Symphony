@@ -14,6 +14,7 @@ export interface EventSearchParams {
     SEBAKA_YEAR_IN_DAYS: number;
     HOURS_IN_SEBAKA_DAY: number;
     signal: AbortSignal;
+    disableCache?: boolean;
 }
 
 interface EventSearchResult {
@@ -370,7 +371,7 @@ function checkEventConditions(
 }
 
 async function findEventWithCandidates(params: EventSearchParams): Promise<EventSearchResult | null> {
-    const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY, signal } = params;
+    const { startHours, event, allBodiesData, direction, SEBAKA_YEAR_IN_DAYS, HOURS_IN_SEBAKA_DAY, signal, disableCache } = params;
     
     if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
 
@@ -383,7 +384,10 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
     let currentSearchStart = startHours;
 
     const positionCache: { [hours: number]: { [name: string]: THREE.Vector3 } } = {};
-    const getCachedPositions = (hours: number): { [name: string]: THREE.Vector3 } => {
+    const getPositions = (hours: number): { [name: string]: THREE.Vector3 } => {
+        if (disableCache) {
+            return calculateBodyPositions(hours, processedBodyData);
+        }
         const roundedHours = Math.round(hours / HOURS_IN_SEBAKA_DAY) * HOURS_IN_SEBAKA_DAY;
         if (!positionCache[roundedHours]) {
             positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
@@ -391,12 +395,12 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
         return positionCache[roundedHours];
     };
 
-    if (direction !== 'first' && checkEventConditions(event, getCachedPositions(startHours), processedBodyData, sebakaTilt).met) {
+    if (direction !== 'first' && checkEventConditions(event, getPositions(startHours), processedBodyData, sebakaTilt).met) {
         const escapeDistance = event.type === 'occultation' ? 30 : 10;
         currentSearchStart += HOURS_IN_SEBAKA_DAY * escapeDistance * timeMultiplier;
         let escapeCount = 0;
         const maxEscapeDays = 365 * (event.type === 'occultation' ? 10 : 2);
-        while (checkEventConditions(event, getCachedPositions(currentSearchStart), processedBodyData, sebakaTilt).met && escapeCount < maxEscapeDays) {
+        while (checkEventConditions(event, getPositions(currentSearchStart), processedBodyData, sebakaTilt).met && escapeCount < maxEscapeDays) {
             currentSearchStart += HOURS_IN_SEBAKA_DAY * escapeDistance * timeMultiplier;
             escapeCount += escapeDistance;
         }
@@ -421,7 +425,7 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
             if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
             if (iterationCount % 500 === 0) await yieldToMain();
 
-            const bodyPositions = getCachedPositions(currentHours);
+            const bodyPositions = getPositions(currentHours);
             const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
             if (result.met) {
@@ -433,7 +437,7 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
                                     event.type === 'occultation' ? 1 : 2;
 
                 while (durationDays < stabilityDays && isStable) {
-                    const durationPositions = getCachedPositions(durationCheckHours);
+                    const durationPositions = getPositions(durationCheckHours);
                     if (!checkEventConditions(event, durationPositions, processedBodyData, sebakaTilt).met) {
                         isStable = false;
                         break;
@@ -487,7 +491,7 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
         if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
         if (iterationCount % 500 === 0) await yieldToMain();
 
-        const bodyPositions = getCachedPositions(currentHours);
+        const bodyPositions = getPositions(currentHours);
         const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (result.met) {
@@ -498,7 +502,7 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
                                 event.type === 'occultation' ? 1 : 2;
 
             while (durationDays < stabilityDays && isStable) {
-                const durationPositions = getCachedPositions(durationCheckHours);
+                const durationPositions = getPositions(durationCheckHours);
                 if (!checkEventConditions(event, durationPositions, processedBodyData, sebakaTilt).met) {
                     isStable = false;
                     break;

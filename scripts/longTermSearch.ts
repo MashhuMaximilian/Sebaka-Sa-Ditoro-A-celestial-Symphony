@@ -28,7 +28,7 @@ async function searchLongTerm() {
     }
     
     const results: PrecomputedEvent[] = [...existingResults];
-    const maxYears = 100000;
+    const maxYears = 1000000;
     
     console.log(`🔍 Starting ${maxYears}-year search for ${PRIORITY_EVENTS.length} priority events...`);
     
@@ -52,7 +52,8 @@ async function searchLongTerm() {
                 direction: 'next',
                 SEBAKA_YEAR_IN_DAYS,
                 HOURS_IN_SEBAKA_DAY,
-                signal: new AbortController().signal // A dummy signal for the script
+                signal: new AbortController().signal, // A dummy signal for the script
+                disableCache: true,
             });
 
             if (result && result.foundHours < maxHours) {

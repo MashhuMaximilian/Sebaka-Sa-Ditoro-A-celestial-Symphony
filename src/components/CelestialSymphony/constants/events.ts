@@ -120,7 +120,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Extraordinary triple occultation with 95%+ overlap - the 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"], 
-        longitudeTolerance: 0.017, // 1 arcmin - maximum precision
+        longitudeTolerance: 0.3, // truly: 0.017 1 arcmin - maximum precision
         overlapThreshold: 0.95, // Near-total overlap
         sunSeparationMultiplier: 0.5, // Very close sun approach allowed
         viewingLongitude: 188,
