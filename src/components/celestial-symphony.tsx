@@ -10,7 +10,7 @@ import { useInitializeScene } from "./CelestialSymphony/hooks/useInitializeScene
 import { useUpdateBodyMaterials } from "./CelestialSymphony/hooks/useUpdateBodyMaterials";
 import { useBodyData } from "./CelestialSymphony/hooks/useBodyData";
 import InfoPanel from "./info-panel";
-import { Sheet, SheetContent } from "./ui/sheet";
+import { Sheet, SheetContent, SheetDescription } from "./ui/sheet";
 
 export interface CelestialSymphonyProps {
   stars: StarData[];
@@ -136,6 +136,9 @@ const CelestialSymphony = (props: CelestialSymphonyProps) => {
       <div ref={mountRef} className="absolute inset-0 w-full h-full" />
       <Sheet open={props.isInfoPanelOpen} onOpenChange={props.setInfoPanelOpen}>
         <SheetContent side="left" className="w-[65vw] max-w-2xl p-0 bg-card/80 backdrop-blur-sm" withoutOverlay>
+            <SheetDescription className="sr-only">
+              Information panel for the selected celestial body.
+            </SheetDescription>
             {props.selectedBody && (
                 <InfoPanel 
                   data={props.selectedBody}

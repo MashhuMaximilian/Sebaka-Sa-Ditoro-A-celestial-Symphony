@@ -117,7 +117,7 @@ export const celestialEvents: CelestialEvent[] = [
         description: "Extremely rare occultation of all three, a 'Triple Cascade.'",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"],
-        longitudeTolerance: 0.1,
+        longitudeTolerance: 0.2,
         overlapThreshold: 0.9,
         sunSeparationMultiplier: 0.5, // Very close approach allowed
         viewingLongitude: 188,
