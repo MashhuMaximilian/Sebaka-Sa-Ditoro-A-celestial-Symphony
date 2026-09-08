@@ -10,7 +10,7 @@ import * as path from 'path';
 const PRIORITY_EVENTS = [
     "The Great Eclipse",
     "Great Conjunction", 
-    "Celestial Origin Alignment"
+    "Full Triune Alignment"
 ];
 
 const allBodiesData = [...initialStars, ...initialPlanets];

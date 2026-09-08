@@ -1,5 +1,7 @@
 
 
+import type * as THREE from 'three';
+
 interface CelestialBody {
     name: string;
     color: string;
@@ -19,13 +21,17 @@ interface CelestialBody {
     orbitRadius?: number;
     eccentric?: boolean;
     eccentricity?: number;
+    inclinationDeg?: number;
+    longitudeOfAscendingNodeDeg?: number;
+    weaveSizeMultiplier?: number;
+    maxApparentDiameterDeg?: number;
     rotation?: string;
     axialTilt?: string;
     moons?: string;
     rotationPeriodHours?: number;
     luminosity?: number;
     initialPhase?: number; // Starting angle in degrees
-    
+
     // Calculated properties
     radsPerHour?: number;
     initialPhaseRad?: number;
@@ -60,7 +66,7 @@ export interface MaterialProperties {
     specularIntensity?: number;
     shininess?: number;
     aoMapIntensity?: number;
-    
+
     // Character Blob properties
     noiseFrequency?: number;
     noiseSpeed?: number;
@@ -104,6 +110,11 @@ export interface CelestialEvent {
     allowSunOverlap?: boolean; // New field for special eclipse events
     viewingLongitude?: number; // Optimal longitude on Sebaka (degrees)
     visibilityCondition?: 'night' | 'twilight' | 'day';
+    eventRole?: 'core' | 'derived' | 'decorative';
+    durationDays?: number;
+    orderedBodies?: string[];
+    requiresBeacon?: boolean;
+    historicalRecurrenceYears?: number;
 }
 
 export interface PrecomputedEvent {
@@ -114,5 +125,3 @@ export interface PrecomputedEvent {
   latitude: number;
   longitude: number;
 }
-
-    

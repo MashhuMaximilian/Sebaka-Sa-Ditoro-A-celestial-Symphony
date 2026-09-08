@@ -19,19 +19,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-      // Increase timeout for long-running operations like event searching
-      executionTimeout: 120, 
-    },
-  },
-  // This is required to allow the Next.js dev server to accept requests from the
-  // Firebase Studio UI.
-  allowedDevOrigins: [
-    '6000-firebase-studio-1752436261754.cluster-6vyo4gb53jczovun3dxslzjahs.cloudworkstations.dev',
-    '9000-firebase-studio-1752436261754.cluster-6vyo4gb53jczovun3dxslzjahs.cloudworkstations.dev'
-  ],
 };
 
 export default nextConfig;

@@ -87,7 +87,9 @@ function generateCandidateWindows(params: EventSearchParams): CandidateWindow[] 
     const timeMultiplier = direction === 'previous' ? -1 : 1;
 
     // Calculate TRUE recurrence period from orbital mechanics
-    const trueRecurrence = calculateTrueRecurrencePeriod(event, allPlanets);
+    const trueRecurrence = event.historicalRecurrenceYears
+        ? event.historicalRecurrenceYears * SEBAKA_YEAR_IN_DAYS
+        : calculateTrueRecurrencePeriod(event, allPlanets);
 
     if (!trueRecurrence) {
         console.warn(`[EventSolver] Cannot calculate orbital recurrence for "${event.name}". Using broad search.`);
@@ -98,13 +100,13 @@ function generateCandidateWindows(params: EventSearchParams): CandidateWindow[] 
     // Window size scales with event tolerance and orbital period
     const baseWindowDays = 10; // Minimum window size
     const toleranceScaling = (event.longitudeTolerance / 360) * trueRecurrence * 0.5;
-    const windowSizeDays = baseWindowDays + toleranceScaling;
+    const windowSizeDays = event.durationDays ?? (baseWindowDays + toleranceScaling);
     const windowSizeHours = windowSizeDays * HOURS_IN_SEBAKA_DAY;
     const recurrenceHours = trueRecurrence * HOURS_IN_SEBAKA_DAY;
 
     const candidates: CandidateWindow[] = [];
     let currentCandidateHour = Math.floor(startHours / recurrenceHours) * recurrenceHours;
-    
+
     if (timeMultiplier > 0 && currentCandidateHour < startHours) {
         currentCandidateHour += recurrenceHours;
     } else if (timeMultiplier < 0 && currentCandidateHour > startHours) {
@@ -132,6 +134,27 @@ function generateCandidateWindows(params: EventSearchParams): CandidateWindow[] 
 
 function getApparentRadius(bodySize: number, distance: number): number {
     return THREE.MathUtils.radToDeg(Math.atan(bodySize / distance));
+}
+
+function getWeaveApparentRadius(body: ProcessedBodyData, distance: number): number {
+    const physicalRadius = getApparentRadius(body.size, distance);
+    const amplifiedRadius = physicalRadius * (body.weaveSizeMultiplier ?? 1);
+    const cap = body.maxApparentDiameterDeg;
+    return cap ? Math.min(amplifiedRadius, cap / 2) : amplifiedRadius;
+}
+
+function checkOccultationPair(
+    foreground: BodyVectorInfo,
+    background: BodyVectorInfo,
+    overlapThreshold: number,
+): boolean {
+    const separationAngleDeg = THREE.MathUtils.radToDeg(foreground.vec.angleTo(background.vec));
+    const maxSeparation = foreground.apparentRadius + background.apparentRadius * (1 - overlapThreshold);
+    return separationAngleDeg <= maxSeparation;
+}
+
+function occultationPairKey(first: BodyVectorInfo, second: BodyVectorInfo): string {
+    return [first.name, second.name].sort().join(' / ');
 }
 
 function checkSunPlanetSeparation(
@@ -186,6 +209,27 @@ function checkGenericEvent(
     optimalLatitude: number,
     longitude: number
 ): { met: boolean; viewingLatitude: number; viewingLongitude: number } {
+    const checkOrderedBodies = (): boolean => {
+        if (!event.orderedBodies || event.orderedBodies.length < 2) return true;
+        const orderedInfo = event.orderedBodies.map(name => primaryBodyInfo.find(info => info.name === name));
+        if (orderedInfo.some(info => !info)) return false;
+
+        const angles = (orderedInfo as BodyVectorInfo[]).map(info => Math.atan2(info.vec.z, info.vec.x));
+        const maxArc = THREE.MathUtils.degToRad(event.longitudeTolerance);
+        const isForward = (reverse: boolean) => {
+            const values = reverse ? [...angles].reverse() : angles;
+            const unwrapped = [values[0]];
+            for (let i = 1; i < values.length; i++) {
+                let next = values[i];
+                while (next < unwrapped[i - 1]) next += Math.PI * 2;
+                unwrapped.push(next);
+            }
+            return unwrapped[unwrapped.length - 1] - unwrapped[0] <= maxArc;
+        };
+
+        return isForward(false) || isForward(true);
+    };
+
     switch (event.type) {
         case 'conjunction': {
             if (primaryBodyInfo.length < 2) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
@@ -214,6 +258,9 @@ function checkGenericEvent(
 
         case 'cluster':
         case 'triangle': {
+            if (!checkOrderedBodies()) {
+                return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+            }
             const avgVector = new THREE.Vector3();
             primaryBodyInfo.forEach(({ vec }) => avgVector.add(vec));
             avgVector.normalize();
@@ -225,7 +272,10 @@ function checkGenericEvent(
             if (event.secondaryBodies) {
                 const secondaryBodyInfo = allBodyInfo.filter(info => event.secondaryBodies?.includes(info.name));
                 for (const { vec } of secondaryBodyInfo) {
-                    if (vec.angleTo(avgVector) > THREE.MathUtils.degToRad(event.longitudeTolerance * 3)) {
+                    const secondaryTolerance = event.requiresBeacon
+                        ? Math.max(90, event.longitudeTolerance * 1.5)
+                        : event.longitudeTolerance * 3;
+                    if (vec.angleTo(avgVector) > THREE.MathUtils.degToRad(secondaryTolerance)) {
                         return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                     }
                 }
@@ -235,6 +285,22 @@ function checkGenericEvent(
         
         case 'occultation': {
             if (primaryBodyInfo.length < 2) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+
+            // The Triple Cascade is a sequence of pairwise occultations, not one
+            // impossible three-body overlap. The episode sampler below verifies
+            // that at least two distinct pairs occur during the declared window.
+            if (event.name === 'The Great Eclipse') {
+                const overlapThreshold = event.overlapThreshold ?? 0.1;
+                for (let i = 0; i < primaryBodyInfo.length; i++) {
+                    for (let j = i + 1; j < primaryBodyInfo.length; j++) {
+                        const pair = [primaryBodyInfo[i], primaryBodyInfo[j]].sort((a, b) => a.distance - b.distance);
+                        if (checkOccultationPair(pair[0], pair[1], overlapThreshold)) {
+                            return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+                        }
+                    }
+                }
+                return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+            }
             
             const sortedBodies = [...primaryBodyInfo].sort((a, b) => a.distance - b.distance);
             
@@ -242,11 +308,8 @@ function checkGenericEvent(
                 const foreground = sortedBodies[i];
                 const background = sortedBodies[i + 1];
                 
-                const separationAngleDeg = THREE.MathUtils.radToDeg(foreground.vec.angleTo(background.vec));
                 const overlapThreshold = event.overlapThreshold ?? 0.1;
-                const maxSeparation = foreground.apparentRadius + background.apparentRadius * (1 - overlapThreshold);
-
-                if (separationAngleDeg > maxSeparation) {
+                if (!checkOccultationPair(foreground, background, overlapThreshold)) {
                     return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
                 }
             }
@@ -280,6 +343,72 @@ function checkGenericEvent(
         default:
             return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
     }
+}
+
+function getEventBodyInfo(
+    event: CelestialEvent,
+    bodyPositions: { [key: string]: THREE.Vector3 },
+    processedBodyData: ProcessedBodyData[],
+    sebakaTilt: number,
+): { primary: BodyVectorInfo[]; all: BodyVectorInfo[] } | null {
+    const sebakaData = processedBodyData.find(d => d.name === 'Sebaka') as PlanetData | undefined;
+    const sebakaPos = bodyPositions['Sebaka'];
+    if (!sebakaData || !sebakaPos) return null;
+
+    const longitude = event.viewingLongitude ?? 180;
+    const primaryForLatitude = event.primaryBodies.map(name => {
+        const bodyData = processedBodyData.find(d => d.name === name);
+        const bodyPos = bodyPositions[name];
+        if (!bodyData || !bodyPos) return null;
+        const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(
+            sebakaData.size,
+            Math.PI / 2,
+            THREE.MathUtils.degToRad(longitude),
+        );
+        const tiltQuat = new THREE.Quaternion().setFromAxisAngle(
+            new THREE.Vector3(0, 0, 1),
+            THREE.MathUtils.degToRad(sebakaTilt),
+        );
+        viewpointOffset.applyQuaternion(tiltQuat);
+        const viewpoint = new THREE.Vector3().addVectors(sebakaPos, viewpointOffset);
+        return new THREE.Vector3().subVectors(bodyPos, viewpoint).normalize();
+    }).filter(Boolean) as THREE.Vector3[];
+
+    if (primaryForLatitude.length !== event.primaryBodies.length) return null;
+    const avgY = primaryForLatitude.reduce((sum, vector) => sum + vector.y, 0) / primaryForLatitude.length;
+    const optimalLatitude = -THREE.MathUtils.radToDeg(Math.asin(avgY));
+    const allNames = [...event.primaryBodies, ...(event.secondaryBodies || [])];
+    const all = allNames.map(name => {
+        const bodyData = processedBodyData.find(d => d.name === name);
+        const bodyPos = bodyPositions[name];
+        if (!bodyData || !bodyPos) return null;
+        const viewpointOffset = new THREE.Vector3().setFromSphericalCoords(
+            sebakaData.size,
+            Math.PI / 2 - THREE.MathUtils.degToRad(optimalLatitude),
+            THREE.MathUtils.degToRad(longitude),
+        );
+        const tiltQuat = new THREE.Quaternion().setFromAxisAngle(
+            new THREE.Vector3(0, 0, 1),
+            THREE.MathUtils.degToRad(sebakaTilt),
+        );
+        viewpointOffset.applyQuaternion(tiltQuat);
+        const observerPos = new THREE.Vector3().addVectors(sebakaPos, viewpointOffset);
+        const vec = bodyPos.clone().sub(observerPos);
+        const distance = vec.length();
+        return {
+            name,
+            vec: vec.normalize(),
+            pos: bodyPos,
+            data: bodyData,
+            apparentRadius: getWeaveApparentRadius(bodyData, distance),
+            distance,
+        } satisfies BodyVectorInfo;
+    }).filter(Boolean) as BodyVectorInfo[];
+
+    return {
+        primary: all.filter(info => event.primaryBodies.includes(info.name)),
+        all,
+    };
 }
 
 function checkEventConditions(
@@ -343,7 +472,7 @@ function checkEventConditions(
 
         const vec = bodyPos.clone().sub(observerPos);
         const distance = vec.length();
-        const apparentRadius = getApparentRadius(bodyData.size, distance);
+        const apparentRadius = getWeaveApparentRadius(bodyData, distance);
         
         return { name, vec: vec.normalize(), pos: bodyPos, data: bodyData, apparentRadius, distance };
     }).filter(Boolean) as BodyVectorInfo[]);
@@ -352,19 +481,18 @@ function checkEventConditions(
 
     if (primaryBodyInfo.length !== event.primaryBodies.length) return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
     
-    // For the Great Conjunction, use a looser check
-    if (event.name === "Great Conjunction") {
-        const searchTolerance = Math.max(event.longitudeTolerance, 15);
-        const avgVector = new THREE.Vector3();
-        primaryBodyInfo.forEach(({ vec }) => avgVector.add(vec));
-        avgVector.normalize();
-
-        for (const { vec } of primaryBodyInfo) {
-            if (vec.angleTo(avgVector) > THREE.MathUtils.degToRad(searchTolerance)) {
-                return { met: false, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
-            }
-        }
-        return { met: true, viewingLatitude: optimalLatitude, viewingLongitude: longitude };
+    if (event.visibilityCondition === 'night' && !event.allowSunOverlap) {
+        const visibility = checkSunPlanetSeparation(
+            primaryBodyInfo,
+            processedBodyData,
+            bodyPositions,
+            sebakaData,
+            sebakaTilt,
+            optimalLatitude,
+            longitude,
+            event,
+        );
+        if (!visibility.met) return visibility;
     }
 
     return checkGenericEvent(event, primaryBodyInfo, allBodyInfo, optimalLatitude, longitude);
@@ -393,6 +521,34 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
             positionCache[roundedHours] = calculateBodyPositions(roundedHours, processedBodyData);
         }
         return positionCache[roundedHours];
+    };
+
+    const episodeHasEnoughStages = (start: number): boolean => {
+        if (!event.eventRole || !event.durationDays) return true;
+        if (event.name === 'The Great Eclipse') {
+            const cascadePairs = new Set<string>();
+            const overlapThreshold = event.overlapThreshold ?? 0.1;
+            for (let day = 0; day < event.durationDays; day++) {
+                const stagePositions = getPositions(start + day * HOURS_IN_SEBAKA_DAY);
+                const stageResult = getEventBodyInfo(event, stagePositions, processedBodyData, sebakaTilt);
+                if (!stageResult) continue;
+                for (let i = 0; i < stageResult.primary.length; i++) {
+                    for (let j = i + 1; j < stageResult.primary.length; j++) {
+                        const pair = [stageResult.primary[i], stageResult.primary[j]].sort((a, b) => a.distance - b.distance);
+                        if (checkOccultationPair(pair[0], pair[1], overlapThreshold)) {
+                            cascadePairs.add(occultationPairKey(pair[0], pair[1]));
+                        }
+                    }
+                }
+            }
+            return cascadePairs.size >= 2;
+        }
+        let stages = 0;
+        for (let day = 0; day < event.durationDays; day++) {
+            const stagePositions = getPositions(start + day * HOURS_IN_SEBAKA_DAY);
+            if (checkEventConditions(event, stagePositions, processedBodyData, sebakaTilt).met) stages += 1;
+        }
+        return stages >= (event.name === 'Full Triune Alignment' ? 3 : 2);
     };
 
     if (direction !== 'first' && checkEventConditions(event, getPositions(startHours), processedBodyData, sebakaTilt).met) {
@@ -429,6 +585,11 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
             const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
             if (result.met) {
+                if (!episodeHasEnoughStages(currentHours)) {
+                    currentHours += HOURS_IN_SEBAKA_DAY * Math.max(1, event.durationDays ?? 1) * timeMultiplier;
+                    iterationCount += Math.max(1, event.durationDays ?? 1);
+                    continue;
+                }
                 let durationDays = 0;
                 let durationCheckHours = currentHours;
                 let isStable = true;
@@ -495,6 +656,11 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
         const result = checkEventConditions(event, bodyPositions, processedBodyData, sebakaTilt);
 
         if (result.met) {
+            if (!episodeHasEnoughStages(currentHours)) {
+                currentHours += HOURS_IN_SEBAKA_DAY * Math.max(1, event.durationDays ?? 1) * timeMultiplier;
+                iterationCount += Math.max(1, event.durationDays ?? 1);
+                continue;
+            }
             let durationDays = 0;
             let durationCheckHours = currentHours;
             let isStable = true;
@@ -546,5 +712,3 @@ async function findEventWithCandidates(params: EventSearchParams): Promise<Event
 export async function findNextEvent(params: EventSearchParams): Promise<EventSearchResult | null> {
     return findEventWithCandidates(params);
 }
-
-    

@@ -12,17 +12,23 @@ export const celestialEvents: CelestialEvent[] = [
         sunSeparationMultiplier: 5, // Reduced from 10, more realistic
         viewingLongitude: 180,
         visibilityCondition: 'night',
+        eventRole: 'derived',
     },
     {
-        name: "Celestial Origin Alignment", 
-        description: "Perfect alignment of five planets within 20 arcminutes - recreating Year 0 positions.",
-        type: 'conjunction',
-        primaryBodies: ["Rutilis", "Sebaka", "Spectris", "Viridis", "Aetheris"],
-        longitudeTolerance: 0.33, // 20 arcmin - very tight alignment
-        minSeparation: 0.08, // 5 arcmin - extremely close
+        name: "Full Triune Alignment",
+        description: "The rare Year 0 / approximately Year 2454 episode: four planets form an ordered crescent, shadows pass in sequence, darkness arrives in stages, and Beacon provides the finale.",
+        type: 'cluster',
+        primaryBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
+        secondaryBodies: ["Beacon"],
+        longitudeTolerance: 60,
         sunSeparationMultiplier: 1.0,
         viewingLongitude: 180,
         visibilityCondition: 'night',
+        eventRole: 'core',
+        durationDays: 54,
+        orderedBodies: ["Rutilis", "Spectris", "Viridis", "Aetheris"],
+        requiresBeacon: true,
+        historicalRecurrenceYears: 2454,
     },
     {
         name: "Gathering of Witnesses",
@@ -33,6 +39,8 @@ export const celestialEvents: CelestialEvent[] = [
         longitudeTolerance: 35, // 5° cluster - realistic for naked eye grouping
         viewingLongitude: 270,
         visibilityCondition: 'night',
+        eventRole: 'core',
+        durationDays: 27,
     },
     {
         name: "Twin Conjunction",
@@ -43,6 +51,7 @@ export const celestialEvents: CelestialEvent[] = [
         minSeparation: 0.5, // 30 arcmin minimum separation
         viewingLongitude: 240,
         visibilityCondition: 'twilight',
+        eventRole: 'derived',
     },
     {
         name: "Triad Alignment",
@@ -53,6 +62,7 @@ export const celestialEvents: CelestialEvent[] = [
         minSeparation: 0.17, // 10 arcmin between vertices
         viewingLongitude: 210,
         visibilityCondition: 'night',
+        eventRole: 'derived',
     },
     {
         name: "Quadrant Convergence", 
@@ -74,6 +84,7 @@ export const celestialEvents: CelestialEvent[] = [
         minSeparation: 15, // 15° isolation requirement
         viewingLongitude: 180,
         visibilityCondition: 'night',
+        eventRole: 'derived',
     },
     {
         name: "Pre-Conjunction Prelude",
@@ -84,6 +95,7 @@ export const celestialEvents: CelestialEvent[] = [
         sunSeparationMultiplier: 0.8, // Closer to sun, harder to see
         viewingLongitude: 90,
         visibilityCondition: 'twilight',
+        eventRole: 'derived',
     },
     {
         name: "Spectris-Viridis Occultation",
@@ -94,6 +106,7 @@ export const celestialEvents: CelestialEvent[] = [
         overlapThreshold: 0.9, // 90% overlap for visible occultation
         viewingLongitude: 170,
         visibilityCondition: 'night',
+        eventRole: 'derived',
     },
     {
         name: "Spectris-Aetheris Occultation", 
@@ -104,6 +117,7 @@ export const celestialEvents: CelestialEvent[] = [
         overlapThreshold: 0.9,
         viewingLongitude: 185,
         visibilityCondition: 'night',
+        eventRole: 'derived',
     },
     {
         name: "Viridis-Aetheris Occultation",
@@ -114,10 +128,11 @@ export const celestialEvents: CelestialEvent[] = [
         overlapThreshold: 0.7, // Partial occultation
         viewingLongitude: 190,
         visibilityCondition: 'night',
+        eventRole: 'derived',
     },
     {
         name: "The Great Eclipse",
-        description: "Extraordinary triple occultation with 95%+ overlap - the 'Triple Cascade.'",
+        description: "A rare V/S/A occultation sequence: the Triple Cascade. This is distinct from the Full Triune Alignment.",
         type: 'occultation',
         primaryBodies: ["Viridis", "Spectris", "Aetheris"], 
         longitudeTolerance: 0.5, // truly: 0.017 1 arcmin - maximum precision
@@ -125,5 +140,8 @@ export const celestialEvents: CelestialEvent[] = [
         sunSeparationMultiplier: 0.5, // Very close sun approach allowed
         viewingLongitude: 188,
         visibilityCondition: 'night',
+        eventRole: 'core',
+        durationDays: 54,
+        historicalRecurrenceYears: 10000,
     },
 ];

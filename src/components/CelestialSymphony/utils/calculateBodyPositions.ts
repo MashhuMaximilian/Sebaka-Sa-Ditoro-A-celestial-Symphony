@@ -37,35 +37,42 @@ export const calculateBodyPositions = (
     currentHours: number,
     bodyData: ProcessedBodyData[],
 ): { [key: string]: THREE.Vector3 } => {
-    
+
     const positions: { [key: string]: THREE.Vector3 } = {};
     let barycenter = new THREE.Vector3(0, 0, 0);
 
-    // Calculate binary star positions first to establish the barycenter
+    // Calculate the close binary around its shared barycenter. The configured
+    // separation is 0.2 AU; the two stars do not each orbit at 0.1 AU because
+    // their masses are different.
     const alphaData = bodyData.find(d => d.name === 'Alpha');
     const twilightData = bodyData.find(d => d.name === 'Twilight');
+    const binarySeparation = 0.2 * 150;
+    const alphaMass = alphaData ? parseFloat(alphaData.mass || '1.0') : 1.0;
+    const twilightMass = twilightData ? parseFloat(twilightData.mass || '0.6') : 0.6;
+    const binaryMass = alphaMass + twilightMass;
+    const alphaOrbitRadius = binarySeparation * twilightMass / binaryMass;
+    const twilightOrbitRadius = binarySeparation * alphaMass / binaryMass;
+    const binaryPhase = alphaData
+        ? (alphaData.initialPhaseRad + currentHours * alphaData.radsPerHour) % (2 * Math.PI)
+        : 0;
 
     if (alphaData) {
-        const M = (alphaData.initialPhaseRad + currentHours * alphaData.radsPerHour) % (2 * Math.PI);
-        const r1 = 0.1 * 150; // 0.1 AU in simulation units
-        const x = -r1 * Math.cos(M);
-        const z = -r1 * Math.sin(M);
+        const x = -alphaOrbitRadius * Math.cos(binaryPhase);
+        const z = -alphaOrbitRadius * Math.sin(binaryPhase);
         positions['Alpha'] = new THREE.Vector3(x, 0, z);
     }
 
     if (twilightData) {
-        const M = (twilightData.initialPhaseRad + currentHours * twilightData.radsPerHour) % (2 * Math.PI);
-        const r1 = 0.1 * 150;
-        const x = r1 * Math.cos(M);
-        const z = r1 * Math.sin(M);
+        const x = twilightOrbitRadius * Math.cos(binaryPhase);
+        const z = twilightOrbitRadius * Math.sin(binaryPhase);
         positions['Twilight'] = new THREE.Vector3(x, 0, z);
     }
-    
+
     // Calculate the dynamic barycenter of the binary system
     if (alphaData && twilightData && positions['Alpha'] && positions['Twilight']) {
-        const m1 = parseFloat(alphaData.mass || '1.0');
-        const m2 = parseFloat(twilightData.mass || '0.6');
-        const totalMass = m1 + m2;
+        const m1 = alphaMass;
+        const m2 = twilightMass;
+        const totalMass = binaryMass;
         barycenter = positions['Alpha'].clone().multiplyScalar(m1)
             .add(positions['Twilight'].clone().multiplyScalar(m2))
             .divideScalar(totalMass);
@@ -99,8 +106,8 @@ export const calculateBodyPositions = (
              // Calculate Mean Anomaly (M) using pre-calculated values
             const M = (data.initialPhaseRad + currentHours * data.radsPerHour) % (2 * Math.PI);
             
-            let x: number;
-            let z: number;
+            let orbitalX: number;
+            let orbitalZ: number;
 
             if (data.eccentric && data.eccentricity && data.eccentricity > 0) {
                 const e = data.eccentricity;
@@ -114,20 +121,32 @@ export const calculateBodyPositions = (
 
                 const r = semiMajorAxis * (1 - e * Math.cos(E));
                 
-                x = orbitCenter.x + r * Math.cos(v);
-                z = orbitCenter.z + r * Math.sin(v);
+                orbitalX = r * Math.cos(v);
+                orbitalZ = r * Math.sin(v);
             } else {
                 // Default to circular orbit
                 const r = data.orbitRadius || 0;
-                x = orbitCenter.x + r * Math.cos(M);
-                z = orbitCenter.z + r * Math.sin(M);
+                orbitalX = r * Math.cos(M);
+                orbitalZ = r * Math.sin(M);
             }
 
-            positions[data.name] = new THREE.Vector3(x, orbitCenter.y, z);
+            // Inclination and node are observer-important even when the
+            // renderer remains a simple Keplerian model. Keep the orbital
+            // radius in the local plane, then rotate that plane into 3D.
+            const inclination = THREE.MathUtils.degToRad(data.inclinationDeg ?? 0);
+            const node = THREE.MathUtils.degToRad(data.longitudeOfAscendingNodeDeg ?? 0);
+            const inclinedY = orbitalZ * Math.sin(inclination);
+            const inclinedZ = orbitalZ * Math.cos(inclination);
+            const x = orbitalX * Math.cos(node) - inclinedZ * Math.sin(node);
+            const z = orbitalX * Math.sin(node) + inclinedZ * Math.cos(node);
+
+            positions[data.name] = new THREE.Vector3(
+                orbitCenter.x + x,
+                orbitCenter.y + inclinedY,
+                orbitCenter.z + z,
+            );
         }
     });
 
     return positions;
 };
-
-    
