@@ -1386,3 +1386,361 @@
     bottom: 14px;
   }
 }
+
+/* Exploration controls stay on the canvas, independent of the settings drawer. */
+.scene-intro {
+  top: 130px;
+  left: 38px;
+}
+.scene-intro h1 {
+  font-size: 39px;
+  margin: 16px 0 12px;
+  letter-spacing: -1.5px;
+}
+.scene-intro h1 br {
+  display: none;
+}
+.scene-intro h1 em {
+  margin-left: 0.2em;
+}
+.scene-intro p {
+  max-width: 290px;
+}
+.scene-intro .text-action {
+  margin-top: 14px;
+}
+.body-instrument {
+  top: 135px;
+}
+.navigation-dock {
+  position: absolute;
+  left: 36px;
+  bottom: 316px;
+  width: 250px;
+  padding: 14px;
+  border: 1px solid #abc5d32b;
+  border-radius: 12px;
+  background: linear-gradient(140deg, #14242ee8, #07131be8);
+  box-shadow: 0 10px 40px #0003;
+  backdrop-filter: blur(12px);
+}
+.navigation-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  color: var(--brass);
+  font-size: 8px;
+  letter-spacing: 1.35px;
+}
+.navigation-title button {
+  padding: 4px;
+}
+.navigation-dock button {
+  border: 1px solid transparent;
+  color: #bbcbd0;
+  background: transparent;
+  border-radius: 5px;
+}
+.navigation-dock button:hover {
+  color: #f4deba;
+  background: #c6b08016;
+  border-color: #c6b08030;
+}
+.navigation-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 8px 0 10px;
+}
+.direction-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 28px);
+  grid-template-rows: repeat(3, 28px);
+  flex-shrink: 0;
+}
+.direction-pad button {
+  display: grid;
+  place-items: center;
+  background: #c5d9e109;
+  border-color: #c5d9e119;
+}
+.direction-up {
+  grid-area: 1 / 2;
+}
+.direction-left {
+  grid-area: 2 / 1;
+}
+.direction-right {
+  grid-area: 2 / 3;
+}
+.direction-down {
+  grid-area: 3 / 2;
+}
+.direction-pad span {
+  grid-area: 2 / 2;
+  text-align: center;
+  align-self: center;
+  color: #cab37e;
+}
+.coordinate-controls {
+  flex: 1;
+  min-width: 0;
+}
+.coordinate-controls label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  color: #8fa8b3;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+.coordinate-controls label + label {
+  margin-top: 8px;
+}
+.coordinate-controls input {
+  width: 70px;
+  font-size: 15px;
+  color: #e2e9e8;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #aac5d326;
+  padding: 2px 0;
+}
+.coordinate-controls label::before {
+  content: none;
+}
+.coordinate-controls label span {
+  padding-top: 5px;
+}
+.navigation-switches {
+  display: flex;
+  gap: 6px;
+  border-top: 1px solid #bcd5df1a;
+  padding-top: 10px;
+}
+.navigation-switches button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 6px;
+  font-size: 10px;
+  flex: 1;
+  white-space: nowrap;
+}
+.navigation-switches button[aria-pressed="true"] {
+  color: #e3c795;
+  background: #dac29512;
+}
+.navigation-dock > small {
+  display: block;
+  margin-top: 9px;
+  color: #849ba7;
+  font-size: 8px;
+  line-height: 1.5;
+}
+.navigation-destinations {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.navigation-destinations button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  padding: 5px 0;
+  text-align: left;
+}
+.explorer-options {
+  position: absolute;
+  right: 42px;
+  bottom: 267px;
+  max-width: 270px;
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.explorer-options label,
+.explorer-options button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 9px;
+  border-radius: 5px;
+  background: #0c1a24dc;
+  border: 1px solid #c1d5de26;
+  color: #95aab4;
+  font-size: 10px;
+}
+.explorer-options button[aria-pressed="true"] {
+  color: #d9c397;
+  border-color: #d9c39740;
+}
+.explorer-options select {
+  color: #d9c397;
+  background: transparent;
+  border: 0;
+  font-size: 10px;
+  max-width: 100px;
+}
+.explorer-options option {
+  background: #101e2a;
+}
+.immersive .scene-intro,
+.immersive .body-instrument,
+.immersive .navigation-dock,
+.immersive .explorer-options,
+.immersive .time-console,
+.immersive .horizon-caption,
+.immersive .weave-switch,
+.immersive .sky-tools {
+  display: none;
+}
+.immersive .vignette {
+  opacity: 0.3;
+}
+.immersive .observatory-header {
+  border-color: transparent;
+  background: linear-gradient(#07101988, transparent);
+}
+@media (max-height: 820px) and (min-width: 701px) {
+  .scene-intro h1,
+  .scene-intro p,
+  .scene-intro .text-action {
+    display: none;
+  }
+  .navigation-dock {
+    bottom: 270px;
+  }
+  .sky-tools {
+    bottom: 218px;
+    left: 36px;
+  }
+  .horizon-caption {
+    bottom: 192px;
+  }
+  .horizon-caption small {
+    display: none;
+  }
+  .explorer-options {
+    bottom: 250px;
+  }
+  .body-story {
+    display: none;
+  }
+}
+@media (max-width: 1000px) and (min-width: 701px) {
+  .navigation-dock {
+    left: 24px;
+    width: 225px;
+  }
+  .scene-intro {
+    left: 24px;
+  }
+  .scene-intro h1 {
+    font-size: 32px;
+  }
+}
+@media (max-width: 700px) {
+  .scene-intro {
+    display: none;
+  }
+  .body-instrument {
+    top: 143px;
+    right: 16px;
+    bottom: auto;
+    width: 148px;
+  }
+  .body-instrument .outline-button {
+    display: flex;
+    font-size: 9px;
+    padding: 8px 5px;
+    margin-top: 9px;
+  }
+  .navigation-dock {
+    left: 12px;
+    bottom: 228px;
+    width: 196px;
+    padding: 10px;
+    border-radius: 9px;
+  }
+  .navigation-title {
+    font-size: 6px;
+    letter-spacing: 0.75px;
+  }
+  .navigation-main {
+    gap: 8px;
+    margin: 5px 0;
+  }
+  .direction-pad {
+    grid-template-columns: repeat(3, 30px);
+    grid-template-rows: repeat(3, 30px);
+  }
+  .coordinate-controls label {
+    font-size: 6px;
+    letter-spacing: 0.5px;
+  }
+  .coordinate-controls input {
+    width: 60px;
+    font-size: 13px;
+  }
+  .navigation-switches {
+    padding-top: 6px;
+    gap: 2px;
+  }
+  .navigation-switches button {
+    font-size: 8px;
+    padding: 5px 1px;
+  }
+  .navigation-switches svg {
+    width: 11px;
+  }
+  .navigation-dock > small {
+    display: none;
+  }
+  .navigation-destinations button {
+    font-size: 8px;
+  }
+  .navigation-destinations svg {
+    display: none;
+  }
+  .explorer-options {
+    right: 12px;
+    bottom: 231px;
+    max-width: 158px;
+    gap: 4px;
+  }
+  .explorer-options label,
+  .explorer-options button {
+    padding: 5px 6px;
+    font-size: 8px;
+  }
+  .explorer-options select {
+    font-size: 8px;
+  }
+  .sky-tools {
+    left: 12px;
+    top: 144px;
+    bottom: auto;
+    flex-direction: row;
+    gap: 0;
+  }
+  .sky-tools .icon-button {
+    width: 30px;
+    height: 34px;
+  }
+  .header-actions {
+    gap: 5px;
+  }
+  .horizon-caption {
+    left: 16px;
+    bottom: 201px;
+  }
+  .weave-switch {
+    right: 13px;
+    bottom: 200px;
+  }
+}

@@ -29,6 +29,7 @@ import {
   YEAR,
   MONTH,
   calendar,
+  bodies,
   fieldNotes,
   knownBodies,
   mod,
@@ -37,7 +38,14 @@ import {
   observe,
   openingObservation,
   witnesses,
+  rotationHours,
+  toggleRotation,
+  type RotationState,
 } from "@/lib/observatory";
+import NavigationDock, {
+  type CameraCommand,
+  type OrbitTarget,
+} from "@/components/observatory/NavigationDock";
 import "./observatory.css";
 
 const SkyScene = dynamic(() => import("@/components/observatory/SkyScene"), {
@@ -90,6 +98,25 @@ export default function Observatory() {
   const [yearInput, setYearInput] = useState("0");
   const [dayInput, setDayInput] = useState("1");
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [rotation, setRotation] = useState<RotationState>({
+    enabled: true,
+    offset: 0,
+    frozenHours: 0,
+  });
+  const [orbitTarget, setOrbitTarget] = useState<OrbitTarget>("system");
+  const [tracking, setTracking] = useState(false);
+  const [orbitStyle, setOrbitStyle] = useState<
+    "iridescent" | "plain" | "hidden"
+  >("iridescent");
+  const [rings, setRings] = useState(true);
+  const [volcanism, setVolcanism] = useState(true);
+  const [landscape, setLandscape] = useState(true);
+  const [authorAtlas, setAuthorAtlas] = useState(false);
+  const [immersive, setImmersive] = useState(false);
+  const [cameraCommand, setCameraCommand] = useState<CameraCommand>({
+    id: 0,
+    action: "left",
+  });
   const search = useRef<AbortController | null>(null);
   const dialogRef = useRef<HTMLElement>(null);
   const panelOpener = useRef<HTMLElement | null>(null);
@@ -99,6 +126,9 @@ export default function Observatory() {
     clock.current = next;
     setHours(next);
     setPlaying(false);
+    // Explicit date travel restores the canonical observer phase. Event searches
+    // must never display a held-rotation horizon as the calculated event sky.
+    setRotation({ enabled: true, offset: 0, frozenHours: next });
     setFocusKey((k) => k + 1);
     const c = calendar(next);
     setYearInput(String(c.year));
@@ -165,7 +195,13 @@ export default function Observatory() {
     };
   }, [panel]);
 
-  const s = observe(hours, latitude, longitude, weave);
+  const s = observe(
+    hours,
+    latitude,
+    longitude,
+    weave,
+    rotationHours(hours, rotation),
+  );
   const c = calendar(hours);
   const current = s.sky.find((b) => b.name === selected);
   const note = fieldNotes[selected];
@@ -181,7 +217,23 @@ export default function Observatory() {
   const selectBody = (name: string) => {
     setRiseMessage("");
     setSelected(name);
-    if (name === "Sebaka") setMode("orbit");
+    if (name === "Sebaka" || ["Gelidis", "Liminis"].includes(name))
+      setMode("orbit");
+    setOrbitTarget("body");
+    if (mode === "orbit" || name === "Sebaka") setTracking(true);
+    setFocusKey((k) => k + 1);
+  };
+  const command = (action: CameraCommand["action"]) =>
+    setCameraCommand((v) => ({ id: v.id + 1, action }));
+  const moveSurface = (north: number, east: number) => {
+    setLatitude((v) => Math.max(-89, Math.min(89, v + north)));
+    setLongitude((v) => mod(v + east + 180, 360) - 180);
+  };
+  const systemView = (target: OrbitTarget) => {
+    setMode("orbit");
+    setOrbitTarget(target);
+    setTracking(target !== "system");
+    if (target === "beacon") setAuthorAtlas(true);
     setFocusKey((k) => k + 1);
   };
   const startSearch = async () => {
@@ -220,7 +272,9 @@ export default function Observatory() {
   };
 
   return (
-    <main className={`observatory ${reducedMotion ? "reduced-motion" : ""}`}>
+    <main
+      className={`observatory ${reducedMotion ? "reduced-motion" : ""} ${immersive ? "immersive" : ""}`}
+    >
       {initialized && (
         <SkyScene
           clock={clock}
@@ -230,8 +284,22 @@ export default function Observatory() {
           weave={weave}
           latitude={latitude}
           longitude={longitude}
-          labels={labels}
+          labels={labels && !immersive}
           fov={fov}
+          rotation={rotation}
+          orbitTarget={orbitTarget}
+          tracking={tracking}
+          orbitStyle={orbitStyle}
+          rings={rings}
+          volcanism={volcanism}
+          landscape={landscape}
+          authorAtlas={authorAtlas}
+          reducedMotion={reducedMotion}
+          command={cameraCommand}
+          onMove={moveSurface}
+          onZoom={(delta) =>
+            setFov((v) => Math.max(18, Math.min(80, v + delta)))
+          }
           onSelect={selectBody}
           onReady={() => setReady(true)}
           onPerformance={setFps}
@@ -256,19 +324,36 @@ export default function Observatory() {
           <button
             className={mode === "sky" ? "active" : ""}
             aria-pressed={mode === "sky"}
-            onClick={() => setMode("sky")}
+            onClick={() => {
+              setMode("sky");
+              setTracking(false);
+              if (["Sebaka", "Gelidis", "Liminis"].includes(selected))
+                setSelected("Aetheris");
+            }}
           >
             <Eye size={15} /> The sky
           </button>
           <button
             className={mode === "orbit" ? "active" : ""}
             aria-pressed={mode === "orbit"}
-            onClick={() => setMode("orbit")}
+            onClick={() => systemView("system")}
           >
             <Orbit size={16} /> The system
           </button>
         </nav>
         <div className="header-actions">
+          <button
+            className="icon-button"
+            aria-label={immersive ? "Show interface" : "Hide interface"}
+            title={
+              immersive
+                ? "Show interface"
+                : "Hide interface for an unobstructed view"
+            }
+            onClick={() => setImmersive((v) => !v)}
+          >
+            <Eye size={17} />
+          </button>
           <button
             className="journal-button"
             aria-label="Field journal"
@@ -292,7 +377,11 @@ export default function Observatory() {
           <span className="live-dot" />{" "}
           {mode === "sky"
             ? `SURFACE OBSERVATION / ${phase.toUpperCase()}`
-            : "ORBITAL ATLAS / INNER SYSTEM"}
+            : orbitTarget === "beacon"
+              ? "ORBITAL ATLAS / BEACON SYSTEM"
+              : orbitTarget === "body"
+                ? "ORBITAL ATLAS / CLOSE ENCOUNTER"
+                : "ORBITAL ATLAS / INNER SYSTEM"}
         </div>
         <h1>
           {mode === "sky" ? (
@@ -323,9 +412,12 @@ export default function Observatory() {
           <span className="eyebrow">IN THE LENS</span>
           <span className="instrument-number">
             {String(
-              knownBodies.findIndex((b) => b.name === selected) + 1,
+              (authorAtlas && mode === "orbit"
+                ? bodies
+                : knownBodies
+              ).findIndex((b) => b.name === selected) + 1,
             ).padStart(2, "0")}{" "}
-            / 08
+            / {authorAtlas && mode === "orbit" ? "10" : "08"}
           </span>
         </div>
         <label className="body-picker">
@@ -335,9 +427,11 @@ export default function Observatory() {
             value={selected}
             onChange={(e) => selectBody(e.target.value)}
           >
-            {knownBodies.map((b) => (
-              <option key={b.name}>{b.name}</option>
-            ))}
+            {(authorAtlas && mode === "orbit" ? bodies : knownBodies).map(
+              (b) => (
+                <option key={b.name}>{b.name}</option>
+              ),
+            )}
           </select>
           <ChevronDown size={17} />
         </label>
@@ -348,7 +442,11 @@ export default function Observatory() {
           <div>
             <span>ALTITUDE</span>
             <strong>
-              {current ? `${current.altitude.toFixed(1)}°` : "Home"}
+              {current
+                ? `${current.altitude.toFixed(1)}°`
+                : selected === "Sebaka"
+                  ? "Home"
+                  : "—"}
             </strong>
           </div>
           <div>
@@ -358,7 +456,9 @@ export default function Observatory() {
                 ? mode === "sky"
                   ? `${current.apparentDiameter.toFixed(2)}°`
                   : `${current.distanceAU.toFixed(2)} AU`
-                : "—"}
+                : mode === "orbit" && selected !== "Sebaka"
+                  ? `${(s.positions[selected].distanceTo(s.positions.Sebaka) / 150).toFixed(2)} AU`
+                  : "—"}
             </strong>
           </div>
         </div>
@@ -367,7 +467,9 @@ export default function Observatory() {
         >
           <span className="tiny-dot" />
           {!current
-            ? "Your observing world"
+            ? selected === "Sebaka"
+              ? "Your observing world"
+              : "Author atlas · undiscovered world"
             : current.aboveHorizon
               ? s.solarAltitude > 0 && current.type !== "Star"
                 ? "Above horizon · daylight glare"
@@ -405,12 +507,86 @@ export default function Observatory() {
           </p>
         )}
         {mode === "orbit" && (
-          <p className="instrument-footnote">
-            Distances to scale. Body sizes enlarged. Beacon lies beyond this
-            inner-system chart at ~100 AU.
-          </p>
+          <>
+            <button
+              className="outline-button"
+              onClick={() => {
+                setOrbitTarget("body");
+                setTracking(true);
+                setFocusKey((k) => k + 1);
+              }}
+            >
+              <Crosshair size={14} /> Fly to {selected}
+            </button>
+            <p className="instrument-footnote">
+              Distances to scale. Body sizes enlarged for exploration.{" "}
+              {authorAtlas
+                ? "Author atlas reveals Beacon’s undiscovered planets."
+                : "Visit Beacon’s system using the navigation dock."}
+            </p>
+          </>
         )}
       </aside>
+      <NavigationDock
+        mode={mode}
+        latitude={latitude}
+        longitude={longitude}
+        onMove={moveSurface}
+        onCoordinates={(lat, lon) => {
+          setLatitude(lat);
+          setLongitude(lon);
+        }}
+        onCommand={command}
+        rotating={rotation.enabled}
+        onRotation={() => setRotation((v) => toggleRotation(clock.current, v))}
+        tracking={tracking}
+        onTracking={() => {
+          if (!tracking && mode === "orbit" && orbitTarget === "system") {
+            setOrbitTarget("body");
+            setFocusKey((k) => k + 1);
+          }
+          setTracking((v) => !v);
+        }}
+        onFocus={() => {
+          if (mode === "orbit") setOrbitTarget("body");
+          setFocusKey((k) => k + 1);
+        }}
+        onHome={() => systemView("system")}
+        onBeacon={() => systemView("beacon")}
+        target={orbitTarget}
+        selected={selected}
+      />
+      <div className="explorer-options" aria-label="Scene appearance">
+        <label>
+          Orbits{" "}
+          <select
+            aria-label="Orbit appearance"
+            value={orbitStyle}
+            onChange={(e) => setOrbitStyle(e.target.value as typeof orbitStyle)}
+          >
+            <option value="iridescent">Iridescent</option>
+            <option value="plain">Plain</option>
+            <option value="hidden">Hidden</option>
+          </select>
+        </label>
+        <button aria-pressed={rings} onClick={() => setRings((v) => !v)}>
+          Iridescent rings
+        </button>
+        <button
+          aria-pressed={volcanism}
+          onClick={() => setVolcanism((v) => !v)}
+        >
+          Viridis activity
+        </button>
+        {mode === "sky" && (
+          <button
+            aria-pressed={landscape}
+            onClick={() => setLandscape((v) => !v)}
+          >
+            Landscape
+          </button>
+        )}
+      </div>
       <div className="sky-tools" aria-label="View controls">
         <button
           className={`icon-button ${labels ? "on" : ""}`}
@@ -423,16 +599,24 @@ export default function Observatory() {
         <button
           className="icon-button"
           aria-label="Zoom in"
-          disabled={fov <= 18}
-          onClick={() => setFov((v) => Math.max(18, v - 6))}
+          disabled={mode === "sky" && fov <= 18}
+          onClick={() =>
+            mode === "orbit"
+              ? command("in")
+              : setFov((v) => Math.max(18, v - 6))
+          }
         >
           <Plus size={18} />
         </button>
         <button
           className="icon-button"
           aria-label="Zoom out"
-          disabled={fov >= 80}
-          onClick={() => setFov((v) => Math.min(80, v + 6))}
+          disabled={mode === "sky" && fov >= 80}
+          onClick={() =>
+            mode === "orbit"
+              ? command("out")
+              : setFov((v) => Math.min(80, v + 6))
+          }
         >
           <Minus size={18} />
         </button>
@@ -451,10 +635,16 @@ export default function Observatory() {
         <span>
           {mode === "sky"
             ? `${Math.abs(latitude).toFixed(0)}° ${latitude < 0 ? "S" : "N"} / ${Math.abs(longitude).toFixed(0)}° ${longitude < 0 ? "W" : "E"}`
-            : "ALPHA–TWILIGHT BARYCENTER"}
+            : orbitTarget === "body"
+              ? `EXPLORING ${selected.toUpperCase()}`
+              : orbitTarget === "beacon"
+                ? "BEACON BARYCENTER"
+                : "ALPHA–TWILIGHT BARYCENTER"}
           <small>
             {mode === "sky"
-              ? "Drag to look around · select a world to follow its story"
+              ? !rotation.enabled
+                ? "Rotation held · orbital time remains independent"
+                : "Drag to look around · select a world to follow its story"
               : "Drag to orbit · scroll or pinch to explore"}
           </small>
         </span>
@@ -812,6 +1002,26 @@ export default function Observatory() {
                   <div className="setting-label">THE OBSERVER’S LENS</div>
                   <button
                     className="setting-toggle"
+                    aria-pressed={authorAtlas}
+                    onClick={() => {
+                      setAuthorAtlas((v) => !v);
+                      if (
+                        authorAtlas &&
+                        ["Gelidis", "Liminis"].includes(selected)
+                      )
+                        selectBody("Beacon");
+                    }}
+                  >
+                    <span>
+                      Author atlas
+                      <small>
+                        Reveal Gelidis and Liminis in system view only
+                      </small>
+                    </span>
+                    {authorAtlas ? <Check size={18} /> : <Minus size={18} />}
+                  </button>
+                  <button
+                    className="setting-toggle"
                     aria-pressed={weave}
                     onClick={() => setWeave((v) => !v)}
                   >
@@ -842,11 +1052,26 @@ export default function Observatory() {
                     setFov(42);
                     setMode("sky");
                     setWeave(true);
+                    setOrbitTarget("system");
+                    setTracking(false);
+                    setRings(true);
+                    setVolcanism(true);
+                    setLandscape(true);
+                    setImmersive(false);
                     setPanel(null);
                   }}
                 >
                   <RotateCcw size={14} /> Return to the opening observation
                 </button>
+                <p className="instrument-footnote">
+                  Rotation controls are an exploration override. Jumping to a
+                  date or calculated event restores the canonical rotation
+                  phase.
+                </p>
+                <a className="text-action" href="/classic">
+                  Open the original full-control simulator{" "}
+                  <ArrowRight size={14} />
+                </a>
               </>
             )}
             {panel === "about" && (

@@ -17,6 +17,18 @@ For development, use `npm run dev` instead.
 
 - Choose a world in **In the lens**; **Find next rise** advances the clock when
   it is below the horizon. Drag or use arrow keys on the sky to look around.
+- The on-screen navigation dock moves your surface location; use its direction
+  pad, coordinate inputs, or WASD while the canvas is focused. Scroll to zoom.
+- **Rotation on/off** holds Sebaka's rotational phase independently of orbital
+  time, and resumes continuously. Explicit date/event travel restores the
+  canonical rotational phase. **Tracking / Free camera** controls following.
+- In system view, choosing a world flies into a close-up. Drag to orbit,
+  right-drag or two-finger drag to pan, and scroll/pinch or use +/− to approach.
+  **Inner system** restores the wide view. **Beacon system** opens an author-only
+  atlas with Gelidis and Liminis; neither is added to the inhabitants' sky.
+- Direct appearance controls restore iridescent orbit paths, Spectris's
+  view-dependent rings, Viridis's lava/ash treatment, and landscape visibility.
+  Use the eye button in the header to hide the interface.
 - Compare **Through the Weave** with physical angular sizes. Orbital positions
   and physical radii do not change with this switch.
 - Play, pause, step a day, scrub the 13-month year, or enter a year/day in settings.
@@ -51,14 +63,24 @@ npm run build
 sizes, writes screenshots to ignored `output/playwright/`, and measures frame
 timing and texture transfer. It accepts `PLAYWRIGHT_CORE` (installed module path),
 `BROWSER_PATH` (Chromium executable), and `PREVIEW_URL` (default port 3100).
+`scripts/inspect-exploration.cjs` uses those same variables to exercise surface
+movement, rotation hold/resume, every body close-up, panning, camera zoom,
+Beacon's system, appearance switches, and mobile controls.
 
 Rendering uses one canvas, a capped pixel ratio, optimized local WebP textures,
 resource disposal, and redraws on change. Paused scenes do not continuously draw.
-Reduced-motion preferences disable decorative CSS animation; time starts paused.
+Reduced-motion preferences disable decorative CSS animation and camera travel;
+time starts paused. Resolved stars use procedural photospheric granulation,
+cool spots, limb darkening, and soft glare. Distant stars use soft point profiles
+and varied colors/brightness instead of uniformly sized squares. These are
+visual treatments, not a stellar atmosphere calculation.
 
 The original Firebase Studio interface is retained in
-`src/components/observatory/LegacyObservatory.tsx` for reference, together with its
-engine and optional Genkit workflows. It is not loaded by the new landing route.
+`src/components/observatory/LegacyObservatory.tsx`, together with its engine and
+optional Genkit workflows. Open **the original full-control simulator** from
+settings, or visit `/classic`, for its material editing and legacy tools. That
+renderer is not loaded by the new landing route. Its old event claims are not
+new astronomy validation.
 
 ## Original prototype documentation (historical)
 

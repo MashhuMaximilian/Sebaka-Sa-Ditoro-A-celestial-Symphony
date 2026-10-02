@@ -21,6 +21,22 @@ export const deg = THREE.MathUtils.radToDeg;
 export const rad = THREE.MathUtils.degToRad;
 const KM_PER_AU = 149597870.7;
 
+export type RotationState = {
+  enabled: boolean;
+  offset: number;
+  frozenHours: number;
+};
+export const rotationHours = (hours: number, state: RotationState) =>
+  state.enabled ? hours + state.offset : state.frozenHours;
+export function toggleRotation(
+  hours: number,
+  state: RotationState,
+): RotationState {
+  return state.enabled
+    ? { ...state, enabled: false, frozenHours: rotationHours(hours, state) }
+    : { ...state, enabled: true, offset: state.frozenHours - hours };
+}
+
 // Legacy `size` is a renderer scale, not a physical radius. Use the stated
 // radius metadata for the observer calculation, retaining orbital parameters.
 export function radiusKm(name: string): number {
@@ -69,9 +85,10 @@ export function observe(
   latitude = 24,
   longitude = 0,
   weave = true,
+  spinHours = hours,
 ) {
   const positions = calculateBodyPositions(hours, bodies);
-  const frame = observerFrame(hours, latitude, longitude);
+  const frame = observerFrame(spinHours, latitude, longitude);
   const observer = positions.Sebaka.clone().addScaledVector(
     frame.up,
     (radiusKm("Sebaka") / KM_PER_AU) * 150,
@@ -245,5 +262,15 @@ export const fieldNotes: Record<
     title: "Where we stand",
     text: "An independent planet around the twin suns. Every view of this sky begins here.",
     color: "#87c1b1",
+  },
+  Gelidis: {
+    title: "Beyond the known sky",
+    text: "A world orbiting Beacon. Visible here in the author’s atlas, not yet discovered by the people of Sebaka.",
+    color: "#b8d5e2",
+  },
+  Liminis: {
+    title: "Beacon’s outer world",
+    text: "The second of Beacon’s planets. This author-only view reveals the wider system without adding it to the inhabitants’ sky.",
+    color: "#c5bbde",
   },
 };

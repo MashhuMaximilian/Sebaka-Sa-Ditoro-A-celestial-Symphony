@@ -92,3 +92,19 @@ the application tests. Those remain astronomy research tasks.
 Terrain, background stars, atmospheric color, and point-source glow are visual
 interpretations. Apparent disc sizes and horizon readouts use the observer
 adapter; lighting is illustrative, not a radiometric visibility calculation.
+
+### Exploration overrides
+
+The rotation switch holds Sebaka's observer-frame phase and its atlas globe
+rotation without stopping orbital time. Resumption applies an offset to preserve
+continuity. This is an explicitly noncanonical exploration override; date jumps
+and calculated-event travel reset it to the canonical phase. The same phase is
+used for renderer and altitude readouts. Viridis's appearance switch only hides
+the lava/ash treatment: its 27-day physical/calendar cycle is unchanged.
+
+The author atlas may expose Gelidis and Liminis around Beacon. Their positions
+come from the same ephemeris, and their orbit traces are drawn relative to Beacon.
+They remain excluded from the inhabitants' sky and Gathering predicates. Enlarged
+atlas body markers, stellar glare, and iridescent ring coloration are visual
+treatments, not inputs to event detection. The original code assigns the rings
+to Spectris and the volcanic treatment to Viridis.

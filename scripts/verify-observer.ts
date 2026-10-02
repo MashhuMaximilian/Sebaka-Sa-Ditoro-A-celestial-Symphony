@@ -8,6 +8,8 @@ import {
   radiusKm,
   openingObservation,
   nextGathering,
+  rotationHours,
+  toggleRotation,
 } from "../src/lib/observatory";
 
 async function verify() {
@@ -22,6 +24,29 @@ async function verify() {
   assert.equal(radiusKm("Alpha"), 695700);
 
   const start = openingObservation();
+  const spinning = { enabled: true, offset: 0, frozenHours: 0 };
+  const held = toggleRotation(start, spinning);
+  assert.equal(rotationHours(start + 6, held), start);
+  const resumed = toggleRotation(start + 6, held);
+  assert.equal(
+    rotationHours(start + 6, resumed),
+    start,
+    "Resume must not jump the horizon",
+  );
+  assert.equal(rotationHours(start + 7, resumed), start + 1);
+  const heldNow = observe(start, 24, 0, true, rotationHours(start, held));
+  const heldLater = observe(
+    start + 6,
+    24,
+    0,
+    true,
+    rotationHours(start + 6, held),
+  );
+  assert.ok(heldNow.frame.up.distanceTo(heldLater.frame.up) < 1e-12);
+  assert.ok(
+    heldNow.positions.Sebaka.distanceTo(heldLater.positions.Sebaka) > 0.01,
+    "Pausing rotation must not freeze the orbit",
+  );
   const physical = observe(start, 24, 0, false),
     apparent = observe(start);
   for (const b of physical.sky) {
