@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:observer": "tsx scripts/verify-observer.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.13.0",

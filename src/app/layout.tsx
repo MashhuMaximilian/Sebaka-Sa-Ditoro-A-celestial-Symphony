@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import Script from "next/script";
 
 export const metadata: Metadata = {
-  title: "Celestial Symphony",
+  title: "Sebaka sa Ditoro — The Observatory",
   description:
-    "An interactive 3D celestial simulation with AI-powered color harmonization.",
+    "Stand beneath the twin suns of Sebaka. Explore a living sky, its worlds, and the stories they leave behind.",
 };
 
 export default function RootLayout({
@@ -16,18 +15,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
       <body className="font-body antialiased">
         {children}
         <Toaster />

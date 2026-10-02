@@ -1,4 +1,69 @@
-# Celestial Symphony
+# Sebaka sa Ditoro — The Observatory
+
+An interactive sky over Sebaka, a fictional circumbinary world. The opening
+observation shows Aetheris above an illustrative mountain horizon. Switch to
+**The system** to see the same moment from orbit.
+
+## Observatory preview
+
+```sh
+npm ci
+npm run build
+npm start
+```
+
+Open http://localhost:3000. No API key is needed for the observatory.
+For development, use `npm run dev` instead.
+
+- Choose a world in **In the lens**; **Find next rise** advances the clock when
+  it is below the horizon. Drag or use arrow keys on the sky to look around.
+- Compare **Through the Weave** with physical angular sizes. Orbital positions
+  and physical radii do not change with this switch.
+- Play, pause, step a day, scrub the 13-month year, or enter a year/day in settings.
+- **Field journal** searches one year for the next practical Gathering.
+  Historical Triune and Triple Cascade entries explicitly remain unverified.
+- The orbital atlas uses physical distance ratios and enlarged body markers.
+  The gold line connects Sebaka to the selected world. Beacon is beyond the
+  inner chart; its undiscovered planets stay out of the inhabitants' atlas.
+
+## Model and verification
+
+The astronomy remains a research baseline; see `docs/astronomy-specification.md`.
+The observatory uses the existing ephemeris, with a new observer projection in
+`src/lib/observatory.ts`. Physical radii are read from radius metadata because
+legacy `size` fields were exaggerated mesh scales. Rotation is treated as the
+baseline 24-hour sidereal period; this is not a validation of the solar calendar.
+Atmosphere, terrain, starfield, and star glow are illustrative. Brightness is
+art-directed; it is not a radiometric atmosphere simulation.
+
+A Gathering search is explicitly defined as at least three of the four witnesses
+above 3°, both suns below −4°, and each witness more than 10° from either sun.
+It samples hourly over 351 days. It does not prove the frequency of a full
+Triune Alignment, a Triple Cascade, or an event at Year 2454.
+
+```sh
+npm run test:observer
+npm run typecheck
+npm run build
+```
+
+`scripts/inspect-observatory.cjs` exercises the real browser at desktop and mobile
+sizes, writes screenshots to ignored `output/playwright/`, and measures frame
+timing and texture transfer. It accepts `PLAYWRIGHT_CORE` (installed module path),
+`BROWSER_PATH` (Chromium executable), and `PREVIEW_URL` (default port 3100).
+
+Rendering uses one canvas, a capped pixel ratio, optimized local WebP textures,
+resource disposal, and redraws on change. Paused scenes do not continuously draw.
+Reduced-motion preferences disable decorative CSS animation; time starts paused.
+
+The original Firebase Studio interface is retained in
+`src/components/observatory/LegacyObservatory.tsx` for reference, together with its
+engine and optional Genkit workflows. It is not loaded by the new landing route.
+
+## Original prototype documentation (historical)
+
+The following describes the earlier Firebase Studio prototype, not a validation
+of its astronomical claims or the feature set of the current observatory.
 
 Welcome to Celestial Symphony, an interactive 3D celestial simulation built with Next.js and Three.js. Explore a detailed, fictional solar system, customize planetary appearances with AI, and experience the sky from the surface of the homeworld, Sebaka.
 

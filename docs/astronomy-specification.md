@@ -63,3 +63,32 @@ secondary reports derived from the authoritative observer model.
 The renderer consumes the authoritative ephemeris and observer-event results;
 it must not invent a second astronomy model from display radii, pairwise
 synodic shortcuts, or the inclusion of Sebaka as a sky body.
+
+## Observatory implementation (October 2026)
+
+The new sky and orbital views consume the same `calculateBodyPositions`
+ephemeris and simulation hour. The observer adapter converts the radius metadata
+to kilometers rather than treating exaggerated legacy mesh sizes as physical
+radii. The reference location is 24° north, 0° longitude, with the baseline
+23.5° axial tilt and 24-hour rotation treated as sidereal. Surface topocentric
+offsets are included. The Weave scales angular diameters using the existing
+600× multipliers and per-planet caps, without changing directions or distances.
+
+The opening hour is chosen by a documented search for a scenic Aetheris view,
+not as a Year 0 alignment or a fabricated event. The Gathering finder samples
+hourly for up to one year, requiring at least three witnesses above 3°, both
+suns below −4°, and each witness separated from both suns by more than 10°.
+This explicit observing interpretation is provisional.
+
+Known unresolved contradictions in the legacy baseline include its mesh/radius
+unit mismatch, Spectris's old calendar description, Beacon's fixed giant-star
+classification despite its unknown lore status, inconsistent period text, and
+the event solver's use of historical recurrence values as search hints. The
+observatory does not present these descriptions or search hints as established
+facts. Its journal labels Full Triune Alignment and Triple Cascade unverified.
+No full-sequence recurrence or long-term gravitational stability was proved by
+the application tests. Those remain astronomy research tasks.
+
+Terrain, background stars, atmospheric color, and point-source glow are visual
+interpretations. Apparent disc sizes and horizon readouts use the observer
+adapter; lighting is illustrative, not a radiometric visibility calculation.
